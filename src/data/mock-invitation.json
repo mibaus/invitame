@@ -1,0 +1,270 @@
+{
+  "metadata": {
+    "id": "inv_001",
+    "slug": "maria-y-carlos-2024",
+    "tier": "premium",
+    "skin_id": "celestial-noir",
+    "event_type": "wedding",
+    "created_at": "2024-01-15T10:00:00Z",
+    "updated_at": "2024-01-20T15:30:00Z",
+    "expires_at": "2024-12-31T23:59:59Z",
+    "is_active": true,
+    "owner_id": "user_123",
+    "language": "es"
+  },
+  "content": {
+    "headline": "María & Carlos",
+    "subtitle": "Nos casamos",
+    "main_message": "Con la bendición de Dios y nuestras familias, tenemos el honor de invitarte a celebrar nuestra unión en matrimonio.",
+    "couple": {
+      "person1": {
+        "name": "María",
+        "full_name": "María Alejandra Rodríguez López",
+        "photo_url": "/images/maria.jpg"
+      },
+      "person2": {
+        "name": "Carlos",
+        "full_name": "Carlos Eduardo Martínez García",
+        "photo_url": "/images/carlos.jpg"
+      },
+      "hashtag": "#MariaYCarlos2024",
+      "love_story": "Nos conocimos en una tarde de otoño en la universidad, y desde ese momento supimos que nuestras almas estaban destinadas a encontrarse."
+    },
+    "hosts": [
+      {
+        "name": "Roberto y Ana Rodríguez",
+        "relation": "Padres de la novia"
+      },
+      {
+        "name": "Eduardo y Carmen Martínez",
+        "relation": "Padres del novio"
+      }
+    ],
+    "cover_image": "/images/cover-wedding.jpg",
+    "gallery_images": [
+      "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80",
+      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80",
+      "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80",
+      "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=800&q=80",
+      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80",
+      "https://images.unsplash.com/photo-1507504031003-b417219a0fde?w=800&q=80",
+      "https://images.unsplash.com/photo-1460978812857-470ed1c77af0?w=800&q=80",
+      "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80",
+      "https://images.unsplash.com/photo-1529636798458-92182e662485?w=800&q=80",
+      "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800&q=80",
+      "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&q=80",
+      "https://images.unsplash.com/photo-1544078751-58fee2d8a03b?w=800&q=80",
+      "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&q=80",
+      "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=800&q=80",
+      "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=800&q=80"
+    ],
+    "quote": {
+      "text": "El amor no consiste en mirarse el uno al otro, sino en mirar juntos en la misma dirección.",
+      "author": "Antoine de Saint-Exupéry"
+    }
+  },
+  "logistics": {
+    "event_date": "2024-11-15T17:00:00Z",
+    "timezone": "America/Mexico_City",
+    "agenda": [
+      {
+        "id": "agenda_1",
+        "time": "17:00",
+        "title": "Ceremonia Religiosa",
+        "description": "Unión sacramental en la Parroquia de San José",
+        "icon": "church",
+        "location": "Parroquia San José"
+      },
+      {
+        "id": "agenda_2",
+        "time": "19:00",
+        "title": "Cóctel de Bienvenida",
+        "description": "Recepción y brindis de bienvenida",
+        "icon": "champagne",
+        "location": "Jardín Principal"
+      },
+      {
+        "id": "agenda_3",
+        "time": "20:00",
+        "title": "Recepción y Cena",
+        "description": "Cena de gala y celebración",
+        "icon": "utensils",
+        "location": "Salón Imperial"
+      },
+      {
+        "id": "agenda_4",
+        "time": "22:00",
+        "title": "Fiesta y Baile",
+        "description": "¡A celebrar con música y baile!",
+        "icon": "music",
+        "location": "Salón Imperial"
+      }
+    ],
+    "venues": [
+      {
+        "id": "venue_1",
+        "name": "Parroquia de San José",
+        "type": "ceremony",
+        "address": "Calle Principal #123, Col. Centro",
+        "city": "Ciudad de México",
+        "country": "México",
+        "coordinates": {
+          "lat": 19.4326,
+          "lng": -99.1332
+        },
+        "google_maps_url": "https://maps.google.com/?q=19.4326,-99.1332",
+        "instructions": "La iglesia cuenta con estacionamiento gratuito para invitados.",
+        "image_url": "/images/church.jpg"
+      },
+      {
+        "id": "venue_2",
+        "name": "Hacienda Los Morales",
+        "type": "reception",
+        "address": "Vázquez de Mella #525, Col. Polanco",
+        "city": "Ciudad de México",
+        "country": "México",
+        "coordinates": {
+          "lat": 19.4400,
+          "lng": -99.2000
+        },
+        "google_maps_url": "https://maps.google.com/?q=19.4400,-99.2000",
+        "waze_url": "https://waze.com/ul?ll=19.4400,-99.2000",
+        "instructions": "Servicio de valet parking disponible.",
+        "image_url": "/images/hacienda.jpg"
+      }
+    ],
+    "dress_code": {
+      "code": "formal",
+      "description": "Vestimenta formal de gala",
+      "suggestions": [
+        "Caballeros: Traje oscuro o smoking",
+        "Damas: Vestido largo de noche"
+      ],
+      "colors_to_avoid": ["blanco", "marfil", "crema"]
+    },
+    "parking_info": "Servicio de valet parking gratuito en ambas ubicaciones.",
+    "accommodation_suggestions": [
+      {
+        "name": "Hotel Camino Real Polanco",
+        "url": "https://caminoreal.com",
+        "distance": "5 min del salón"
+      },
+      {
+        "name": "JW Marriott México City",
+        "url": "https://marriott.com",
+        "distance": "10 min del salón"
+      }
+    ]
+  },
+  "features": {
+    "rsvp": {
+      "enabled": true,
+      "deadline": "2024-11-01T23:59:59Z",
+      "max_companions": 2,
+      "allow_children": false,
+      "dietary_options": [
+        "Sin restricciones",
+        "Vegetariano",
+        "Vegano",
+        "Sin gluten",
+        "Sin mariscos",
+        "Kosher"
+      ],
+      "custom_questions": [
+        {
+          "id": "q1",
+          "question": "¿Asistirás a la ceremonia religiosa?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "question": "¿Qué género musical prefieres?",
+          "type": "select",
+          "options": ["Pop", "Rock", "Salsa", "Cumbia", "Reggaetón", "Variado"],
+          "required": false
+        }
+      ],
+      "confirmation_message": "¡Gracias por confirmar! Estamos muy emocionados de celebrar contigo.",
+      "requires_approval": false
+    },
+    "gift_registry": {
+      "enabled": true,
+      "message": "Tu presencia es nuestro mejor regalo. Sin embargo, si deseas obsequiarnos algo, hemos preparado algunas opciones.",
+      "bank_details": {
+        "bank_name": "BBVA México",
+        "account_holder": "María A. Rodríguez López",
+        "account_number": "0123456789",
+        "routing_number": "012180"
+      },
+      "registries": [
+        {
+          "id": "reg_1",
+          "platform": "Liverpool",
+          "name": "Mesa de Regalos Liverpool",
+          "url": "https://liverpool.com.mx/mesa/mariaycarlos",
+          "logo_url": "/images/logos/liverpool.png"
+        },
+        {
+          "id": "reg_2",
+          "platform": "Amazon",
+          "name": "Lista de Deseos Amazon",
+          "url": "https://amazon.com.mx/wishlist/mariaycarlos",
+          "logo_url": "/images/logos/amazon.png"
+        }
+      ]
+    },
+    "music": {
+      "enabled": true,
+      "autoplay": false,
+      "track_url": "/audio/perfect-ed-sheeran.mp3",
+      "track_name": "Perfect",
+      "artist": "Ed Sheeran"
+    },
+    "countdown": {
+      "enabled": true,
+      "target_date": "2024-11-15T17:00:00Z",
+      "show_seconds": true,
+      "style": "elegant"
+    },
+    "social_sharing": {
+      "enabled": true,
+      "whatsapp_message": "¡Estás invitado a la boda de María y Carlos! 💒💕 Confirma tu asistencia aquí:",
+      "og_image": "/images/og-wedding.jpg",
+      "og_title": "Boda de María & Carlos",
+      "og_description": "Te invitamos a celebrar nuestra unión en matrimonio el 15 de noviembre de 2024"
+    },
+    "photo_gallery": {
+      "enabled": true,
+      "allow_uploads": true
+    },
+    "guestbook": {
+      "enabled": true,
+      "moderated": true
+    },
+    "live_streaming": {
+      "enabled": true,
+      "platform": "youtube",
+      "url": "https://youtube.com/live/mariaycarlos2024"
+    }
+  },
+  "skin_config": {
+    "colors": {
+      "primary": "#1a1a2e",
+      "secondary": "#d4af37",
+      "accent": "#f5e6d3",
+      "background": "#0f0f1a",
+      "surface": "#1a1a2e",
+      "text_primary": "#ffffff",
+      "text_secondary": "#d4af37",
+      "text_muted": "#a0a0a0"
+    },
+    "typography": {
+      "heading_font": "Playfair Display",
+      "body_font": "Lato",
+      "accent_font": "Great Vibes"
+    },
+    "border_radius": "sm",
+    "animations": "elegant"
+  }
+}
