@@ -23,6 +23,11 @@ export interface Database {
         Insert: ProfileInsert;
         Update: ProfileUpdate;
       };
+      clients: {
+        Row: Client;
+        Insert: ClientInsert;
+        Update: ClientUpdate;
+      };
       invitations: {
         Row: Invitation;
         Insert: InvitationInsert;
@@ -77,12 +82,48 @@ export interface ProfileUpdate {
 }
 
 // =============================================
+// CLIENTS (Onboarding)
+// =============================================
+
+export interface Client {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  tier_purchased: ServiceTier;
+  profile_id: string | null;
+  onboarding_completed: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ClientInsert {
+  id?: string;
+  full_name: string;
+  email: string;
+  phone?: string | null;
+  tier_purchased: ServiceTier;
+  profile_id?: string | null;
+  onboarding_completed?: boolean;
+}
+
+export interface ClientUpdate {
+  full_name?: string;
+  email?: string;
+  phone?: string | null;
+  tier_purchased?: ServiceTier;
+  profile_id?: string | null;
+  onboarding_completed?: boolean;
+}
+
+// =============================================
 // INVITATIONS
 // =============================================
 
 export interface Invitation {
   id: string;
   client_id: string | null;
+  onboarding_client_id: string | null;
   slug: string;
   tier: ServiceTier;
   skin_id: string;
@@ -99,6 +140,7 @@ export interface Invitation {
 export interface InvitationInsert {
   id?: string;
   client_id?: string | null;
+  onboarding_client_id?: string | null;
   slug: string;
   tier?: ServiceTier;
   skin_id?: string;

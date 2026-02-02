@@ -21,7 +21,7 @@ CREATE TYPE rsvp_status AS ENUM ('pending', 'confirmed', 'declined', 'maybe');
 
 -- =============================================
 -- TABLA: profiles
--- Usuarios/clientes de la plataforma
+-- Usuarios/clientes de la plataforma (autenticados)
 -- =============================================
 
 CREATE TABLE profiles (
@@ -38,6 +38,32 @@ CREATE TABLE profiles (
 CREATE INDEX idx_profiles_email ON profiles(email);
 
 -- =============================================
+-- TABLA: clients
+-- Clientes de onboarding (sin autenticación requerida)
+-- =============================================
+
+CREATE TABLE clients (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  full_name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  tier_purchased service_tier NOT NULL DEFAULT 'essential',
+  
+  -- Referencia opcional a profile si el cliente se registra después
+  profile_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  
+  -- Estado del onboarding
+  onboarding_completed BOOLEAN DEFAULT FALSE,
+  
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Índices
+CREATE INDEX idx_clients_email ON clients(email);
+CREATE INDEX idx_clients_tier ON clients(tier_purchased);
+
+-- =============================================
 -- TABLA: invitations
 -- Invitaciones digitales
 -- =============================================
@@ -45,8 +71,9 @@ CREATE INDEX idx_profiles_email ON profiles(email);
 CREATE TABLE invitations (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   
-  -- Relación con el cliente/propietario
+  -- Relación con el cliente/propietario (puede ser profile o client de onboarding)
   client_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  onboarding_client_id UUID REFERENCES clients(id) ON DELETE CASCADE,
   
   -- Identificador público único (URL-friendly)
   slug TEXT UNIQUE NOT NULL,
@@ -163,6 +190,10 @@ CREATE TRIGGER trigger_rsvps_updated_at
   BEFORE UPDATE ON rsvps
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+CREATE TRIGGER trigger_clients_updated_at
+  BEFORE UPDATE ON clients
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
 -- Función para incrementar contador de vistas
 CREATE OR REPLACE FUNCTION increment_invitation_views(invitation_slug TEXT)
 RETURNS VOID AS $$
@@ -179,6 +210,7 @@ $$ LANGUAGE plpgsql;
 
 -- Habilitar RLS en todas las tablas
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE invitations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE rsvps ENABLE ROW LEVEL SECURITY;
 ALTER TABLE guestbook_entries ENABLE ROW LEVEL SECURITY;
@@ -196,6 +228,20 @@ CREATE POLICY "Users can view own profile"
 CREATE POLICY "Users can update own profile"
   ON profiles FOR UPDATE
   USING (auth.uid() = id);
+
+-- =============================================
+-- POLÍTICAS DE SEGURIDAD: clients
+-- =============================================
+
+-- Permitir inserción desde onboarding (sin autenticación)
+CREATE POLICY "Anyone can create client during onboarding"
+  ON clients FOR INSERT
+  WITH CHECK (TRUE);
+
+-- Clientes vinculados a un profile pueden ser vistos por ese usuario
+CREATE POLICY "Linked users can view their client record"
+  ON clients FOR SELECT
+  USING (auth.uid() = profile_id);
 
 -- =============================================
 -- POLÍTICAS DE SEGURIDAD: invitations
