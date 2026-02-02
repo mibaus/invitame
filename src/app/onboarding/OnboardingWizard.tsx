@@ -5,6 +5,7 @@ import type { ServiceTier } from '@/types/database';
 import { submitOnboarding, type OnboardingData } from '@/app/actions/onboarding';
 import { SkinSelector } from './components/SkinSelector';
 import { StepIndicator } from './components/StepIndicator';
+import { ImageUploader, MultiImageUploader } from './components/ImageUploader';
 
 interface OnboardingWizardProps {
   tier: ServiceTier;
@@ -591,39 +592,24 @@ function Step4Multimedia({ data, onChange, tier }: StepProps) {
       <p className="text-gray-600">Agrega fotos y música para personalizar tu invitación.</p>
 
       {/* Cover Image */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Imagen de portada (URL)</label>
-        <input
-          type="url"
-          value={data.coverImage || ''}
-          onChange={(e) => onChange({ coverImage: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="https://ejemplo.com/foto.jpg"
-        />
-        <p className="mt-1 text-sm text-gray-500">
-          Puedes usar enlaces de Google Drive, Dropbox o cualquier servicio de imágenes.
-        </p>
-      </div>
+      <ImageUploader
+        folder={`onboarding/${data.clientEmail || 'temp'}/cover`}
+        onUpload={(url) => onChange({ coverImage: url })}
+        currentImage={data.coverImage}
+        label="Imagen de portada"
+        hint="Esta imagen aparecerá como fondo principal de tu invitación"
+      />
 
       {/* Gallery Images (Pro/Premium) */}
       {(tier === 'pro' || tier === 'premium') && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Galería de fotos (URLs separadas por coma)
-          </label>
-          <textarea
-            value={(data.galleryImages || []).join(', ')}
-            onChange={(e) => onChange({ 
-              galleryImages: e.target.value.split(',').map(url => url.trim()).filter(Boolean) 
-            })}
-            rows={3}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-            placeholder="https://foto1.jpg, https://foto2.jpg, ..."
-          />
-          <p className="mt-1 text-sm text-gray-500">
-            {tier === 'pro' ? 'Máximo 10 fotos' : 'Sin límite de fotos'}
-          </p>
-        </div>
+        <MultiImageUploader
+          folder={`onboarding/${data.clientEmail || 'temp'}/gallery`}
+          onUpload={(urls) => onChange({ galleryImages: urls })}
+          currentImages={data.galleryImages}
+          maxImages={tier === 'pro' ? 10 : 15}
+          label="Galería de fotos"
+          hint={tier === 'pro' ? 'Máximo 10 fotos' : 'Máximo 15 fotos'}
+        />
       )}
 
       {/* Music (Pro/Premium) */}
