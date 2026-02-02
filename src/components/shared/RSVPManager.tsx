@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import type { ServiceTier, RSVPConfig, InvitationMetadata } from '@/types';
 import { useTierAccess } from './TierGate';
 import { LuxuryButton } from './LuxuryButton';
 import { getWhatsAppShareUrl } from '@/lib/utils';
+import { submitRSVP } from '@/app/actions/rsvp';
 
 interface RSVPManagerProps {
   tier: ServiceTier;
@@ -127,29 +128,37 @@ function RSVPForm({ config, invitationId, className, styles = {} }: RSVPFormProp
     companionNames: [''],
     dietary: '',
     message: '',
+    musicSuggestion: '',
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [submittedName, setSubmittedName] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setError(null);
 
-    try {
-      // TODO: Implementar llamada a API/Supabase
-      console.log('RSVP Submit:', { invitationId, ...formState });
-      
-      // Simular delay de red
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setIsSubmitted(true);
-    } catch (err) {
-      setError('Hubo un error al enviar tu confirmación. Por favor intenta de nuevo.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    startTransition(async () => {
+      const result = await submitRSVP({
+        invitationId,
+        name: formState.name,
+        email: formState.email || undefined,
+        phone: formState.phone || undefined,
+        attendance: formState.attending === 'yes',
+        guestsCount: 1 + formState.companions,
+        dietaryRestrictions: formState.dietary || undefined,
+        musicSuggestion: formState.musicSuggestion || undefined,
+        message: formState.message || undefined,
+      });
+
+      if (result.success) {
+        setSubmittedName(result.data?.name || formState.name);
+        setIsSubmitted(true);
+      } else {
+        setError(result.error || 'Hubo un error al enviar tu confirmación.');
+      }
+    });
   };
 
   if (isSubmitted) {
@@ -276,10 +285,10 @@ function RSVPForm({ config, invitationId, className, styles = {} }: RSVPFormProp
       <LuxuryButton
         type="submit"
         size="lg"
-        loading={isSubmitting}
+        loading={isPending}
         className={`w-full ${styles.buttonClassName || ''}`}
       >
-        {isSubmitting ? 'Enviando...' : 'Confirmar Asistencia'}
+        {isPending ? 'Enviando...' : 'Confirmar Asistencia'}
       </LuxuryButton>
     </form>
   );
