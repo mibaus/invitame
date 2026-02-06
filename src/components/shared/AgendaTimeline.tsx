@@ -1,13 +1,12 @@
 'use client';
 
-import type { ServiceTier, AgendaItem } from '@/types';
-import { useTierAccess } from './TierGate';
+import type { AgendaItem } from '@/types';
 
 interface AgendaTimelineProps {
-  tier: ServiceTier;
   items: AgendaItem[];
   className?: string;
   styles?: {
+    containerClassName?: string;
     itemClassName?: string;
     timeClassName?: string;
     titleClassName?: string;
@@ -16,29 +15,18 @@ interface AgendaTimelineProps {
 
 /**
  * AgendaTimeline - Componente para mostrar la agenda del evento
- * 
- * Essential: No disponible (retorna null)
- * Pro/Premium: Timeline completo con horarios
  */
 export function AgendaTimeline({
-  tier,
   items,
   className = '',
   styles = {},
 }: AgendaTimelineProps) {
-  const { hasFeature } = useTierAccess(tier);
-
-  // Essential no tiene agenda
-  if (!hasFeature('agenda')) {
-    return null;
-  }
-
   if (!items || items.length === 0) {
     return null;
   }
 
   return (
-    <div className={`agenda-timeline ${className}`}>
+    <div className={`agenda-timeline ${className} ${styles.containerClassName || ''}`}>
       <div className="space-y-6">
         {items.map((item, index) => (
           <AgendaTimelineItem

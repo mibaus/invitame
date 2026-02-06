@@ -1,100 +1,13 @@
 'use client';
 
-import type { ServiceTier } from '@/types/database';
+import { getAllSkins, SkinConfig } from '@/lib/skins';
 
 interface SkinSelectorProps {
-  tier: ServiceTier;
   selectedSkin: string;
   onSelect: (skinId: string) => void;
 }
 
-interface SkinDefinition {
-  id: string;
-  name: string;
-  tier: 'essential' | 'pro' | 'premium';
-  tagline: string;
-  style: {
-    bg: string;
-    text: string;
-    accent: string;
-    font: 'serif' | 'sans' | 'script';
-  };
-}
-
-const ALL_SKINS: SkinDefinition[] = [
-  // Essential
-  { 
-    id: 'classic-elegance', 
-    name: 'Classic Elegance', 
-    tier: 'essential',
-    tagline: 'Atemporal y sofisticado',
-    style: { bg: '#FAF8F5', text: '#1C1C1C', accent: '#B8860B', font: 'serif' },
-  },
-  { 
-    id: 'minimal-chic', 
-    name: 'Minimal Chic', 
-    tier: 'essential',
-    tagline: 'Limpio y contemporáneo',
-    style: { bg: '#FFFFFF', text: '#0A0A0A', accent: '#6B6B6B', font: 'sans' },
-  },
-  { 
-    id: 'garden-romance', 
-    name: 'Garden Romance', 
-    tier: 'essential',
-    tagline: 'Romántico y natural',
-    style: { bg: '#F7F5F0', text: '#4A5D4A', accent: '#C9A86C', font: 'script' },
-  },
-  // Pro
-  { 
-    id: 'royal-gold', 
-    name: 'Royal Gold', 
-    tier: 'pro',
-    tagline: 'Majestuoso y opulento',
-    style: { bg: '#0F0F0F', text: '#D4AF37', accent: '#F5E6C8', font: 'serif' },
-  },
-  { 
-    id: 'modern-luxe', 
-    name: 'Modern Luxe', 
-    tier: 'pro',
-    tagline: 'Audaz y refinado',
-    style: { bg: '#1A1A1A', text: '#FAFAFA', accent: '#C9A55C', font: 'sans' },
-  },
-  { 
-    id: 'vintage-rose', 
-    name: 'Vintage Rose', 
-    tier: 'pro',
-    tagline: 'Nostálgico y delicado',
-    style: { bg: '#FDF8F6', text: '#8B4557', accent: '#D4A5A5', font: 'script' },
-  },
-  // Premium
-  { 
-    id: 'celestial-noir', 
-    name: 'Celestial Noir', 
-    tier: 'premium',
-    tagline: 'Misterioso y elegante',
-    style: { bg: '#0A0A14', text: '#C9B037', accent: '#2A2A4A', font: 'serif' },
-  },
-  { 
-    id: 'enchanted-garden', 
-    name: 'Enchanted Garden', 
-    tier: 'premium',
-    tagline: 'Mágico y envolvente',
-    style: { bg: '#0F1A0F', text: '#E8D5B7', accent: '#4A6B4A', font: 'script' },
-  },
-  { 
-    id: 'art-deco', 
-    name: 'Art Deco', 
-    tier: 'premium',
-    tagline: 'Geométrico y glamoroso',
-    style: { bg: '#1A1A2E', text: '#D4AF37', accent: '#2A2A4E', font: 'sans' },
-  },
-];
-
-function getAvailableSkins(tier: ServiceTier): SkinDefinition[] {
-  const tierOrder = { essential: 1, pro: 2, premium: 3 };
-  const userTierLevel = tierOrder[tier];
-  return ALL_SKINS.filter(s => tierOrder[s.tier] <= userTierLevel);
-}
+const ALL_SKINS = getAllSkins();
 
 function getFontClass(font: 'serif' | 'sans' | 'script'): string {
   switch (font) {
@@ -108,8 +21,8 @@ function openPreview(skinId: string) {
   window.open(`/preview/${skinId}`, '_blank', 'noopener,noreferrer');
 }
 
-export function SkinSelector({ tier, selectedSkin, onSelect }: SkinSelectorProps) {
-  const availableSkins = getAvailableSkins(tier);
+export function SkinSelector({ selectedSkin, onSelect }: SkinSelectorProps) {
+  const availableSkins = ALL_SKINS;
 
   return (
     <div className="space-y-6">
@@ -218,15 +131,6 @@ export function SkinSelector({ tier, selectedSkin, onSelect }: SkinSelectorProps
                         {skin.tagline}
                       </p>
                     </div>
-                    <span className={`shrink-0 text-[10px] font-medium uppercase tracking-wide px-2 py-0.5 rounded ${
-                      skin.tier === 'premium' 
-                        ? 'bg-amber-50 text-amber-700' 
-                        : skin.tier === 'pro'
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
-                      {skin.tier}
-                    </span>
                   </div>
                 </div>
               </button>
@@ -252,9 +156,7 @@ export function SkinSelector({ tier, selectedSkin, onSelect }: SkinSelectorProps
       </div>
       
       <p className="text-xs text-gray-400 text-center">
-        {tier === 'essential' && '3 diseños disponibles con tu plan'}
-        {tier === 'pro' && '6 diseños disponibles con tu plan'}
-        {tier === 'premium' && 'Todos los diseños disponibles'}
+        1 diseño disponible - Más diseños próximamente
       </p>
     </div>
   );

@@ -1,7 +1,5 @@
 'use client';
 
-import type { ServiceTier } from '@/types/database';
-
 interface Step {
   id: number;
   title: string;
@@ -11,29 +9,16 @@ interface Step {
 interface StepIndicatorProps {
   steps: Step[];
   currentStep: number;
-  tier: ServiceTier;
 }
 
-const TIER_COLORS = {
-  essential: {
-    active: 'bg-gray-600',
-    completed: 'bg-gray-600',
-    line: 'bg-gray-600',
-  },
-  pro: {
-    active: 'bg-blue-600',
-    completed: 'bg-blue-600',
-    line: 'bg-blue-600',
-  },
-  premium: {
-    active: 'bg-amber-500',
-    completed: 'bg-amber-500',
-    line: 'bg-amber-500',
-  },
+const INDICATOR_COLORS = {
+  active: 'bg-amber-600',
+  completed: 'bg-amber-600',
+  line: 'bg-amber-600',
 };
 
-export function StepIndicator({ steps, currentStep, tier }: StepIndicatorProps) {
-  const colors = TIER_COLORS[tier];
+export function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
+  const colors = INDICATOR_COLORS;
 
   return (
     <nav aria-label="Progress">

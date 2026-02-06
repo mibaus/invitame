@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitame | Tu boda, tu historia.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cloud-white: #F8F9FA;
+            --charcoal-blue: #2C3333;
+            --dusty-rose: #E7D2CC;
+            --bronze-leaf: #A27B5C;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--cloud-white);
+            color: var(--charcoal-blue);
+            scroll-behavior: smooth;
+        }
+        .font-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+        .bg-cloud { background-color: var(--cloud-white); }
+        .text-charcoal { color: var(--charcoal-blue); }
+        .bg-charcoal { background-color: var(--charcoal-blue); }
+        .text-rose { color: var(--dusty-rose); }
+        .bg-rose { background-color: var(--dusty-rose); }
+        .text-bronze { color: var(--bronze-leaf); }
+        .border-bronze { border-color: var(--bronze-leaf); }
+        
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 8s linear infinite;
+        }
+
+        /* Custom styles for animations and layout */
+        .reveal { opacity: 0; transform: translateY(20px); transition: all 0.8s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cloud: '#F8F9FA',
+                        charcoal: '#2C3333',
+                        rose: '#E7D2CC',
+                        bronze: '#A27B5C',
+                    },
+                    spacing: {
+                        '16': '4rem',
+                        '20': '5rem',
+                    }
+                }
+            }
+        }
+    </script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

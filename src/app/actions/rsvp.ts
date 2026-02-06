@@ -146,7 +146,7 @@ export async function getRSVPStats(invitationId: string) {
   if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('tu-proyecto')) {
     return {
       success: true,
-      data: { total: 0, confirmed: 0, declined: 0, pending: 0, totalGuests: 0 },
+      data: { total: 0, confirmed: 0, declined: 0, totalGuests: 0 },
     };
   }
 
@@ -167,7 +167,6 @@ export async function getRSVPStats(invitationId: string) {
       total: records.length,
       confirmed: records.filter((r) => r.status === 'confirmed').length,
       declined: records.filter((r) => r.status === 'declined').length,
-      pending: records.filter((r) => r.status === 'pending').length,
       totalGuests: records
         .filter((r) => r.status === 'confirmed')
         .reduce((sum: number, r) => sum + (r.guests_count || 1), 0),

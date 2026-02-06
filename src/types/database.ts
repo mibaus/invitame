@@ -7,7 +7,6 @@
 // ENUMS
 // =============================================
 
-export type ServiceTier = 'essential' | 'pro' | 'premium';
 export type EventType = 'wedding' | 'quinceañera' | 'birthday' | 'baby_shower' | 'corporate' | 'other';
 export type RSVPStatus = 'pending' | 'confirmed' | 'declined' | 'maybe';
 
@@ -45,7 +44,6 @@ export interface Database {
       };
     };
     Enums: {
-      service_tier: ServiceTier;
       event_type: EventType;
       rsvp_status: RSVPStatus;
     };
@@ -90,7 +88,6 @@ export interface Client {
   full_name: string;
   email: string;
   phone: string | null;
-  tier_purchased: ServiceTier;
   profile_id: string | null;
   onboarding_completed: boolean;
   created_at: string;
@@ -102,7 +99,6 @@ export interface ClientInsert {
   full_name: string;
   email: string;
   phone?: string | null;
-  tier_purchased: ServiceTier;
   profile_id?: string | null;
   onboarding_completed?: boolean;
 }
@@ -111,7 +107,6 @@ export interface ClientUpdate {
   full_name?: string;
   email?: string;
   phone?: string | null;
-  tier_purchased?: ServiceTier;
   profile_id?: string | null;
   onboarding_completed?: boolean;
 }
@@ -125,7 +120,6 @@ export interface Invitation {
   client_id: string | null;
   onboarding_client_id: string | null;
   slug: string;
-  tier: ServiceTier;
   skin_id: string;
   event_type: EventType;
   content: InvitationContent;
@@ -142,7 +136,6 @@ export interface InvitationInsert {
   client_id?: string | null;
   onboarding_client_id?: string | null;
   slug: string;
-  tier?: ServiceTier;
   skin_id?: string;
   event_type?: EventType;
   content: InvitationContent;
@@ -153,7 +146,6 @@ export interface InvitationInsert {
 
 export interface InvitationUpdate {
   slug?: string;
-  tier?: ServiceTier;
   skin_id?: string;
   event_type?: EventType;
   content?: InvitationContent;

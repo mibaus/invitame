@@ -1,38 +1,30 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import type { ServiceTier, MusicConfig } from '@/types';
-import { useTierAccess } from './TierGate';
+import { useState, useRef } from 'react';
+import type { MusicConfig } from '@/types';
 
 interface MusicPlayerProps {
-  tier: ServiceTier;
   config?: MusicConfig;
   className?: string;
 }
 
 /**
  * MusicPlayer - Componente para música de fondo
- * 
- * Essential: No disponible
- * Pro: Reproductor de audio básico
- * Premium: Reproductor + embed de Spotify
+ * Single Price Model: Disponible para todos si está configurado.
  */
 export function MusicPlayer({
-  tier,
   config,
   className = '',
 }: MusicPlayerProps) {
-  const { hasFeature } = useTierAccess(tier);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showPlayer, setShowPlayer] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const canPlayMusic = hasFeature('background_music');
   const isEnabled = config?.enabled;
 
   const togglePlay = () => {
     if (!audioRef.current) return;
-    
+
     if (isPlaying) {
       audioRef.current.pause();
     } else {
@@ -41,13 +33,12 @@ export function MusicPlayer({
     setIsPlaying(!isPlaying);
   };
 
-  // Early returns DESPUÉS de todos los hooks
-  if (!canPlayMusic || !isEnabled) {
+  // Early return if not enabled
+  if (!isEnabled) {
     return null;
   }
 
-  // Premium: Show Spotify embed
-  const showSpotify = hasFeature('spotify_playlist') && config.spotify_playlist_url;
+  const showSpotify = !!config.spotify_playlist_url;
 
   return (
     <div className={`music-player fixed bottom-4 right-4 z-40 ${className}`}>
@@ -117,7 +108,7 @@ export function MusicPlayer({
             </button>
           )}
 
-          {/* Spotify Link (Premium) */}
+          {/* Spotify Link */}
           {showSpotify && (
             <a
               href={config.spotify_playlist_url}

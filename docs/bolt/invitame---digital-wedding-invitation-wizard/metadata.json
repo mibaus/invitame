@@ -1,0 +1,7 @@
+{
+  "name": "Invitame - Digital Wedding Invitation Wizard",
+  "description": "A luxury minimalist 5-step wizard to create high-end digital wedding invitations with agenda, RSVP, and multimedia management.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

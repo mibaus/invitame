@@ -2,8 +2,7 @@
   "metadata": {
     "id": "inv_001",
     "slug": "maria-y-carlos-2024",
-    "tier": "premium",
-    "skin_id": "celestial-noir",
+    "skin_id": "bolt-dark",
     "event_type": "wedding",
     "created_at": "2024-01-15T10:00:00Z",
     "updated_at": "2024-01-20T15:30:00Z",
@@ -40,7 +39,7 @@
         "relation": "Padres del novio"
       }
     ],
-    "cover_image": "/images/cover-wedding.jpg",
+    "cover_image": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=1200",
     "gallery_images": [
       "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80",
       "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80",
@@ -64,8 +63,8 @@
     }
   },
   "logistics": {
-    "event_date": "2024-11-15T17:00:00Z",
-    "timezone": "America/Mexico_City",
+    "event_date": "2026-06-15T17:00:00Z",
+    "timezone": "America/Argentina/Buenos_Aires",
     "agenda": [
       {
         "id": "agenda_1",
@@ -140,7 +139,11 @@
         "Caballeros: Traje oscuro o smoking",
         "Damas: Vestido largo de noche"
       ],
-      "colors_to_avoid": ["blanco", "marfil", "crema"]
+      "colors_to_avoid": [
+        "blanco",
+        "marfil",
+        "crema"
+      ]
     },
     "parking_info": "Servicio de valet parking gratuito en ambas ubicaciones.",
     "accommodation_suggestions": [
@@ -181,7 +184,14 @@
           "id": "q2",
           "question": "¿Qué género musical prefieres?",
           "type": "select",
-          "options": ["Pop", "Rock", "Salsa", "Cumbia", "Reggaetón", "Variado"],
+          "options": [
+            "Pop",
+            "Rock",
+            "Salsa",
+            "Cumbia",
+            "Reggaetón",
+            "Variado"
+          ],
           "required": false
         }
       ],
@@ -195,15 +205,16 @@
         "bank_name": "BBVA México",
         "account_holder": "María A. Rodríguez López",
         "account_number": "0123456789",
-        "routing_number": "012180"
+        "routing_number": "012180",
+        "alias": "MARIA.CARLOS.2024"
       },
       "registries": [
         {
           "id": "reg_1",
-          "platform": "Liverpool",
-          "name": "Mesa de Regalos Liverpool",
-          "url": "https://liverpool.com.mx/mesa/mariaycarlos",
-          "logo_url": "/images/logos/liverpool.png"
+          "platform": "Mercado Libre",
+          "name": "Lista de Regalos Mercado Libre",
+          "url": "https://mercadolibre.com.mx/lista/mariaycarlos",
+          "logo_url": "/images/logos/mercadolibre.png"
         },
         {
           "id": "reg_2",
@@ -219,11 +230,12 @@
       "autoplay": false,
       "track_url": "/audio/perfect-ed-sheeran.mp3",
       "track_name": "Perfect",
-      "artist": "Ed Sheeran"
+      "artist": "Ed Sheeran",
+      "spotify_playlist_url": "https://open.spotify.com/playlist/37i9dQZF1DX8C9xQcOrC6Z"
     },
     "countdown": {
       "enabled": true,
-      "target_date": "2024-11-15T17:00:00Z",
+      "target_date": "2026-06-15T17:00:00Z",
       "show_seconds": true,
       "style": "elegant"
     },

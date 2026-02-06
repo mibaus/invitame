@@ -1,11 +1,12 @@
 export { LuxuryButton } from './LuxuryButton';
 export { CountdownDisplay } from './CountdownDisplay';
-export { TierGate, useTierAccess } from './TierGate';
+export { FeatureGate } from './FeatureGate';
 export { RSVPManager } from './RSVPManager';
 export { VenueDisplay } from './VenueDisplay';
 export { GiftSection } from './GiftSection';
 export { AgendaTimeline } from './AgendaTimeline';
 export { MusicPlayer } from './MusicPlayer';
 export { LogisticsGuide } from './LogisticsGuide';
-export { Guestbook } from './Guestbook';
 export { PhotoGallery } from './PhotoGallery';
+export { PaperSurface } from './PaperSurface';
+export { InvitationSkeleton, SectionSkeleton } from './InvitationSkeleton';

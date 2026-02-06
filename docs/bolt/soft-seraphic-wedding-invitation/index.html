@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soft-Seraphic Invitation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@200;300;400&family=Pinyon+Script&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #fcf9f2;
+            color: #4a4a4a;
+            overflow-x: hidden;
+        }
+        .font-script {
+            font-family: 'Great Vibes', cursive;
+        }
+        .font-pinyon {
+            font-family: 'Pinyon Script', cursive;
+        }
+        .linen-texture {
+            background-image: url("https://www.transparenttextures.com/patterns/handmade-paper.png");
+        }
+        .silver-border {
+            border: 1px solid rgba(192, 192, 192, 0.5);
+            box-shadow: 0 0 10px rgba(192, 192, 192, 0.2);
+        }
+        .seraphic-arch {
+            border-radius: 300px 300px 20px 20px;
+            overflow: hidden;
+            border: 1px solid rgba(192, 192, 192, 0.3);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+        }
+        .decorative-outline {
+            position: absolute;
+            inset: -12px;
+            border: 1px solid rgba(192, 192, 192, 0.4);
+            border-radius: 312px 312px 32px 32px;
+            pointer-events: none;
+            z-index: 5;
+        }
+        /* Utilidades de Scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .scroll-snap-x {
+            scroll-snap-type: x mandatory;
+        }
+        .snap-center {
+            scroll-snap-align: center;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fcf9f2;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #96adc0;
+            border-radius: 4px;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "framer-motion": "https://esm.sh/framer-motion@^12.31.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

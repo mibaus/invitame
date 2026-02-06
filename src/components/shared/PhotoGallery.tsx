@@ -2,11 +2,9 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import type { ServiceTier } from '@/types';
-import { getGalleryLimit } from '@/lib/tier-features';
+import { motion } from 'framer-motion';
 
 interface PhotoGalleryProps {
-  tier: ServiceTier;
   images: string[];
   className?: string;
   styles?: {
@@ -15,93 +13,91 @@ interface PhotoGalleryProps {
   };
 }
 
-/**
- * PhotoGallery - Galería de fotos con límite por tier
- * 
- * Essential: 1 foto
- * Pro: 2 fotos
- * Premium: 15 fotos
- */
 export function PhotoGallery({
-  tier,
   images,
   className = '',
   styles = {},
 }: PhotoGalleryProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  
-  const limit = getGalleryLimit(tier);
+
+  const limit = 15;
   const displayImages = images.slice(0, limit);
 
   if (!displayImages || displayImages.length === 0) {
     return null;
   }
 
-  // Grid layout basado en cantidad de imágenes
-  const getGridClass = () => {
-    const count = displayImages.length;
-    if (count === 1) return 'grid-cols-1 max-w-md mx-auto';
-    if (count === 2) return 'grid-cols-2';
-    if (count <= 4) return 'grid-cols-2 md:grid-cols-2';
-    if (count <= 6) return 'grid-cols-2 md:grid-cols-3';
-    return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
+  // Masonry layout - diferentes tamaños para crear efecto visual
+  const getImageSize = (index: number) => {
+    const patterns = [
+      'col-span-1 row-span-1', // normal
+      'col-span-1 row-span-2', // vertical
+      'col-span-2 row-span-1', // horizontal
+      'col-span-2 row-span-2', // grande
+    ];
+    return patterns[index % patterns.length];
+  };
+
+  const getAspectRatio = (index: number) => {
+    const patterns = ['aspect-square', 'aspect-[3/4]', 'aspect-[4/3]', 'aspect-square'];
+    return patterns[index % patterns.length];
   };
 
   return (
     <div className={`photo-gallery ${className}`}>
-      <div className={`grid gap-4 ${getGridClass()} ${styles.gridClassName || ''}`}>
+      <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 auto-rows-[200px] ${styles.gridClassName || ''}`}>
         {displayImages.map((src, index) => (
-          <button
+          <motion.button
             key={index}
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: index * 0.05 }}
             onClick={() => setSelectedImage(src)}
-            className={`relative aspect-square overflow-hidden rounded-lg group cursor-pointer ${styles.imageClassName || ''}`}
+            className={`relative overflow-hidden rounded-xl group cursor-pointer ${getImageSize(index)} ${getAspectRatio(index)} ${styles.imageClassName || ''}`}
           >
             <Image
               src={src}
               alt={`Foto ${index + 1}`}
               fill
-              className="object-cover transition-transform duration-300 group-hover:scale-110"
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+              className="object-cover transition-all duration-500 group-hover:scale-110"
+              sizes="(max-width: 768px) 50vw, 25vw"
             />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-          </button>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          </motion.button>
         ))}
       </div>
 
       {/* Lightbox Modal */}
       {selectedImage && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
           onClick={() => setSelectedImage(null)}
         >
           <button
-            className="absolute top-4 right-4 text-white text-4xl hover:text-gray-300 transition-colors"
+            className="absolute top-6 right-6 text-white text-5xl hover:text-gray-300 transition-colors z-10"
             onClick={() => setSelectedImage(null)}
           >
             ×
           </button>
-          <div className="relative max-w-4xl max-h-[90vh] w-full h-full">
+          <motion.div 
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            className="relative max-w-5xl max-h-[90vh] w-full aspect-[4/3]"
+          >
             <Image
               src={selectedImage}
               alt="Foto ampliada"
               fill
               className="object-contain"
               sizes="100vw"
+              priority
             />
-          </div>
-        </div>
-      )}
-
-      {/* Indicador de fotos limitadas */}
-      {images.length > limit && (
-        <p className="text-center text-sm opacity-50 mt-4">
-          Mostrando {limit} de {images.length} fotos
-          {tier !== 'premium' && (
-            <span className="block text-xs mt-1">
-              Actualiza a {tier === 'essential' ? 'Pro o Premium' : 'Premium'} para ver más
-            </span>
-          )}
-        </p>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );

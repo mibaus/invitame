@@ -1,0 +1,7 @@
+{
+  "name": "Invitame - Avant-Garde Editorial",
+  "description": "A high-gloss, luxury fashion magazine-style digital invitation featuring bold typography, Swiss design aesthetics, and vibrant accent colors.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Invitame - Retro Love Skin",
+  "description": "A neo-retro scrapbook style wedding invitation skin with elegant typography, heart-shaped frames, and integrated AI messaging.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

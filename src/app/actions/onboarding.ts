@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@supabase/supabase-js';
-import type { Database, ServiceTier, ClientInsert, InvitationInsert, InvitationContent } from '@/types/database';
+import type { Database, ClientInsert } from '@/types/database';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -31,6 +31,7 @@ export interface OnboardingData {
   eventDate: string;
   eventTime: string;
   dressCode?: string;
+  dressCodeDescription?: string;
   quote?: string;
   quoteAuthor?: string;
   
@@ -49,16 +50,19 @@ export interface OnboardingData {
   ceremonyName?: string;
   ceremonyAddress?: string;
   ceremonyMapsUrl?: string;
+  ceremonyTime?: string;
   receptionName?: string;
   receptionAddress?: string;
   receptionMapsUrl?: string;
+  receptionTime?: string;
   
   // Gift registry
   bankName?: string;
   bankAccountHolder?: string;
   bankAccountNumber?: string;
   bankAccountType?: string;
-  giftRegistryLinks?: Array<{ name: string; url: string }>;
+  giftRegistryMessage?: string;
+  mercadoLibreUrl?: string;
   
   // Step 4: Multimedia
   coverImage?: string;
@@ -66,10 +70,33 @@ export interface OnboardingData {
   musicTrackUrl?: string;
   spotifyPlaylistUrl?: string;
   
+  // Features toggles (Step 5)
+  showHero?: boolean;
+  showCountdown?: boolean;
+  showAgenda?: boolean;
+  showVenueMap?: boolean;
+  showDressCode?: boolean;
+  showGiftRegistry?: boolean;
+  showRSVP?: boolean;
+  showGallery?: boolean;
+  showMusic?: boolean;
+  showGuestMessages?: boolean;
+  
+  // Agenda items (timeline)
+  agendaItems?: Array<{
+    time: string;
+    title: string;
+    description?: string;
+    icon?: string;
+  }>;
+  
   // RSVP config
-  whatsappNumber?: string;
+  rsvpEnabled?: boolean;
+  rsvpDeadline?: string;
   maxCompanions?: number;
+  allowChildren?: boolean;
   dietaryOptions?: string[];
+  rsvpConfirmationMessage?: string;
 }
 
 export interface OnboardingResult {
@@ -81,12 +108,11 @@ export interface OnboardingResult {
 }
 
 export async function submitOnboarding(
-  tier: ServiceTier,
   data: OnboardingData
 ): Promise<OnboardingResult> {
   // Development mode fallback
   if (!isConfigured()) {
-    console.log('[Dev Mode] Onboarding submission:', { tier, data });
+    console.log('[Dev Mode] Onboarding submission:', { data });
     const tempSlug = generateTemporarySlug();
     return {
       success: true,
@@ -104,7 +130,6 @@ export async function submitOnboarding(
       full_name: data.clientName,
       email: data.clientEmail,
       phone: data.clientPhone || null,
-      tier_purchased: tier,
       onboarding_completed: true,
     };
 
@@ -115,8 +140,11 @@ export async function submitOnboarding(
       .single();
 
     if (clientError) {
-      console.error('Error creating client:', clientError);
-      return { success: false, error: 'Error al crear el registro del cliente.' };
+      console.error('Error creating client:', JSON.stringify(clientError, null, 2));
+      return { 
+        success: false, 
+        error: `Error al crear el registro del cliente: ${clientError.message || clientError.code || 'Unknown'}` 
+      };
     }
 
     // 2. Build invitation content
@@ -133,7 +161,13 @@ export async function submitOnboarding(
       logistics: {
         event_date: `${data.eventDate}T${data.eventTime}:00`,
         timezone: 'America/Argentina/Buenos_Aires',
-        agenda: [],
+        agenda: data.agendaItems?.map((item, idx) => ({
+          id: `agenda_${idx}`,
+          time: item.time,
+          title: item.title,
+          description: item.description || '',
+          icon: item.icon || 'circle',
+        })) || [],
         venues: [
           ...(data.ceremonyName ? [{
             id: 'ceremony',
@@ -142,6 +176,7 @@ export async function submitOnboarding(
             address: data.ceremonyAddress || '',
             city: '',
             google_maps_url: data.ceremonyMapsUrl,
+            time: data.ceremonyTime,
           }] : []),
           ...(data.receptionName ? [{
             id: 'reception',
@@ -150,40 +185,59 @@ export async function submitOnboarding(
             address: data.receptionAddress || '',
             city: '',
             google_maps_url: data.receptionMapsUrl,
+            time: data.receptionTime,
           }] : []),
         ],
         dress_code: data.dressCode ? {
           code: data.dressCode,
+          description: data.dressCodeDescription,
         } : undefined,
       },
       features: {
+        show_hero: data.showHero ?? true,
+        show_countdown: data.showCountdown ?? true,
+        show_agenda: data.showAgenda ?? true,
+        show_venue_map: data.showVenueMap ?? true,
+        show_dress_code: data.showDressCode ?? true,
+        show_gift_registry: data.showGiftRegistry ?? true,
+        show_rsvp: data.showRSVP ?? true,
+        show_gallery: data.showGallery ?? true,
+        show_music: data.showMusic ?? true,
+        show_guest_messages: data.showGuestMessages ?? false,
         rsvp: {
-          enabled: true,
+          enabled: data.rsvpEnabled ?? true,
+          deadline: data.rsvpDeadline,
           max_companions: data.maxCompanions || 2,
+          allow_children: data.allowChildren ?? false,
           dietary_options: data.dietaryOptions || [],
+          confirmation_message: data.rsvpConfirmationMessage,
         },
         gift_registry: {
-          enabled: Boolean(data.bankName || (data.giftRegistryLinks && data.giftRegistryLinks.length > 0)),
+          enabled: data.showGiftRegistry ?? Boolean(data.bankName || data.mercadoLibreUrl),
+          message: data.giftRegistryMessage,
           bank_details: data.bankName ? {
             bank_name: data.bankName,
             account_holder: data.bankAccountHolder || '',
             account_number: data.bankAccountNumber || '',
           } : undefined,
-          registry_links: data.giftRegistryLinks || [],
+          registries: data.mercadoLibreUrl ? [{
+            id: 'mercadolibre',
+            platform: 'Mercado Libre',
+            name: 'Lista de Regalos',
+            url: data.mercadoLibreUrl,
+          }] : [],
         },
         music: {
-          enabled: Boolean(data.musicTrackUrl || data.spotifyPlaylistUrl),
+          enabled: data.showMusic ?? Boolean(data.musicTrackUrl || data.spotifyPlaylistUrl),
           track_url: data.musicTrackUrl,
           spotify_playlist_url: data.spotifyPlaylistUrl,
           autoplay: false,
         },
         guestbook: {
-          enabled: tier === 'premium',
+          enabled: data.showGuestMessages ?? false,
           moderated: true,
         },
       },
-      // Store whatsapp separately for RSVP
-      whatsapp_number: data.whatsappNumber,
     };
 
     // Add couple data for weddings
@@ -205,7 +259,6 @@ export async function submitOnboarding(
     const invitationData = {
       onboarding_client_id: (client as any).id,
       slug: temporarySlug,
-      tier: tier,
       skin_id: data.skinId,
       event_type: data.eventType,
       content: content,
@@ -233,11 +286,4 @@ export async function submitOnboarding(
     console.error('Onboarding error:', error);
     return { success: false, error: 'Error inesperado durante el proceso.' };
   }
-}
-
-// Validate tier from URL
-export async function validateTier(tier: string | null): Promise<ServiceTier | null> {
-  if (!tier) return null;
-  const validTiers: ServiceTier[] = ['essential', 'pro', 'premium'];
-  return validTiers.includes(tier as ServiceTier) ? (tier as ServiceTier) : null;
 }

@@ -1,20 +1,122 @@
-/* Google Fonts - Must be first (All 9 Skin Fonts) */
-@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Great+Vibes&family=Italianno&family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Open+Sans:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Tenor+Sans&display=swap');
+/* Google Fonts - Must be first (All 9 Skin Fonts + Design Bible Pairings) */
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Great+Vibes&family=Italiana&family=Italianno&family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Open+Sans:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Tenor+Sans&display=swap');
 
 @import "tailwindcss";
 
 /* ============================================
    INVITA.ME - Luxury Design System
+   Based on: docs/DESIGN_BIBLE.md
    ============================================ */
 
 @theme inline {
-  /* ----- FONTS ----- */
-  --font-heading: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
-  --font-body: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* =============================================
+     TYPOGRAPHY - Font Families
+     ============================================= */
+  
+  /* Pairing 1: Editorial Classicism (Essential) */
+  --font-display-editorial: 'Cormorant Garamond', Georgia, serif;
+  --font-body-editorial: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-accent-editorial: 'Great Vibes', cursive;
+  
+  /* Pairing 2: Contemporary Drama (Pro) */
+  --font-display-drama: 'Playfair Display', Georgia, serif;
+  --font-body-drama: 'Source Sans 3', -apple-system, sans-serif;
+  --font-accent-drama: 'Italiana', serif;
+  
+  /* Pairing 3: Artisanal Heritage (Premium) */
+  --font-display-heritage: 'EB Garamond', Georgia, serif;
+  --font-body-heritage: 'Crimson Pro', Georgia, serif;
+  --font-accent-heritage: 'Pinyon Script', cursive;
+  
+  /* Retro Love Skin Fonts */
+  --font-retro: 'Playfair Display', Georgia, serif;
+  --font-classic: 'EB Garamond', Georgia, serif;
+  --font-script: 'Great Vibes', cursive;
+  
+  /* Legacy aliases (backwards compatibility) */
+  --font-heading: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-accent: 'Great Vibes', cursive;
   --font-sans: 'Lato', sans-serif;
-  --font-serif: 'Playfair Display', serif;
+  --font-serif: 'Cormorant Garamond', serif;
+
+  /* =============================================
+     TYPOGRAPHY - Fluid Scale (clamp)
+     ============================================= */
+  --font-size-display: clamp(2.5rem, 8vw + 1rem, 6rem);
+  --font-size-h1: clamp(2rem, 5vw + 0.5rem, 3.5rem);
+  --font-size-h2: clamp(1.5rem, 3vw + 0.5rem, 2.5rem);
+  --font-size-h3: clamp(1.25rem, 2vw + 0.5rem, 1.75rem);
+  --font-size-body: clamp(1rem, 1vw + 0.75rem, 1.125rem);
+  --font-size-small: clamp(0.875rem, 0.5vw + 0.75rem, 0.9375rem);
+  --font-size-label: clamp(0.625rem, 0.25vw + 0.5rem, 0.75rem);
+
+  /* =============================================
+     LANDING PAGE PALETTE
+     ============================================= */
+  --color-cloud: #F8F9FA;
+  --color-charcoal: #2C3333;
+  --color-rose: #E7D2CC;
+  --color-bronze: #A27B5C;
+
+  /* =============================================
+     PALETTE 1: Sandstone & Sage
+     "Organic warmth" - Essential Tier
+     ============================================= */
+  --color-sandstone: #D4C4B0;
+  --color-sandstone-light: #E8DED2;
+  --color-sandstone-dark: #B8A896;
   
+  --color-deep-sage: #7A8B7A;
+  --color-deep-sage-light: #9BAA9B;
+  --color-deep-sage-dark: #5A6B5A;
+  
+  --color-warm-cream: #F5F1EB;
+  --color-warm-cream-light: #FDFCFA;
+  --color-warm-cream-dark: #EDE5DB;
+  
+  --color-charcoal-ink: #2C2C2C;
+  --color-antique-gold: #B8956A;
+  --color-antique-gold-light: #D4B896;
+  --color-antique-gold-dark: #96734A;
+
+  /* =============================================
+     PALETTE 2: Champagne Midnight
+     "High-end drama" - Pro Tier
+     ============================================= */
+  --color-champagne: #F7E7CE;
+  --color-champagne-light: #FDF8F0;
+  --color-champagne-dark: #E8D4B8;
+  
+  --color-deep-charcoal: #1A1A1A;
+  --color-deep-charcoal-light: #2D2D2D;
+  --color-deep-charcoal-dark: #0A0A0A;
+  
+  --color-rose-gold: #B76E79;
+  --color-rose-gold-light: #D4949D;
+  --color-rose-gold-dark: #944858;
+  
+  --color-ivory: #FFFFF0;
+  --color-soft-blush: #F4E1D2;
+
+  /* =============================================
+     PALETTE 3: Modern Minimalist
+     "Urban sophistication" - Premium Tier
+     ============================================= */
+  --color-pure-white: #FFFFFF;
+  --color-graphite: #3D3D3D;
+  --color-graphite-light: #5A5A5A;
+  --color-graphite-dark: #2A2A2A;
+  
+  --color-silver-mist: #C0C0C0;
+  --color-silver-mist-light: #D8D8D8;
+  --color-silver-mist-dark: #A0A0A0;
+  
+  --color-subtle-cream: #FAF9F7;
+
+  /* =============================================
+     LEGACY PALETTES (backwards compatibility)
+     ============================================= */
   /* ----- GOLD PALETTE ----- */
   --color-gold-50: #fdf9ef;
   --color-gold-100: #f9f0d9;
@@ -61,7 +163,16 @@
   --color-sage-800: #314231;
   --color-sage-900: #2d3a2d;
   
-  /* ----- SEMANTIC COLORS ----- */
+  /* =============================================
+     ELEVATION SHADOWS (Luxury System)
+     ============================================= */
+  --shadow-elevation-1: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03);
+  --shadow-elevation-2: 0 4px 6px rgba(0,0,0,0.04), 0 10px 20px rgba(0,0,0,0.03);
+  --shadow-elevation-3: 0 8px 16px rgba(0,0,0,0.04), 0 20px 40px rgba(0,0,0,0.06), 0 40px 80px rgba(0,0,0,0.04);
+
+  /* =============================================
+     SEMANTIC COLORS
+     ============================================= */
   --color-background: #ffffff;
   --color-foreground: #1a1a2e;
   --color-primary: var(--color-gold-500);
@@ -69,7 +180,9 @@
   --color-accent: var(--color-cream-100);
   --color-muted: var(--color-charcoal-400);
   
-  /* ----- ANIMATIONS ----- */
+  /* =============================================
+     ANIMATIONS
+     ============================================= */
   --animate-fade-in: fade-in 0.6s ease-out;
   --animate-slide-up: slide-up 0.6s ease-out;
   --animate-float: float 3s ease-in-out infinite;
@@ -98,9 +211,19 @@
 }
 
 /* ----- BASE STYLES ----- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #1a1a2e;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 body {
@@ -109,6 +232,7 @@ body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 /* ----- TYPOGRAPHY UTILITIES ----- */
@@ -122,6 +246,97 @@ body {
 
 .font-accent {
   font-family: var(--font-accent);
+}
+
+/* Pairing 1: Editorial Classicism (Essential) */
+.font-display-editorial {
+  font-family: var(--font-display-editorial);
+}
+
+.font-body-editorial {
+  font-family: var(--font-body-editorial);
+}
+
+.font-accent-editorial {
+  font-family: var(--font-accent-editorial);
+}
+
+/* Pairing 2: Contemporary Drama (Pro) */
+.font-display-drama {
+  font-family: var(--font-display-drama);
+}
+
+.font-body-drama {
+  font-family: var(--font-body-drama);
+}
+
+.font-accent-drama {
+  font-family: var(--font-accent-drama);
+}
+
+/* Pairing 3: Artisanal Heritage (Premium) */
+.font-display-heritage {
+  font-family: var(--font-display-heritage);
+}
+
+.font-body-heritage {
+  font-family: var(--font-body-heritage);
+}
+
+.font-accent-heritage {
+  font-family: var(--font-accent-heritage);
+}
+
+/* Soft Seraphic Skin Fonts */
+.font-script {
+  font-family: 'Great Vibes', cursive;
+}
+
+.font-pinyon {
+  font-family: 'Pinyon Script', cursive;
+}
+
+/* ----- FLUID TYPOGRAPHY SCALE ----- */
+.text-display {
+  font-size: var(--font-size-display);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.text-h1 {
+  font-size: var(--font-size-h1);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+
+.text-h2 {
+  font-size: var(--font-size-h2);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.text-h3 {
+  font-size: var(--font-size-h3);
+  line-height: 1.3;
+}
+
+.text-body {
+  font-size: var(--font-size-body);
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+}
+
+.text-small {
+  font-size: var(--font-size-small);
+  line-height: 1.5;
+}
+
+.text-label {
+  font-size: var(--font-size-label);
+  line-height: 1.4;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 500;
 }
 
 /* ----- LUXURY EFFECTS ----- */
@@ -138,6 +353,59 @@ body {
 
 .border-glow-gold {
   box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+}
+
+/* Foil Effects (Design Bible Section VII) */
+.foil-gold {
+  background: linear-gradient(to bottom, #cfc09f 22%, #ffecb3 35%, #cfc09f 50%, #3a2c0f 78%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
+}
+
+.foil-silver {
+  background: linear-gradient(to bottom, #c0c0c0 22%, #f5f5f5 35%, #c0c0c0 50%, #4a4a4a 78%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
+}
+
+.foil-rose-gold {
+  background: linear-gradient(to bottom, #e8c4b8 22%, #f5dcd4 35%, #d4a594 50%, #8b5a4a 78%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.25));
+}
+
+/* Letterpress / Emboss Effect */
+.letterpress {
+  color: rgba(242, 241, 238, 0.7);
+  text-shadow: 
+    0px -1px 0px rgba(147, 140, 128, 0.7),
+    0px 1px 0px rgba(250, 250, 249, 0.3);
+}
+
+.deboss {
+  color: rgba(200, 195, 188, 0.6);
+  text-shadow: 
+    0px 1px 0px rgba(255, 255, 255, 0.4),
+    0px -1px 0px rgba(100, 95, 88, 0.3);
+}
+
+/* Elevation Shadows */
+.elevation-1 {
+  box-shadow: var(--shadow-elevation-1);
+}
+
+.elevation-2 {
+  box-shadow: var(--shadow-elevation-2);
+}
+
+.elevation-3 {
+  box-shadow: var(--shadow-elevation-3);
 }
 
 /* ----- SCROLLBAR STYLING ----- */

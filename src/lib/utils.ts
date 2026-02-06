@@ -6,10 +6,19 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(
-  date: string | Date,
+  date: string | Date | undefined | null,
   locale: string = 'es-MX',
   options?: Intl.DateTimeFormatOptions
 ): string {
+  if (!date) return 'Fecha por confirmar';
+  
+  const parsedDate = new Date(date);
+  
+  // Check if date is valid
+  if (isNaN(parsedDate.getTime())) {
+    return 'Fecha por confirmar';
+  }
+  
   const defaultOptions: Intl.DateTimeFormatOptions = {
     weekday: 'long',
     year: 'numeric',
@@ -18,21 +27,29 @@ export function formatDate(
     ...options,
   };
 
-  return new Date(date).toLocaleDateString(locale, defaultOptions);
+  return parsedDate.toLocaleDateString(locale, defaultOptions);
 }
 
 export function formatTime(
-  date: string | Date,
+  date: string | Date | undefined | null,
   locale: string = 'es-MX',
   options?: Intl.DateTimeFormatOptions
 ): string {
+  if (!date) return 'Hora por confirmar';
+  
+  const parsedDate = new Date(date);
+  
+  if (isNaN(parsedDate.getTime())) {
+    return 'Hora por confirmar';
+  }
+  
   const defaultOptions: Intl.DateTimeFormatOptions = {
     hour: '2-digit',
     minute: '2-digit',
     ...options,
   };
 
-  return new Date(date).toLocaleTimeString(locale, defaultOptions);
+  return parsedDate.toLocaleTimeString(locale, defaultOptions);
 }
 
 export function generateSlug(text: string): string {

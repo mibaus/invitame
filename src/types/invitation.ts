@@ -5,23 +5,11 @@
 
 // ----- ENUMS & TIPOS BASE -----
 
-export type ServiceTier = 'essential' | 'pro' | 'premium';
+export const VALID_SKINS: SkinId[] = ['bolt-dark', 'avant-garde-editorial', 'soft-seraphic', 'cyberpunk-romance', 'japandi-zen', 'retro-love'];
 
-export type SkinId = 
-  // Essential (3 modelos básicos)
-  | 'classic-elegance'
-  | 'minimal-chic'
-  | 'garden-romance'
-  // Pro (3 modelos intermedios)
-  | 'royal-gold'
-  | 'modern-luxe'
-  | 'botanical-dream'
-  // Premium (3 modelos de lujo)
-  | 'celestial-noir'
-  | 'renaissance-opulence'
-  | 'bespoke-couture';
+export type SkinId = 'bolt-dark' | 'avant-garde-editorial' | 'soft-seraphic' | 'cyberpunk-romance' | 'japandi-zen' | 'retro-love';
 
-export type EventType = 
+export type EventType =
   | 'wedding'
   | 'quinceañera'
   | 'birthday'
@@ -31,7 +19,7 @@ export type EventType =
   | 'graduation'
   | 'custom';
 
-export type DressCode = 
+export type DressCode =
   | 'formal'
   | 'semi-formal'
   | 'cocktail'
@@ -48,7 +36,6 @@ export type RSVPStatus = 'pending' | 'confirmed' | 'declined' | 'maybe';
 export interface InvitationMetadata {
   id: string;
   slug: string;
-  tier: ServiceTier;
   skin_id: SkinId;
   event_type: EventType;
   created_at: string;
@@ -191,6 +178,7 @@ export interface GiftRegistry {
     account_number: string;
     routing_number?: string;
     swift?: string;
+    alias?: string;
   };
   registries?: GiftRegistryItem[];
 }
@@ -220,6 +208,19 @@ export interface SocialSharingConfig {
 }
 
 export interface InvitationFeatures {
+  // Visibility Flags (User Controlled)
+  show_hero: boolean;
+  show_countdown: boolean;
+  show_agenda: boolean;
+  show_venue_map: boolean;
+  show_dress_code: boolean;
+  show_gift_registry: boolean;
+  show_rsvp: boolean;
+  show_gallery: boolean;
+  show_music: boolean;
+  show_guest_messages: boolean;
+
+  // Feature Configurations
   rsvp: RSVPConfig;
   gift_registry?: GiftRegistry;
   music?: MusicConfig;
@@ -228,10 +229,6 @@ export interface InvitationFeatures {
   photo_gallery?: {
     enabled: boolean;
     allow_uploads: boolean;
-  };
-  guestbook?: {
-    enabled: boolean;
-    moderated: boolean;
   };
   live_streaming?: {
     enabled: boolean;
@@ -295,46 +292,3 @@ export interface RSVPResponse {
   submitted_at: string;
   approved?: boolean;
 }
-
-// ----- TIPO PARA FEATURES POR TIER -----
-
-export const TIER_FEATURES: Record<ServiceTier, string[]> = {
-  essential: [
-    'countdown',
-    'whatsapp_share',
-    'basic_rsvp',
-    'single_venue',
-    'basic_gallery',
-  ],
-  pro: [
-    'countdown',
-    'whatsapp_share',
-    'advanced_rsvp',
-    'multiple_venues',
-    'full_gallery',
-    'dashboard',
-    'dress_code',
-    'agenda',
-    'music_player',
-    'gift_registry',
-  ],
-  premium: [
-    'countdown',
-    'whatsapp_share',
-    'advanced_rsvp',
-    'multiple_venues',
-    'full_gallery',
-    'dashboard',
-    'dress_code',
-    'agenda',
-    'music_player',
-    'gift_registry',
-    'live_streaming',
-    'photo_upload',
-    'guestbook',
-    'spotify_playlist',
-    'logistics_guide',
-    'analytics',
-    'priority_support',
-  ],
-};
