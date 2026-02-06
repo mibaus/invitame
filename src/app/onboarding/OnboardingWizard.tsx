@@ -7,6 +7,7 @@ import { Step2Wedding } from './components/Step2Wedding';
 import { Step3Logistics } from './components/Step3Logistics';
 import { Step4Multimedia } from './components/Step4Multimedia';
 import { Step5Config } from './components/Step5Config';
+import { LivePreview } from './components/LivePreview';
 import { OnboardingData } from './types';
 import { submitOnboarding } from '@/app/actions/onboarding';
 
@@ -43,6 +44,7 @@ export function OnboardingWizard() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [result, setResult] = useState<{ temporarySlug?: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   const updateFormData = useCallback((newData: Partial<OnboardingData>) => {
     setFormData((prev) => ({ ...prev, ...newData }));
@@ -127,66 +129,95 @@ export function OnboardingWizard() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <StepIndicator currentStep={currentStep} />
-      
-      <div className="p-8 flex-grow">
-        {currentStep === 1 && <Step1Personal formData={formData} updateFormData={updateFormData} />}
-        {currentStep === 2 && <Step2Wedding formData={formData} updateFormData={updateFormData} />}
-        {currentStep === 3 && <Step3Logistics formData={formData} updateFormData={updateFormData} />}
-        {currentStep === 4 && <Step4Multimedia formData={formData} updateFormData={updateFormData} />}
-        {currentStep === 5 && <Step5Config formData={formData} updateFormData={updateFormData} />}
+    <div className="flex flex-col lg:flex-row h-full min-h-[600px]">
+      {/* Mobile Toggle */}
+      <div className="lg:hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-40">
+        <button
+          onClick={() => setShowPreview(!showPreview)}
+          className="bg-[#2C3333] text-white px-6 py-3 rounded-full shadow-xl flex items-center gap-2 text-[11px] uppercase tracking-wider font-bold"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={showPreview ? "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" : "M15 12a3 3 0 11-6 0 3 3 0 016 0z"} />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={showPreview ? "" : "M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"} />
+          </svg>
+          {showPreview ? 'Editar' : 'Vista Previa'}
+        </button>
       </div>
 
-      {error && (
-        <div className="px-8 pb-4">
-          <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm text-center">
-            {error}
-          </div>
+      {/* Left Panel - Form */}
+      <div className={`flex-1 flex flex-col ${showPreview ? 'hidden lg:flex' : 'flex'}`}>
+        <StepIndicator currentStep={currentStep} />
+        
+        <div className="p-8 flex-grow overflow-y-auto">
+          {currentStep === 1 && <Step1Personal formData={formData} updateFormData={updateFormData} />}
+          {currentStep === 2 && <Step2Wedding formData={formData} updateFormData={updateFormData} />}
+          {currentStep === 3 && <Step3Logistics formData={formData} updateFormData={updateFormData} />}
+          {currentStep === 4 && <Step4Multimedia formData={formData} updateFormData={updateFormData} />}
+          {currentStep === 5 && <Step5Config formData={formData} updateFormData={updateFormData} />}
         </div>
-      )}
 
-      <div className="p-8 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
-        <button
-          onClick={handleBack}
-          disabled={currentStep === 1 || isSubmitting}
-          className={`px-8 py-3 rounded-xl font-bold tracking-premium text-[10px] uppercase transition-all ${
-            currentStep === 1 ? 'opacity-0 pointer-events-none' : 'text-[#2C3333] hover:text-[#A27B5C]'
-          }`}
-        >
-          Anterior
-        </button>
-
-        {currentStep < 5 ? (
-          <button
-            onClick={handleNext}
-            disabled={isNextDisabled()}
-            className="bg-[#2C3333] disabled:bg-gray-200 text-white px-10 py-4 rounded-xl font-bold tracking-premium text-[10px] uppercase hover:bg-[#A27B5C] transition-all duration-500 shadow-xl shadow-black/10 flex items-center gap-3"
-          >
-            Siguiente
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </button>
-        ) : (
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="bg-[#A27B5C] text-white px-12 py-4 rounded-xl font-bold tracking-premium text-[10px] uppercase hover:bg-[#2C3333] transition-all duration-500 shadow-xl shadow-bronze-500/20 flex items-center gap-3"
-          >
-            {isSubmitting ? (
-              <>
-                <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Enviando...
-              </>
-            ) : (
-              'Finalizar'
-            )}
-          </button>
+        {error && (
+          <div className="px-8 pb-4">
+            <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm text-center">
+              {error}
+            </div>
+          </div>
         )}
+
+        <div className="p-8 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <button
+            onClick={handleBack}
+            disabled={currentStep === 1 || isSubmitting}
+            className={`px-8 py-3 rounded-xl font-bold tracking-premium text-[10px] uppercase transition-all ${
+              currentStep === 1 ? 'opacity-0 pointer-events-none' : 'text-[#2C3333] hover:text-[#A27B5C]'
+            }`}
+          >
+            Anterior
+          </button>
+
+          {currentStep < 5 ? (
+            <button
+              onClick={handleNext}
+              disabled={isNextDisabled()}
+              className="bg-[#2C3333] disabled:bg-gray-200 text-white px-10 py-4 rounded-xl font-bold tracking-premium text-[10px] uppercase hover:bg-[#A27B5C] transition-all duration-500 shadow-xl shadow-black/10 flex items-center gap-3"
+            >
+              Siguiente
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="bg-[#A27B5C] text-white px-12 py-4 rounded-xl font-bold tracking-premium text-[10px] uppercase hover:bg-[#2C3333] transition-all duration-500 shadow-xl shadow-bronze-500/20 flex items-center gap-3"
+            >
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Enviando...
+                </>
+              ) : (
+                'Finalizar'
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Right Panel - Live Preview (Desktop always visible, Mobile toggle) */}
+      <div className={`lg:w-[420px] xl:w-[480px] bg-gradient-to-br from-gray-50 to-gray-100 border-l border-gray-200 flex flex-col ${showPreview ? 'flex' : 'hidden lg:flex'}`}>
+        <div className="p-4 border-b border-gray-200 bg-white/50">
+          <h3 className="text-[10px] uppercase tracking-widest font-bold text-gray-400 text-center">
+            Vista Previa en Tiempo Real
+          </h3>
+        </div>
+        <div className="flex-1 p-6 overflow-y-auto flex items-center justify-center">
+          <LivePreview formData={formData} />
+        </div>
       </div>
     </div>
   );
