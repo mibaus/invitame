@@ -3,23 +3,21 @@
 import { OnboardingData } from '../types';
 import { generateFantasyData } from '../lib/mock-fantasy-data';
 import { MasterLayout } from '@/components/layouts/MasterLayout';
-import { InvitationSchema, SkinId } from '@/types';
+import { InvitationSchema, SkinId, VenueLocation, AgendaItem as SchemaAgendaItem } from '@/types';
 
 interface LivePreviewProps {
   formData: Partial<OnboardingData>;
   className?: string;
 }
 
-// Adapter: Convert OnboardingData to InvitationSchema
 function createInvitationFromFormData(formData: Partial<OnboardingData>): InvitationSchema {
   const fantasyData = generateFantasyData(formData);
   
   const p1Name = formData.person1Name || fantasyData.person1Name;
   const p2Name = formData.person2Name || fantasyData.person2Name;
   const headline = formData.headline || fantasyData.headline;
-  const mainMsg = formData.mainMessage || fantasyData.mainMsg;
+  const mainMsg = formData.mainMessage || fantasyData.mainMessage;
   const eventDate = formData.eventDate || fantasyData.eventDate;
-  const eventTime = formData.eventTime || fantasyData.eventTime;
   
   const showAgenda = formData.showAgenda !== false;
   const showVenue = formData.showVenueMap !== false;
@@ -32,20 +30,46 @@ function createInvitationFromFormData(formData: Partial<OnboardingData>): Invita
   
   const skinId = (formData.skinId as SkinId) || 'bolt-dark';
   
-  const agendaItems = (formData.agendaItems || fantasyData.agendaItems).map((item, idx) => ({
+  const agendaItems: SchemaAgendaItem[] = (formData.agendaItems || []).map((item, idx) => ({
     id: item.id || `item-${idx}`,
     time: item.time,
     title: item.title,
-    description: item.description || '',
-    icon: item.icon || 'sparkles' as const,
+    description: '',
+    icon: (item.icon as any) || 'sparkles',
   }));
+  
+  const venues: VenueLocation[] = [];
+  if (showVenue && (formData.ceremonyName || fantasyData.ceremonyName)) {
+    venues.push({
+      id: 'ceremony-1',
+      name: formData.ceremonyName || fantasyData.ceremonyName,
+      type: 'ceremony',
+      address: formData.ceremonyAddress || fantasyData.ceremonyAddress,
+      city: 'Buenos Aires',
+      country: 'Argentina',
+      coordinates: { lat: -34.6037, lng: -58.3816 },
+      google_maps_url: formData.ceremonyMapsUrl || 'https://maps.google.com',
+    });
+  }
+  if (showVenue && (formData.receptionName || fantasyData.receptionName)) {
+    venues.push({
+      id: 'reception-1',
+      name: formData.receptionName || fantasyData.receptionName,
+      type: 'reception',
+      address: formData.receptionAddress || fantasyData.receptionAddress,
+      city: 'Buenos Aires',
+      country: 'Argentina',
+      coordinates: { lat: -34.6037, lng: -58.3816 },
+      google_maps_url: formData.receptionMapsUrl || 'https://maps.google.com',
+    });
+  }
   
   const invitation: InvitationSchema = {
     metadata: {
       id: 'preview-001',
       slug: formData.slug || 'preview-boda',
       skin_id: skinId,
-      event_type: formData.eventType || 'wedding',
+      event_type: (formData.eventType as any) || 'wedding',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       is_active: true,
@@ -75,71 +99,52 @@ function createInvitationFromFormData(formData: Partial<OnboardingData>): Invita
         text: formData.quote || fantasyData.quote,
         author: formData.quoteAuthor || fantasyData.quoteAuthor,
       },
-      dress_code: {
-        type: (formData.dressCode as any) || 'formal',
-        description: formData.dressCodeDescription || fantasyData.dressCodeDescription,
-      },
-      music: showMusic ? {
-        track_url: formData.musicTrackUrl,
-        playlist_url: formData.spotifyPlaylistUrl,
-        autoplay: false,
-      } : undefined,
     },
     logistics: {
       event_date: eventDate,
-      event_time: eventTime,
-      ceremony: showVenue ? {
-        name: formData.ceremonyName || fantasyData.ceremonyName,
-        address: formData.ceremonyAddress || fantasyData.ceremonyAddress,
-        time: formData.eventTime || '18:00',
-        coordinates: { lat: -34.6037, lng: -58.3816 },
-        maps_url: formData.ceremonyMapsUrl || 'https://maps.google.com',
-      } : undefined,
-      reception: showVenue ? {
-        name: formData.receptionName || fantasyData.receptionName,
-        address: formData.receptionAddress || fantasyData.receptionAddress,
-        time: '20:00',
-        coordinates: { lat: -34.6037, lng: -58.3816 },
-        maps_url: formData.receptionMapsUrl || 'https://maps.google.com',
-      } : undefined,
+      timezone: 'America/Argentina/Buenos_Aires',
+      agenda: agendaItems,
+      venues: venues,
       dress_code: showDressCode ? {
-        type: (formData.dressCode as any) || 'formal',
+        code: (formData.dressCode as any) || 'formal',
         description: formData.dressCodeDescription || fantasyData.dressCodeDescription,
-      } : undefined,
-      agenda: showAgenda ? agendaItems : undefined,
-      gift_registry: showGifts ? {
-        bank_transfer: {
-          bank_name: formData.bankName || fantasyData.bankName,
-          account_holder: formData.bankAccountHolder || p1Name,
-          account_number: formData.bankAccountNumber || fantasyData.bankAccountNumber,
-          cbu: formData.bankAccountNumber || fantasyData.bankAccountNumber,
-          alias: 'boda.fantasia',
-          message: formData.giftRegistryMessage || fantasyData.giftRegistryMessage,
-        },
-      } : undefined,
-      rsvp: showRSVP ? {
-        enabled: true,
-        deadline: formData.rsvpDeadline || fantasyData.rsvpDeadline,
-        max_companions: formData.maxCompanions || 2,
-        allow_children: formData.allowChildren ?? true,
-        custom_questions: [],
-        confirmation_message: formData.rsvpConfirmationMessage || fantasyData.rsvpConfirmationMessage,
       } : undefined,
     },
     features: {
       show_hero: formData.showHero ?? true,
       show_countdown: showCountdown,
       show_agenda: showAgenda,
-      show_locations: showVenue,
+      show_venue_map: showVenue,
       show_dress_code: showDressCode,
       show_gift_registry: showGifts,
       show_rsvp: showRSVP,
       show_guest_messages: formData.showGuestMessages ?? false,
       show_gallery: showGallery,
       show_music: showMusic,
-      enable_share: true,
-      enable_calendar: true,
-      enable_maps: true,
+      rsvp: {
+        enabled: showRSVP,
+        deadline: formData.rsvpDeadline || fantasyData.rsvpDeadline,
+        max_companions: formData.maxCompanions || 2,
+        allow_children: formData.allowChildren ?? true,
+        custom_questions: [],
+        confirmation_message: formData.rsvpConfirmationMessage || fantasyData.rsvpConfirmationMessage,
+      },
+      gift_registry: showGifts ? {
+        enabled: true,
+        message: formData.giftRegistryMessage || fantasyData.giftRegistryMessage,
+        bank_details: {
+          bank_name: formData.bankName || fantasyData.bankName,
+          account_holder: formData.bankAccountHolder || p1Name,
+          account_number: formData.bankAccountNumber || fantasyData.bankAccountNumber,
+          alias: 'boda.fantasia',
+        },
+      } : undefined,
+      music: showMusic ? {
+        enabled: true,
+        autoplay: false,
+        track_url: formData.musicTrackUrl,
+        spotify_playlist_url: formData.spotifyPlaylistUrl,
+      } : undefined,
     },
   };
   
@@ -153,14 +158,14 @@ export function LivePreview({ formData, className = '' }: LivePreviewProps) {
   
   return (
     <div className={`relative ${className}`}>
-      {/* Phone Frame */}
-      <div className="relative mx-auto w-[280px] sm:w-[320px] md:w-[375px] bg-black rounded-[2.5rem] border-[6px] border-black shadow-2xl overflow-hidden">
+      {/* Phone Frame - Larger size for desktop */}
+      <div className="relative mx-auto w-[340px] lg:w-[390px] bg-black rounded-[3rem] border-[8px] border-black shadow-2xl overflow-hidden">
         {/* Notch */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-black rounded-b-xl z-50"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-black rounded-b-2xl z-50"></div>
         
-        {/* Screen Content - Real Skin Layout */}
-        <div className="relative w-full h-[500px] sm:h-[580px] md:h-[700px] overflow-y-auto overflow-x-hidden bg-white scrollbar-hide">
-          <div className="scale-[0.55] origin-top">
+        {/* Screen Content - Properly scaled */}
+        <div className="relative w-full h-[680px] lg:h-[780px] overflow-hidden bg-white">
+          <div className="w-[390px] h-full overflow-y-auto scrollbar-hide origin-top-left scale-[0.87] lg:scale-[1]">
             <MasterLayout invitation={invitation} preview={true} />
           </div>
         </div>
