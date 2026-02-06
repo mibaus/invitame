@@ -208,14 +208,14 @@ export function OnboardingWizard() {
         </div>
       </div>
 
-      {/* Right Panel - Live Preview (Desktop always visible, Mobile toggle) */}
+      {/* Right Panel - Live Preview */}
       <div className={`lg:w-[460px] xl:w-[540px] bg-gradient-to-br from-gray-50 to-gray-100 border-l border-gray-200 flex flex-col ${showPreview ? 'flex' : 'hidden lg:flex'}`}>
         <div className="p-4 border-b border-gray-200 bg-white/50">
           <h3 className="text-[10px] uppercase tracking-widest font-bold text-gray-400 text-center">
             Vista Previa en Tiempo Real
           </h3>
         </div>
-        <div className="flex-1 py-4 lg:py-6 overflow-y-auto flex items-start lg:items-center justify-center min-h-0 px-0">
+        <div className="flex-1 pt-4 pb-6 px-2 overflow-y-auto flex items-start justify-center min-h-0">
           <LivePreview formData={formData} />
         </div>
       </div>
