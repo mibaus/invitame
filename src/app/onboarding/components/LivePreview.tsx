@@ -99,6 +99,12 @@ function createInvitationFromFormData(formData: Partial<OnboardingData>): Invita
         text: formData.quote || fantasyData.quote,
         author: formData.quoteAuthor || fantasyData.quoteAuthor,
       },
+      music: showMusic ? {
+        enabled: true,
+        autoplay: false,
+        track_url: formData.musicTrackUrl,
+        spotify_playlist_url: formData.spotifyPlaylistUrl,
+      } : undefined,
     },
     logistics: {
       event_date: eventDate,
@@ -158,14 +164,14 @@ export function LivePreview({ formData, className = '' }: LivePreviewProps) {
   
   return (
     <div className={`relative ${className}`}>
-      {/* Phone Frame - Desktop: full size, Mobile: scaled */}
-      <div className="relative mx-auto w-[375px] lg:w-[390px] bg-black rounded-[3rem] border-[8px] border-black shadow-2xl overflow-hidden">
+      {/* Phone Frame - Smaller to fit in panel */}
+      <div className="relative mx-auto w-[355px] lg:w-[375px] bg-black rounded-[3rem] border-[8px] border-black shadow-2xl overflow-hidden">
         {/* Notch */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-black rounded-b-2xl z-50"></div>
         
         {/* Screen Content */}
-        <div className="relative w-full h-[680px] lg:h-[780px] overflow-hidden bg-white">
-          <div className="w-[390px] h-full overflow-y-auto scrollbar-hide origin-top-left scale-[0.96] lg:scale-[1]">
+        <div className="relative w-full h-[640px] lg:h-[750px] overflow-hidden bg-white">
+          <div className="w-[375px] h-full overflow-y-auto scrollbar-hide origin-top-left scale-[0.95] lg:scale-[1]">
             <MasterLayout invitation={invitation} preview={true} />
           </div>
         </div>
