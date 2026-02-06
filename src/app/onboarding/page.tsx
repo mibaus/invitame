@@ -12,7 +12,7 @@ export default function OnboardingPage() {
         </p>
       </header>
       
-      <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl shadow-black/5 overflow-hidden fade-in border border-black/5 z-10">
+      <div className="w-full max-w-6xl xl:max-w-7xl bg-white rounded-3xl shadow-2xl shadow-black/5 overflow-hidden fade-in border border-black/5 z-10">
         <OnboardingWizard />
       </div>
       
