@@ -1,663 +1,192 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { submitOnboarding, type OnboardingData } from '@/app/actions/onboarding';
-import { SkinSelector } from './components/SkinSelector';
+import React, { useState, useCallback } from 'react';
 import { StepIndicator } from './components/StepIndicator';
-import { ImageUploader, MultiImageUploader } from './components/ImageUploader';
-import { FeaturesSelector } from './components/FeaturesSelector';
-import { AgendaEditor } from './components/AgendaEditor';
-import { Step5FeaturesConfig } from './components/Step5FeaturesConfig';
+import { Step1Personal } from './components/Step1Personal';
+import { Step2Wedding } from './components/Step2Wedding';
+import { Step3Logistics } from './components/Step3Logistics';
+import { Step4Multimedia } from './components/Step4Multimedia';
+import { Step5Config } from './components/Step5Config';
+import { OnboardingData } from './types';
+import { submitOnboarding } from '@/app/actions/onboarding';
 
-const ACCENT_STYLES = {
-  accent: 'bg-amber-600',
-  accentText: 'text-amber-600',
-  accentBorder: 'border-amber-600',
-  badge: 'Todo Incluido',
-  badgeBg: 'bg-amber-100 text-amber-700',
+const INITIAL_DATA: Partial<OnboardingData> = {
+  skinId: 'classic-standard',
+  slug: '',
+  isSlugValid: false,
+  eventType: 'wedding',
+  showHero: true,
+  showCountdown: true,
+  showAgenda: true,
+  showVenueMap: true,
+  showDressCode: true,
+  showGiftRegistry: true,
+  showRSVP: true,
+  showGallery: true,
+  showMusic: true,
+  showGuestMessages: false,
+  rsvpEnabled: true,
+  maxCompanions: 2,
+  allowChildren: false,
+  agendaItems: [
+    { id: '1', time: '18:00', title: 'Ceremonia', icon: 'church' },
+    { id: '2', time: '19:00', title: 'Cóctel', icon: 'wine' },
+    { id: '3', time: '20:00', title: 'Cena', icon: 'utensils' },
+    { id: '4', time: '22:00', title: 'Fiesta', icon: 'music' },
+  ]
 };
-
-const STEPS = [
-  { id: 1, title: 'Tus Datos', description: 'Información de contacto' },
-  { id: 2, title: 'La Boda', description: 'Detalles de la celebración' },
-  { id: 3, title: 'Logística', description: 'Ubicaciones y regalos' },
-  { id: 4, title: 'Multimedia', description: 'Fotos y música' },
-  { id: 5, title: 'Configuración', description: 'Secciones y RSVP' },
-];
 
 export function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [isPending, startTransition] = useTransition();
-  const [isComplete, setIsComplete] = useState(false);
+  const [formData, setFormData] = useState<Partial<OnboardingData>>(INITIAL_DATA);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [result, setResult] = useState<{ temporarySlug?: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const styles = ACCENT_STYLES;
-
-  const [formData, setFormData] = useState<Partial<OnboardingData>>({
-    skinId: 'bolt-dark',
-  });
-
-  const updateFormData = (data: Partial<OnboardingData>) => {
-    setFormData(prev => ({ ...prev, ...data }));
-  };
+  const updateFormData = useCallback((newData: Partial<OnboardingData>) => {
+    setFormData((prev) => ({ ...prev, ...newData }));
+  }, []);
 
   const handleNext = () => {
-    if (currentStep < 5) {
-      setCurrentStep(prev => prev + 1);
-    }
+    if (currentStep < 5) setCurrentStep(currentStep + 1);
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setError(null);
+    
+    try {
+      const response = await submitOnboarding(formData as OnboardingData);
+      
+      if (response.success) {
+        setResult({ temporarySlug: response.temporarySlug });
+        setIsSuccess(true);
+      } else {
+        setError(response.error || 'Error al crear la invitación');
+      }
+    } catch (err) {
+      setError('Error inesperado al crear la invitación');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleSubmit = () => {
-    setError(null);
-    startTransition(async () => {
-      const result = await submitOnboarding(formData as OnboardingData);
-      if (result.success) {
-        setResult({ temporarySlug: result.temporarySlug });
-        setIsComplete(true);
-      } else {
-        setError(result.error || 'Error al procesar tu solicitud.');
-      }
-    });
+  const isStep1Valid = !!(formData.clientName && formData.clientEmail && /^\S+@\S+\.\S+$/.test(formData.clientEmail));
+  const isStep2Valid = !!(
+    formData.headline && 
+    formData.eventDate && 
+    formData.eventTime && 
+    formData.person1Name && 
+    formData.person2Name && 
+    formData.mainMessage &&
+    formData.slug &&
+    formData.isSlugValid
+  );
+
+  const isNextDisabled = () => {
+    if (currentStep === 1) return !isStep1Valid;
+    if (currentStep === 2) return !isStep2Valid;
+    return false;
   };
 
-  if (isComplete) {
+  if (isSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-8">
-        <div className="max-w-md w-full text-center space-y-6">
-          <div className={`w-20 h-20 mx-auto rounded-full ${styles.accent} flex items-center justify-center`}>
-            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">¡Felicitaciones!</h1>
-          <p className="text-gray-600">
-            Tu invitación ha sido creada exitosamente. Nuestro equipo la revisará y te contactaremos
-            pronto para asignar tu URL personalizada.
-          </p>
-          {result?.temporarySlug && (
-            <p className="text-sm text-gray-500">
-              Referencia: <code className="bg-gray-100 px-2 py-1 rounded">{result.temporarySlug}</code>
-            </p>
-          )}
-          <a
-            href="/"
-            className={`inline-block px-6 py-3 rounded-lg text-white ${styles.accent} hover:opacity-90 transition-opacity`}
-          >
-            Volver al inicio
-          </a>
+      <div className="p-12 text-center flex flex-col items-center justify-center min-h-[400px] fade-in">
+        <div className="w-20 h-20 bg-[#E7D2CC] rounded-full flex items-center justify-center mb-6 text-[#A27B5C]">
+          <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+          </svg>
         </div>
+        <h2 className="font-serif text-4xl text-[#2C3333] mb-4">¡Todo listo para brillar!</h2>
+        <p className="text-[#2C3333]/70 mb-8 max-w-md">
+          Tu invitación digital se está generando con el toque de elegancia que merece tu evento. 
+          Recibirás un link temporal en tu correo en unos instantes.
+        </p>
+        <div className="p-4 bg-gray-50 rounded-xl mb-8 border border-gray-100">
+          <p className="text-xs uppercase tracking-widest font-bold text-gray-400 mb-2">Tu URL Exclusiva</p>
+          <code className="text-[#A27B5C] font-mono text-lg tracking-tighter">invitame.com/{formData.slug}</code>
+        </div>
+        {result?.temporarySlug && (
+          <p className="text-sm text-gray-500 mb-6">
+            Referencia: <code className="bg-gray-100 px-2 py-1 rounded">{result.temporarySlug}</code>
+          </p>
+        )}
+        <button 
+          onClick={() => window.location.reload()}
+          className="bg-[#2C3333] text-white px-10 py-4 rounded-xl font-bold tracking-premium text-xs uppercase hover:bg-[#A27B5C] transition-all duration-500"
+        >
+          Volver al Inicio
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${styles.badgeBg} mb-4`}>
-          {styles.badge}
-        </span>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Crea tu invitación</h1>
-        <p className="text-gray-600">Completa los siguientes pasos para personalizar tu invitación digital</p>
+    <div className="flex flex-col h-full">
+      <StepIndicator currentStep={currentStep} />
+      
+      <div className="p-8 flex-grow">
+        {currentStep === 1 && <Step1Personal formData={formData} updateFormData={updateFormData} />}
+        {currentStep === 2 && <Step2Wedding formData={formData} updateFormData={updateFormData} />}
+        {currentStep === 3 && <Step3Logistics formData={formData} updateFormData={updateFormData} />}
+        {currentStep === 4 && <Step4Multimedia formData={formData} updateFormData={updateFormData} />}
+        {currentStep === 5 && <Step5Config formData={formData} updateFormData={updateFormData} />}
       </div>
 
-      {/* Step Indicator */}
-      <StepIndicator steps={STEPS} currentStep={currentStep} />
-
-      {/* Form Container */}
-      <div className="bg-white rounded-2xl shadow-lg p-8 mt-8">
-        {/* Step 1: Datos Personales */}
-        {currentStep === 1 && (
-          <Step1PersonalData
-            data={formData}
-            onChange={updateFormData}
-          />
-        )}
-
-        {/* Step 2: Datos del Evento */}
-        {currentStep === 2 && (
-          <Step2EventData
-            data={formData}
-            onChange={updateFormData}
-          />
-        )}
-
-        {/* Step 3: Logística y Regalos */}
-        {currentStep === 3 && (
-          <Step3Logistics
-            data={formData}
-            onChange={updateFormData}
-          />
-        )}
-
-        {/* Step 4: Multimedia */}
-        {currentStep === 4 && (
-          <Step4Multimedia
-            data={formData}
-            onChange={updateFormData}
-          />
-        )}
-
-        {/* Step 5: Secciones y Config */}
-        {currentStep === 5 && (
-          <Step5FeaturesConfig
-            data={formData}
-            onChange={updateFormData}
-          />
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+      {error && (
+        <div className="px-8 pb-4">
+          <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm text-center">
             {error}
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Navigation */}
-        <div className="flex justify-between mt-8 pt-6 border-t">
+      <div className="p-8 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <button
+          onClick={handleBack}
+          disabled={currentStep === 1 || isSubmitting}
+          className={`px-8 py-3 rounded-xl font-bold tracking-premium text-[10px] uppercase transition-all ${
+            currentStep === 1 ? 'opacity-0 pointer-events-none' : 'text-[#2C3333] hover:text-[#A27B5C]'
+          }`}
+        >
+          Anterior
+        </button>
+
+        {currentStep < 5 ? (
           <button
-            type="button"
-            onClick={handleBack}
-            disabled={currentStep === 1}
-            className="px-6 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            onClick={handleNext}
+            disabled={isNextDisabled()}
+            className="bg-[#2C3333] disabled:bg-gray-200 text-white px-10 py-4 rounded-xl font-bold tracking-premium text-[10px] uppercase hover:bg-[#A27B5C] transition-all duration-500 shadow-xl shadow-black/10 flex items-center gap-3"
           >
-            Anterior
+            Siguiente
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
           </button>
-
-          {currentStep < 5 ? (
-            <button
-              type="button"
-              onClick={handleNext}
-              className={`px-6 py-3 rounded-lg text-white ${styles.accent} hover:opacity-90 transition-opacity`}
-            >
-              Siguiente
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isPending}
-              className={`px-8 py-3 rounded-lg text-white ${styles.accent} hover:opacity-90 transition-opacity disabled:opacity-50`}
-            >
-              {isPending ? 'Procesando...' : 'Finalizar'}
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Step Components
-interface StepProps {
-  data: Partial<OnboardingData>;
-  onChange: (data: Partial<OnboardingData>) => void;
-}
-
-function Step1PersonalData({ data, onChange }: StepProps) {
-  return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-gray-900">Datos Personales</h2>
-      <p className="text-gray-600">Ingresa tu información de contacto para que podamos comunicarnos contigo.</p>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Nombre completo *</label>
-          <input
-            type="text"
-            required
-            value={data.clientName || ''}
-            onChange={(e) => onChange({ clientName: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Tu nombre completo"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-          <input
-            type="email"
-            required
-            value={data.clientEmail || ''}
-            onChange={(e) => onChange({ clientEmail: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="tu@email.com"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
-          <input
-            type="tel"
-            value={data.clientPhone || ''}
-            onChange={(e) => onChange({ clientPhone: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="+54 11 1234 5678"
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Step2EventData({ data, onChange }: StepProps) {
-  return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-gray-900">Datos de la Boda</h2>
-      <p className="text-gray-600">Personaliza los detalles de tu celebración.</p>
-
-      {/* Skin Selector - solo bolt-dark disponible */}
-      <SkinSelector
-        selectedSkin={data.skinId || 'bolt-dark'}
-        onSelect={(skinId) => onChange({ skinId })}
-      />
-
-      {/* Headline & Subtitle */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Título principal *</label>
-          <input
-            type="text"
-            required
-            value={data.headline || ''}
-            onChange={(e) => onChange({ headline: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Ej: María & Carlos"
-          />
-        </div>
-
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Subtítulo</label>
-          <input
-            type="text"
-            value={data.subtitle || ''}
-            onChange={(e) => onChange({ subtitle: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Ej: ¡Nos casamos!"
-          />
-        </div>
-      </div>
-
-      {/* Date & Time */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de la boda *</label>
-          <input
-            type="date"
-            required
-            value={data.eventDate || ''}
-            onChange={(e) => onChange({ eventDate: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Hora de la ceremonia *</label>
-          <input
-            type="time"
-            required
-            value={data.eventTime || ''}
-            onChange={(e) => onChange({ eventTime: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-      </div>
-
-      {/* Wedding couple fields - siempre visibles */}
-      <div className="space-y-6 pt-4 border-t">
-        <h3 className="font-medium text-gray-900">Información de la pareja</h3>
-        <div className="grid gap-6 md:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nombre persona 1 *</label>
-            <input
-              type="text"
-              required
-              value={data.person1Name || ''}
-              onChange={(e) => onChange({ person1Name: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Ej: María"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nombre persona 2 *</label>
-            <input
-              type="text"
-              required
-              value={data.person2Name || ''}
-              onChange={(e) => onChange({ person2Name: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Ej: Carlos"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Hashtag de la boda (opcional)</label>
-          <input
-            type="text"
-            value={data.coupleHashtag || ''}
-            onChange={(e) => onChange({ coupleHashtag: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="#MariaYCarlos2024"
-          />
-        </div>
-      </div>
-
-      {/* Main Message */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Mensaje principal *</label>
-        <textarea
-          required
-          value={data.mainMessage || ''}
-          onChange={(e) => onChange({ mainMessage: e.target.value })}
-          rows={4}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-          placeholder="Escribe el mensaje que verán tus invitados..."
-        />
-      </div>
-
-      {/* Dress Code */}
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Código de vestimenta</label>
-          <select
-            value={data.dressCode || ''}
-            onChange={(e) => onChange({ dressCode: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        ) : (
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="bg-[#A27B5C] text-white px-12 py-4 rounded-xl font-bold tracking-premium text-[10px] uppercase hover:bg-[#2C3333] transition-all duration-500 shadow-xl shadow-bronze-500/20 flex items-center gap-3"
           >
-            <option value="">Sin especificar</option>
-            <option value="formal">Formal</option>
-            <option value="semi-formal">Semi-formal</option>
-            <option value="casual">Casual</option>
-            <option value="themed">Temático</option>
-          </select>
-        </div>
-        {data.dressCode && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Descripción del dress code (opcional)</label>
-            <textarea
-              value={data.dressCodeDescription || ''}
-              onChange={(e) => onChange({ dressCodeDescription: e.target.value })}
-              rows={2}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              placeholder="Ej: Elegante, traje oscuro para caballeros, vestido largo para damas..."
-            />
-          </div>
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Enviando...
+              </>
+            ) : (
+              'Finalizar'
+            )}
+          </button>
         )}
-      </div>
-
-      {/* Quote */}
-      <div className="space-y-4 pt-4 border-t">
-        <h3 className="font-medium text-gray-900">Frase especial</h3>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Frase o cita</label>
-          <textarea
-            value={data.quote || ''}
-            onChange={(e) => onChange({ quote: e.target.value })}
-            rows={2}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-            placeholder="Una frase que represente su amor..."
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Autor (opcional)</label>
-          <input
-            type="text"
-            value={data.quoteAuthor || ''}
-            onChange={(e) => onChange({ quoteAuthor: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Autor de la frase"
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Step3Logistics({ data, onChange }: StepProps) {
-  return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-gray-900">Logística y Regalos</h2>
-      <p className="text-gray-600">Indica las ubicaciones del evento y la información de regalos.</p>
-
-      {/* Ceremony */}
-      <div className="space-y-4">
-        <h3 className="font-medium text-gray-900">Ceremonia</h3>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del lugar</label>
-            <input
-              type="text"
-              value={data.ceremonyName || ''}
-              onChange={(e) => onChange({ ceremonyName: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Ej: Iglesia San Francisco"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Hora</label>
-            <input
-              type="time"
-              value={data.ceremonyTime || ''}
-              onChange={(e) => onChange({ ceremonyTime: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
-            <input
-              type="text"
-              value={data.ceremonyAddress || ''}
-              onChange={(e) => onChange({ ceremonyAddress: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Av. Libertador 1234, Buenos Aires"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Link de Google Maps</label>
-            <input
-              type="url"
-              value={data.ceremonyMapsUrl || ''}
-              onChange={(e) => onChange({ ceremonyMapsUrl: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="https://maps.google.com/..."
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Reception */}
-      <div className="space-y-4 pt-4 border-t">
-        <h3 className="font-medium text-gray-900">Recepción / Fiesta</h3>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del lugar</label>
-            <input
-              type="text"
-              value={data.receptionName || ''}
-              onChange={(e) => onChange({ receptionName: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Ej: Estancia Los Álamos"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Hora</label>
-            <input
-              type="time"
-              value={data.receptionTime || ''}
-              onChange={(e) => onChange({ receptionTime: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
-            <input
-              type="text"
-              value={data.receptionAddress || ''}
-              onChange={(e) => onChange({ receptionAddress: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Ruta 8 Km 45, Pilar"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Link de Google Maps</label>
-            <input
-              type="url"
-              value={data.receptionMapsUrl || ''}
-              onChange={(e) => onChange({ receptionMapsUrl: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="https://maps.google.com/..."
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Gift Registry */}
-      <div className="space-y-4 pt-4 border-t">
-        <h3 className="font-medium text-gray-900">Regalos</h3>
-        
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Banco</label>
-            <input
-              type="text"
-              value={data.bankName || ''}
-              onChange={(e) => onChange({ bankName: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Ej: Banco Galicia"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Titular de la cuenta</label>
-            <input
-              type="text"
-              value={data.bankAccountHolder || ''}
-              onChange={(e) => onChange({ bankAccountHolder: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="María García"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">CBU / Alias</label>
-            <input
-              type="text"
-              value={data.bankAccountNumber || ''}
-              onChange={(e) => onChange({ bankAccountNumber: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="maria.carlos.boda"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Gift Registry Message */}
-      <div className="space-y-4 pt-4 border-t">
-        <h3 className="font-medium text-gray-900">Mensaje de regalos</h3>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Mensaje personalizado para la sección de regalos</label>
-          <textarea
-            value={data.giftRegistryMessage || ''}
-            onChange={(e) => onChange({ giftRegistryMessage: e.target.value })}
-            rows={3}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-            placeholder="Tu presencia es nuestro mayor regalo, pero si deseas obsequiarnos algo más..."
-          />
-        </div>
-      </div>
-
-      {/* Mercado Libre Registry */}
-      <div className="space-y-4 pt-4 border-t">
-        <h3 className="font-medium text-gray-900">Lista de regalos Mercado Libre</h3>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">URL de tu lista de regalos</label>
-          <input
-            type="url"
-            value={data.mercadoLibreUrl || ''}
-            onChange={(e) => onChange({ mercadoLibreUrl: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="https://listaderegalos.mercadolibre.com.ar/..."
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Step4Multimedia({ data, onChange }: StepProps) {
-  return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-gray-900">Multimedia</h2>
-      <p className="text-gray-600">Agrega fotos y música para personalizar tu invitación.</p>
-
-      {/* Cover Image */}
-      <ImageUploader
-        folder={`onboarding/${data.clientEmail || 'temp'}/cover`}
-        onUpload={(url) => onChange({ coverImage: url })}
-        currentImage={data.coverImage}
-        label="Imagen de portada"
-        hint="Esta imagen aparecerá como fondo principal de tu invitación"
-      />
-
-      {/* Gallery Images */}
-      <MultiImageUploader
-        folder={`onboarding/${data.clientEmail || 'temp'}/gallery`}
-        onUpload={(urls) => onChange({ galleryImages: urls })}
-        currentImages={data.galleryImages}
-        maxImages={15}
-        label="Galería de fotos"
-        hint="Máximo 15 fotos"
-      />
-
-      {/* Music */}
-      <div className="space-y-4 pt-4 border-t">
-        <h3 className="font-medium text-gray-900">Música de fondo</h3>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">URL de audio (MP3)</label>
-          <input
-            type="url"
-            value={data.musicTrackUrl || ''}
-            onChange={(e) => onChange({ musicTrackUrl: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="https://ejemplo.com/cancion.mp3"
-          />
-        </div>
-      </div>
-
-      {/* Spotify */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Playlist de Spotify (URL)</label>
-        <input
-          type="url"
-          value={data.spotifyPlaylistUrl || ''}
-          onChange={(e) => onChange({ spotifyPlaylistUrl: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="https://open.spotify.com/playlist/..."
-        />
-      </div>
-
-      {/* Summary */}
-      <div className="mt-8 p-6 bg-gray-50 rounded-lg">
-        <h3 className="font-medium text-gray-900 mb-4">Resumen de tu invitación</h3>
-        <dl className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <dt className="text-gray-600">Diseño:</dt>
-            <dd className="font-medium">{data.skinId}</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt className="text-gray-600">Evento:</dt>
-            <dd className="font-medium">{data.headline || '-'}</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt className="text-gray-600">Fecha:</dt>
-            <dd className="font-medium">{data.eventDate || '-'}</dd>
-          </div>
-        </dl>
       </div>
     </div>
   );

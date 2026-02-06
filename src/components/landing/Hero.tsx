@@ -34,7 +34,7 @@ export default function Hero() {
           
           <div className="flex flex-col sm:flex-row gap-3.5 justify-center lg:justify-start pt-2">
             <a 
-              href="#proceso" 
+              href="/onboarding" 
               className="px-9 py-4 bg-charcoal text-cloud text-center text-[10px] uppercase tracking-widest font-bold hover:bg-bronze hover:shadow-[0_15px_30px_rgba(162,123,92,0.15)] transition-all duration-500"
             >
               Comenzar Ahora

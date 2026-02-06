@@ -19,9 +19,7 @@ export default function Navbar() {
 
         <div>
           <a 
-            href="https://wa.me/5491100000000?text=Hola!%20Me%20gustaría%20consultar%20disponibilidad%20para%20mi%20boda." 
-            target="_blank" 
-            rel="noopener noreferrer"
+            href="/onboarding"
             className="px-6 py-2 border border-charcoal text-charcoal text-sm uppercase tracking-widest font-bold hover:bg-charcoal hover:text-cloud transition-all duration-300"
           >
             Comenzar Ahora

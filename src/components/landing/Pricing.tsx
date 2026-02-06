@@ -63,9 +63,7 @@ export default function Pricing() {
                
                <div className="w-full space-y-4">
                  <a 
-                  href="https://wa.me/5491100000000?text=Hola!%20Quiero%20mi%20invitación%20Full%20Access." 
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/onboarding"
                   className="block w-full px-8 py-5 bg-charcoal text-cloud text-center text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-bronze hover:shadow-xl transition-all duration-500"
                  >
                    Comenzar mi Historia

@@ -4,12 +4,15 @@ import { useState, useRef, useCallback } from 'react';
 import { uploadImage, uploadMultipleImages } from '@/app/actions/storage';
 
 interface ImageUploaderProps {
-  folder: string;
-  onUpload: (url: string) => void;
+  folder?: string;
+  onUpload?: (url: string) => void;
+  onChange?: (url: string) => void;
   currentImage?: string;
+  value?: string;
   label?: string;
   hint?: string;
   className?: string;
+  maxSizeMB?: number;
 }
 
 interface MultiImageUploaderProps {
@@ -23,17 +26,20 @@ interface MultiImageUploaderProps {
 }
 
 export function ImageUploader({
-  folder,
+  folder = 'temp',
   onUpload,
+  onChange,
   currentImage,
+  value,
   label = 'Imagen',
   hint,
   className = '',
+  maxSizeMB = 5,
 }: ImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [preview, setPreview] = useState<string | null>(currentImage || null);
+  const [preview, setPreview] = useState<string | null>(value || currentImage || null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(async (file: File) => {
@@ -51,14 +57,16 @@ export function ImageUploader({
     const result = await uploadImage(formData, folder);
 
     if (result.success && result.url) {
-      onUpload(result.url);
+      setPreview(result.url);
+      onUpload?.(result.url);
+      onChange?.(result.url);
     } else {
       setError(result.error || 'Error al subir la imagen');
-      setPreview(currentImage || null);
+      setPreview(value || currentImage || null);
     }
 
     setIsUploading(false);
-  }, [folder, onUpload, currentImage]);
+  }, [folder, onUpload, onChange, currentImage, value]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -89,11 +97,12 @@ export function ImageUploader({
 
   const handleRemove = useCallback(() => {
     setPreview(null);
-    onUpload('');
+    onUpload?.('');
+    onChange?.('');
     if (inputRef.current) {
       inputRef.current.value = '';
     }
-  }, [onUpload]);
+  }, [onUpload, onChange]);
 
   return (
     <div className={className}>
