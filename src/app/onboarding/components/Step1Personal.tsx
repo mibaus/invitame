@@ -2,44 +2,12 @@
 
 import React, { useState } from 'react';
 import { StepProps } from '../types';
+import { getAllSkins, SkinConfig } from '@/lib/skins';
 
 export function Step1Personal({ formData, updateFormData }: StepProps) {
   const [activeDemo, setActiveDemo] = useState<string | null>(null);
 
-  const designs = [
-    { 
-      id: 'classic-standard', 
-      name: 'Minimalist Silk', 
-      bg: 'bg-white',
-      accent: '#A27B5C',
-      textColor: '#2C3333',
-      description: 'Limpio, moderno y sofisticado. Ideal para bodas urbanas.'
-    },
-    { 
-      id: 'modern-dark', 
-      name: 'Modern Charcoal', 
-      bg: 'bg-[#2C3333]',
-      accent: '#E7D2CC',
-      textColor: '#FFFFFF',
-      description: 'Drama y elegancia para eventos nocturnos de gala.'
-    },
-    { 
-      id: 'soft-floral', 
-      name: 'Floral Bloom', 
-      bg: 'bg-[#FDF2F0]',
-      accent: '#D4A373',
-      textColor: '#4A4A4A',
-      description: 'Romántico y etéreo, perfecto para bodas al aire libre.'
-    },
-    { 
-      id: 'royal-gold', 
-      name: 'Royal Gold', 
-      bg: 'bg-[#F9F6F0]',
-      accent: '#A27B5C',
-      textColor: '#2C3333',
-      description: 'Cálido y atemporal con detalles en oro viejo.'
-    }
-  ];
+  const designs = getAllSkins();
 
   const currentSkin = designs.find(d => d.id === (activeDemo || formData.skinId));
 
@@ -68,7 +36,8 @@ export function Step1Personal({ formData, updateFormData }: StepProps) {
               >
                 <div 
                   onClick={() => updateFormData({ skinId: design.id })}
-                  className={`aspect-[4/5] cursor-pointer rounded-[2rem] ${design.bg} flex flex-col items-center justify-center relative overflow-hidden border border-black/5 transition-transform duration-500 group-hover:scale-[0.98]`}
+                  className="aspect-[4/5] cursor-pointer rounded-[2rem] flex flex-col items-center justify-center relative overflow-hidden border border-black/5 transition-transform duration-500 group-hover:scale-[0.98]"
+                  style={{ backgroundColor: design.style.bg }}
                 >
                   {/* Decorative elements */}
                   <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -76,10 +45,10 @@ export function Step1Personal({ formData, updateFormData }: StepProps) {
                      <div className="absolute bottom-10 right-4 w-20 h-20 border border-current rotate-45"></div>
                   </div>
                   
-                  <span className={`font-serif italic text-3xl mb-2 ${design.id === 'modern-dark' ? 'text-white' : 'text-[#2C3333]'}`}>
+                  <span className="font-serif italic text-3xl mb-2" style={{ color: design.style.text }}>
                     Aa
                   </span>
-                  <div className={`w-8 h-[1px] ${design.id === 'modern-dark' ? 'bg-white/20' : 'bg-black/10'}`}></div>
+                  <div className="w-8 h-[1px]" style={{ backgroundColor: design.style.text, opacity: 0.2 }}></div>
 
                   {formData.skinId === design.id && (
                     <div className="absolute top-4 right-4 bg-[#A27B5C] text-white p-1 rounded-full shadow-lg z-10">
@@ -190,22 +159,22 @@ export function Step1Personal({ formData, updateFormData }: StepProps) {
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-20"></div>
                 
                 {/* Content Area */}
-                <div className={`w-full h-full ${currentSkin.bg} p-8 pt-16 flex flex-col items-center text-center overflow-y-auto custom-scrollbar relative`}>
+                <div className="w-full h-full p-8 pt-16 flex flex-col items-center text-center overflow-y-auto custom-scrollbar relative" style={{ backgroundColor: currentSkin.style.bg }}>
                   {/* Decorative corner */}
-                  <div className="absolute top-10 left-0 w-20 h-20 border-l border-t opacity-20" style={{ borderColor: currentSkin.accent }}></div>
-                  <div className="absolute bottom-10 right-0 w-20 h-20 border-r border-b opacity-20" style={{ borderColor: currentSkin.accent }}></div>
+                  <div className="absolute top-10 left-0 w-20 h-20 border-l border-t opacity-20" style={{ borderColor: currentSkin.style.accent }}></div>
+                  <div className="absolute bottom-10 right-0 w-20 h-20 border-r border-b opacity-20" style={{ borderColor: currentSkin.style.accent }}></div>
 
-                  <span className="text-[8px] uppercase tracking-[0.4em] mb-4 opacity-60" style={{ color: currentSkin.textColor }}>¡Nos Casamos!</span>
+                  <span className="text-[8px] uppercase tracking-[0.4em] mb-4 opacity-60" style={{ color: currentSkin.style.text }}>¡Nos Casamos!</span>
                   
-                  <h4 className="font-serif text-4xl mb-6" style={{ color: currentSkin.textColor }}>
+                  <h4 className="font-serif text-4xl mb-6" style={{ color: currentSkin.style.text }}>
                     {formData.person1Name || 'Novia'} <br/> 
                     <span className="italic text-2xl font-light opacity-50">&</span> <br/>
                     {formData.person2Name || 'Novio'}
                   </h4>
 
-                  <div className="w-10 h-[1px] mb-8" style={{ backgroundColor: currentSkin.accent }}></div>
+                  <div className="w-10 h-[1px] mb-8" style={{ backgroundColor: currentSkin.style.accent }}></div>
 
-                  <p className="text-[10px] leading-relaxed italic opacity-70 mb-10" style={{ color: currentSkin.textColor }}>
+                  <p className="text-[10px] leading-relaxed italic opacity-70 mb-10" style={{ color: currentSkin.style.text }}>
                     "Encontré a quien mi alma ama." <br/>
                     <span className="not-italic font-bold tracking-widest block mt-2 text-[8px]">— CANTAR DE LOS CANTARES</span>
                   </p>
@@ -217,8 +186,8 @@ export function Step1Personal({ formData, updateFormData }: StepProps) {
                       { l: 'Min', v: '45' }
                     ].map((t, i) => (
                       <div key={i} className="flex flex-col items-center">
-                        <span className="text-xl font-serif" style={{ color: currentSkin.textColor }}>{t.v}</span>
-                        <span className="text-[7px] uppercase tracking-widest opacity-40" style={{ color: currentSkin.textColor }}>{t.l}</span>
+                        <span className="text-xl font-serif" style={{ color: currentSkin.style.text }}>{t.v}</span>
+                        <span className="text-[7px] uppercase tracking-widest opacity-40" style={{ color: currentSkin.style.text }}>{t.l}</span>
                       </div>
                     ))}
                   </div>
@@ -226,13 +195,13 @@ export function Step1Personal({ formData, updateFormData }: StepProps) {
                   <button 
                     disabled
                     className="w-full py-4 rounded-full text-[8px] uppercase tracking-[0.3em] font-bold transition-all"
-                    style={{ backgroundColor: currentSkin.accent, color: '#FFF' }}
+                    style={{ backgroundColor: currentSkin.style.accent, color: '#FFF' }}
                   >
                     Confirmar Asistencia
                   </button>
 
                   <div className="mt-12 opacity-20">
-                    <svg className="w-12 h-12" style={{ color: currentSkin.textColor }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-12 h-12" style={{ color: currentSkin.style.text }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                   </div>
