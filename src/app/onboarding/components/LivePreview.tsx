@@ -158,14 +158,14 @@ export function LivePreview({ formData, className = '' }: LivePreviewProps) {
   
   return (
     <div className={`relative ${className}`}>
-      {/* Phone Frame - Larger size for desktop */}
-      <div className="relative mx-auto w-[340px] lg:w-[390px] bg-black rounded-[3rem] border-[8px] border-black shadow-2xl overflow-hidden">
+      {/* Phone Frame - Desktop: full size, Mobile: scaled */}
+      <div className="relative mx-auto w-[375px] lg:w-[390px] bg-black rounded-[3rem] border-[8px] border-black shadow-2xl overflow-hidden">
         {/* Notch */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-black rounded-b-2xl z-50"></div>
         
-        {/* Screen Content - Properly scaled */}
+        {/* Screen Content */}
         <div className="relative w-full h-[680px] lg:h-[780px] overflow-hidden bg-white">
-          <div className="w-[390px] h-full overflow-y-auto scrollbar-hide origin-top-left scale-[0.87] lg:scale-[1]">
+          <div className="w-[390px] h-full overflow-y-auto scrollbar-hide origin-top-left scale-[0.96] lg:scale-[1]">
             <MasterLayout invitation={invitation} preview={true} />
           </div>
         </div>

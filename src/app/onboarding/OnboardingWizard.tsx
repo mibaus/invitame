@@ -209,13 +209,13 @@ export function OnboardingWizard() {
       </div>
 
       {/* Right Panel - Live Preview (Desktop always visible, Mobile toggle) */}
-      <div className={`lg:w-[420px] xl:w-[480px] bg-gradient-to-br from-gray-50 to-gray-100 border-l border-gray-200 flex flex-col ${showPreview ? 'flex' : 'hidden lg:flex'}`}>
+      <div className={`lg:w-[440px] xl:w-[520px] bg-gradient-to-br from-gray-50 to-gray-100 border-l border-gray-200 flex flex-col ${showPreview ? 'flex' : 'hidden lg:flex'}`}>
         <div className="p-4 border-b border-gray-200 bg-white/50">
           <h3 className="text-[10px] uppercase tracking-widest font-bold text-gray-400 text-center">
             Vista Previa en Tiempo Real
           </h3>
         </div>
-        <div className="flex-1 p-6 overflow-y-auto flex items-center justify-center">
+        <div className="flex-1 p-4 lg:p-6 overflow-y-auto flex items-start lg:items-center justify-center min-h-0">
           <LivePreview formData={formData} />
         </div>
       </div>
