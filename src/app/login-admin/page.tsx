@@ -22,9 +22,9 @@ function LoginContent() {
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-center max-w-sm">
           <p className="text-red-700 text-sm">
-            {error === 'access_denied' 
+            {(error === 'access_denied' || error === 'AccessDenied')
               ? 'Acceso denegado. Solo el administrador autorizado puede acceder a esta sección.'
-              : 'Error en la autenticación. Por favor, intenta nuevamente.'
+              : `Error en la autenticación (${error}). Por favor, intenta nuevamente.`
             }
           </p>
         </div>
