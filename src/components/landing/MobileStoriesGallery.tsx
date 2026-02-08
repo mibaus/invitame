@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { getAllSkins, SkinConfig } from '@/lib/skins';
+import React, { useState, useRef, useMemo } from 'react';
+import { getAllSkins } from '@/lib/skins';
 import { InvitationSchema, SkinId } from '@/types';
 import { generateFantasyData } from '@/app/onboarding/lib/mock-fantasy-data';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 function createDemoInvitation(skinId: SkinId): InvitationSchema {
   const fantasyData = generateFantasyData({ skinId });
