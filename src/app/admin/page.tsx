@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { auth, signOut } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,20 +55,13 @@ export default async function AdminPage() {
             </p>
           </div>
           
-          <div className="mt-8 space-y-4">
+          <div className="mt-8">
             <Link 
               href="/"
               className="inline-block px-6 py-3 bg-[#2C3333] text-white text-sm uppercase tracking-widest font-bold rounded-xl hover:bg-[#A27B5C] transition-all duration-500"
             >
               Volver al inicio
             </Link>
-            <br />
-            <button
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className="inline-block px-6 py-3 bg-red-600 text-white text-sm uppercase tracking-widest font-bold rounded-xl hover:bg-red-700 transition-all duration-500"
-            >
-              Cerrar sesión
-            </button>
           </div>
         </div>
       </div>
