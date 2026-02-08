@@ -6,6 +6,7 @@ import type { RSVPConfig, InvitationMetadata } from '@/types';
 import { LuxuryButton } from './LuxuryButton';
 import { cn } from '@/lib/utils';
 import { submitRSVP } from '@/app/actions/rsvp';
+import { DietaryRestrictionsDropdown } from './DietaryRestrictionsDropdown';
 
 interface RSVPManagerProps {
   config: RSVPConfig;
@@ -267,7 +268,7 @@ function RSVPForm({ config, invitationId, className, styles = {} }: RSVPFormProp
     attending: 'yes' as 'yes' | 'no' | 'maybe',
     companions: 0,
     companionNames: [''],
-    dietary: '',
+    dietary: [] as string[],
     message: '',
     musicSuggestion: '',
   });
@@ -308,7 +309,7 @@ function RSVPForm({ config, invitationId, className, styles = {} }: RSVPFormProp
         phone: formState.phone || undefined,
         attendance: formState.attending === 'yes',
         guestsCount: 1 + formState.companions,
-        dietaryRestrictions: formState.dietary || undefined,
+        dietaryRestrictions: formState.dietary.join(', ') || undefined,
         musicSuggestion: formState.musicSuggestion || undefined,
         message: formState.message || undefined,
       });
@@ -435,23 +436,19 @@ function RSVPForm({ config, invitationId, className, styles = {} }: RSVPFormProp
       {/* Restricciones alimentarias */}
       {config.dietary_options && config.dietary_options.length > 0 && (
         <FormField label="Restricciones alimentarias" labelClassName={styles.labelClassName}>
-          <div className="relative">
-            <select
-              value={formState.dietary}
-              onChange={(e) => setFormState(s => ({ ...s, dietary: e.target.value }))}
-              className={selectClass}
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23666'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                backgroundSize: '20px',
-                backgroundPosition: 'right 12px center',
-              }}
-            >
-              <option value="">Ninguna</option>
-              {config.dietary_options.map((opt) => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
-          </div>
+          <DietaryRestrictionsDropdown
+            value={formState.dietary}
+            onChange={(value) => setFormState(s => ({ ...s, dietary: value }))}
+            options={config.dietary_options}
+            placeholder="Selecciona restricciones alimentarias..."
+            styles={{
+              triggerClassName: inputClass,
+              dropdownClassName: "border-2 rounded-xl shadow-lg",
+              optionClassName: "px-3 py-2 rounded-lg cursor-pointer transition-colors text-sm",
+              tagClassName: "px-2 py-1 rounded-md text-xs font-medium",
+              inputClassName: "px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
+            }}
+          />
         </FormField>
       )}
 

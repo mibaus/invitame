@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { InvitationSchema } from '@/types';
 import { FeatureGate } from '@/components/shared/FeatureGate';
+import { DietaryRestrictionsDropdown } from '@/components/shared/DietaryRestrictionsDropdown';
 import { createClient } from '@supabase/supabase-js';
 import { submitRSVP } from '@/app/actions/rsvp';
 import { parseDateLocal } from '@/lib/utils';
@@ -838,7 +839,7 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
     phone: '', 
     attendance: true, 
     guests: 1, 
-    dietary: '', 
+    dietary: [] as string[], 
     musicSuggestion: '', 
     message: '' 
   });
@@ -867,14 +868,14 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
         phone: formData.phone, 
         attendance: formData.attendance, 
         guestsCount: formData.guests, 
-        dietaryRestrictions: formData.dietary, 
+        dietaryRestrictions: formData.dietary.join(', '), 
         musicSuggestion: formData.musicSuggestion, 
         message: formData.message,
         customAnswers: customAnswers // Enviar respuestas personalizadas
       });
       if (result.success) {
         setSuccess(true);
-        setFormData({ name: '', email: '', phone: '', attendance: true, guests: 1, dietary: '', musicSuggestion: '', message: '' });
+        setFormData({ name: '', email: '', phone: '', attendance: true, guests: 1, dietary: [], musicSuggestion: '', message: '' });
         setCustomAnswers({}); // Limpiar respuestas personalizadas
       } else {
         setError(result.error || 'Error al enviar la confirmación');
@@ -936,7 +937,55 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-[0.15em] font-light mb-3" style={{ color: '#A8A6A2', fontFamily: "'Montserrat', sans-serif" }}>Restricciones Alimentarias</label>
-                <textarea value={formData.dietary} onChange={(e) => setFormData({ ...formData, dietary: e.target.value })} className="w-full py-3 bg-transparent focus:outline-none transition-colors text-sm font-light resize-none" style={{ color: '#5C5B57', borderBottom: '1px solid #D4CFC4', fontFamily: "'Montserrat', sans-serif", minHeight: '80px' }} placeholder="¿Tienes alguna restricción alimentaria o alergia que debamos conocer?" disabled={loading} />
+                <DietaryRestrictionsDropdown
+                  value={formData.dietary}
+                  onChange={(value) => setFormData({ ...formData, dietary: value })}
+                  options={[
+                    "Vegetariano",
+                    "Vegano", 
+                    "Sin gluten",
+                    "Diabético",
+                    "Sin lactosa",
+                    "Kosher",
+                    "Halal",
+                    "Alergias"
+                  ]}
+                  placeholder="Selecciona restricciones alimentarias..."
+                  allergyGroups={{
+                    "Alergias": [
+                      "Alergia a frutos secos",
+                      "Alergia a mariscos", 
+                      "Alergia a lácteos",
+                      "Alergia al huevo",
+                      "Alergia al soja",
+                      "Alergia al pescado",
+                      "Alergia al maní",
+                      "Alergia al sésamo"
+                    ]
+                  }}
+                  styles={{
+                    triggerClassName: "bg-transparent focus:outline-none transition-colors text-sm font-light",
+                    dropdownClassName: "border-2 rounded-xl shadow-lg",
+                    optionClassName: "px-3 py-2 rounded-lg cursor-pointer transition-colors text-sm",
+                    tagClassName: "px-2 py-1 rounded-md text-xs font-medium",
+                    inputClassName: "px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
+                  }}
+                  colors={{
+                    border: '#D4CFC4',
+                    text: '#5C5B57',
+                    placeholder: '#A8A6A2',
+                    background: '#FAF8F5',
+                    hover: '#F5F2EB',
+                    selected: '#F5F2EB',
+                    tagBg: '#E8E4DB',
+                    tagText: '#5C5B57',
+                    buttonBg: '#B8956A',
+                    buttonHover: '#9B7F5A',
+                    buttonText: '#FFFFFF',
+                    checkColor: '#FFFFFF',
+                    checkBg: '#B8956A'
+                  }}
+                />
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-[0.15em] font-light mb-3" style={{ color: '#A8A6A2', fontFamily: "'Montserrat', sans-serif" }}>Sugerencia Musical</label>

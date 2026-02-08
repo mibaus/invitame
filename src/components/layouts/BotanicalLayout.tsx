@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { InvitationSchema } from '@/types';
 import { FeatureGate } from '@/components/shared/FeatureGate';
+import { DietaryRestrictionsDropdown } from '@/components/shared/DietaryRestrictionsDropdown';
 import { createClient } from '@supabase/supabase-js';
 import { submitRSVP } from '@/app/actions/rsvp';
 import { parseDateLocal } from '@/lib/utils';
@@ -1031,7 +1032,7 @@ function GiftRegistrySection({ features }: { features: InvitationSchema['feature
 }
 
 function RSVPSection({ features, content, metadata }: { features: InvitationSchema['features']; content: InvitationSchema['content']; metadata: InvitationSchema['metadata'] }) {
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', attendance: true, guests: 1, dietary: '', musicSuggestion: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', attendance: true, guests: 1, dietary: [] as string[], musicSuggestion: '', message: '' });
   // Estado para respuestas de preguntas personalizadas
   const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -1043,8 +1044,8 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
     setLoading(true);
     setError(null);
     try {
-      const result = await submitRSVP({ invitationId: metadata.id, name: formData.name, email: formData.email, phone: formData.phone, attendance: formData.attendance, guestsCount: formData.guests, dietaryRestrictions: formData.dietary, musicSuggestion: formData.musicSuggestion, message: formData.message, customAnswers: customAnswers });
-      if (result.success) { setSuccess(true); setFormData({ name: '', email: '', phone: '', attendance: true, guests: 1, dietary: '', musicSuggestion: '', message: '' }); setCustomAnswers({}); }
+      const result = await submitRSVP({ invitationId: metadata.id, name: formData.name, email: formData.email, phone: formData.phone, attendance: formData.attendance, guestsCount: formData.guests, dietaryRestrictions: formData.dietary.join(', '), musicSuggestion: formData.musicSuggestion, message: formData.message, customAnswers: customAnswers });
+      if (result.success) { setSuccess(true); setFormData({ name: '', email: '', phone: '', attendance: true, guests: 1, dietary: [], musicSuggestion: '', message: '' }); setCustomAnswers({}); }
       else { setError(result.error || 'Error al enviar la confirmación'); }
     } catch { setError('Error inesperado. Por favor intenta de nuevo.'); }
     finally { setLoading(false); }
@@ -1108,7 +1109,55 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-[0.15em] mb-2" style={{ color: COLORS.moss, fontFamily: "'Crimson Text', serif" }}>Restricciones Alimentarias</label>
-                <textarea value={formData.dietary} onChange={(e) => setFormData({ ...formData, dietary: e.target.value })} className="w-full py-3 bg-transparent focus:outline-none transition-colors text-sm resize-none" style={{ color: COLORS.ink, borderBottom: `1px dashed ${COLORS.border}`, fontFamily: "'Crimson Text', serif", minHeight: '80px' }} placeholder="¿Tienes alguna restricción alimentaria o alergia?" disabled={loading} />
+                <DietaryRestrictionsDropdown
+                  value={formData.dietary}
+                  onChange={(value) => setFormData({ ...formData, dietary: value })}
+                  options={[
+                    "Vegetariano",
+                    "Vegano", 
+                    "Sin gluten",
+                    "Diabético",
+                    "Sin lactosa",
+                    "Kosher",
+                    "Halal",
+                    "Alergias"
+                  ]}
+                  placeholder="Selecciona restricciones alimentarias..."
+                  allergyGroups={{
+                    "Alergias": [
+                      "Alergia a frutos secos",
+                      "Alergia a mariscos", 
+                      "Alergia a lácteos",
+                      "Alergia al huevo",
+                      "Alergia al soja",
+                      "Alergia al pescado",
+                      "Alergia al maní",
+                      "Alergia al sésamo"
+                    ]
+                  }}
+                  styles={{
+                    triggerClassName: "w-full py-3 bg-transparent focus:outline-none transition-colors text-sm resize-none",
+                    dropdownClassName: "border-2 rounded-xl shadow-lg",
+                    optionClassName: "px-3 py-2 rounded-lg cursor-pointer transition-colors text-sm",
+                    tagClassName: "px-2 py-1 rounded-md text-xs font-medium",
+                    inputClassName: "px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
+                  }}
+                  colors={{
+                    border: COLORS.border,
+                    text: COLORS.ink,
+                    placeholder: COLORS.sepia,
+                    background: COLORS.paper,
+                    hover: COLORS.paperLight,
+                    selected: COLORS.mossLight,
+                    tagBg: COLORS.mossLight,
+                    tagText: COLORS.paper,
+                    buttonBg: COLORS.moss,
+                    buttonHover: COLORS.mossDark,
+                    buttonText: COLORS.paper,
+                    checkColor: COLORS.paper,
+                    checkBg: COLORS.moss
+                  }}
+                />
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-[0.15em] mb-2" style={{ color: COLORS.moss, fontFamily: "'Crimson Text', serif" }}>Sugerencia Musical</label>

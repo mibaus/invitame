@@ -8,6 +8,7 @@ import { Step3Logistics } from './components/Step3Logistics';
 import { Step4Multimedia } from './components/Step4Multimedia';
 import { Step5Config } from './components/Step5Config';
 import { LivePreview } from './components/LivePreview';
+import { PremiumPaywallModal } from './components/PremiumPaywallModal';
 import { OnboardingData } from './types';
 import { submitOnboarding } from '@/app/actions/onboarding';
 
@@ -70,6 +71,7 @@ export function OnboardingWizard() {
   const [error, setError] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [showRestoreToast, setShowRestoreToast] = useState(false);
+  const [showPaywallModal, setShowPaywallModal] = useState(false);
 
   // Cargar datos guardados al montar
   useEffect(() => {
@@ -94,7 +96,14 @@ export function OnboardingWizard() {
   }, []);
 
   const handleNext = () => {
-    if (currentStep < 5) setCurrentStep(currentStep + 1);
+    if (currentStep < 5) {
+      // Intercept navigation from step 2 to show paywall
+      if (currentStep === 2) {
+        setShowPaywallModal(true);
+      } else {
+        setCurrentStep(currentStep + 1);
+      }
+    }
   };
 
   const handleBack = () => {
@@ -124,6 +133,11 @@ export function OnboardingWizard() {
     }
   };
 
+  const handlePaywallActivate = () => {
+    // Redirect to checkout
+    window.location.href = '/checkout';
+  };
+
   const isStep1Valid = !!(
     formData.clientName && 
     formData.clientEmail && 
@@ -151,7 +165,7 @@ export function OnboardingWizard() {
         </p>
         <div className="p-4 bg-gray-50 rounded-xl mb-8 border border-gray-100">
           <p className="text-xs uppercase tracking-widest font-bold text-gray-400 mb-2">Tu URL</p>
-          <code className="text-[#A27B5C] font-mono text-lg tracking-tighter">invitame.com/{formData.slug}</code>
+          <code className="text-[#A27B5C] font-mono text-lg tracking-tighter">vows.digital/{formData.slug}</code>
         </div>
         <button 
           onClick={() => window.location.reload()}
@@ -272,6 +286,13 @@ export function OnboardingWizard() {
           )}
         </div>
       </div>
+
+      {/* Premium Paywall Modal */}
+      <PremiumPaywallModal 
+        isOpen={showPaywallModal}
+        onClose={() => setShowPaywallModal(false)}
+        onActivate={handlePaywallActivate}
+      />
 
       {/* Right Panel - Live Preview */}
       <div className={`lg:w-[360px] xl:w-[400px] bg-gradient-to-br from-gray-50 to-gray-100 border-l border-gray-200 flex flex-col ${showPreview ? 'flex' : 'hidden lg:flex'}`}>

@@ -96,7 +96,7 @@ export function Step2Wedding({ formData, updateFormData }: StepProps) {
         </div>
         <div className="md:w-2/3 w-full relative">
           <div className="flex items-center bg-white border border-gray-100 rounded-2xl overflow-hidden focus-within:border-[#A27B5C] focus-within:ring-1 focus-within:ring-[#A27B5C] transition-all duration-300">
-            <span className="pl-4 pr-1 py-4 text-[#2C3333]/30 font-medium text-sm">invitame.com/</span>
+            <span className="pl-4 pr-1 py-4 text-[#2C3333]/30 font-medium text-sm">vows.digital/</span>
             <input
               type="text"
               placeholder="tu-boda-aqui"

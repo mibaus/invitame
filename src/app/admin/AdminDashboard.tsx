@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
+import { signOut } from "next-auth/react";
 import { activateInvitation, deactivateInvitation, deleteInvitation, type PendingInvitation } from '@/app/actions/admin';
-import { Eye, PauseCircle, PlayCircle, Trash2, Users, CheckCircle, Clock, Calendar } from 'lucide-react';
+import { Eye, PauseCircle, PlayCircle, Trash2, Users, CheckCircle, Clock, Calendar, LogOut } from 'lucide-react';
 
 interface AdminDashboardProps {
   invitations: PendingInvitation[];

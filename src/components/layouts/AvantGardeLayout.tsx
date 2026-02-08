@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motio
 import { X, Copy, Check, ExternalLink, MapPin, Calendar } from 'lucide-react';
 import { InvitationSchema } from '@/types';
 import { FeatureGate } from '@/components/shared/FeatureGate';
+import { DietaryRestrictionsDropdown } from '@/components/shared/DietaryRestrictionsDropdown';
 import { submitRSVP } from '@/app/actions/rsvp';
 import { parseDateLocal } from '@/lib/utils';
 
@@ -853,7 +854,7 @@ function MusicSuggestionField({ onSongAdd }: { onSongAdd?: (song: string) => voi
 
 // RSVP Section
 function RSVPSection({ features, content, metadata }: { features: InvitationSchema['features']; content: InvitationSchema['content']; metadata: InvitationSchema['metadata'] }) {
-    const [formData, setFormData] = useState({ name: '', attendance: 'YES', message: '', email: '', phone: '', guests: 1 });
+    const [formData, setFormData] = useState({ name: '', attendance: 'YES', message: '', email: '', phone: '', guests: 1, dietary: [] as string[] });
     // Estado para respuestas de preguntas personalizadas
     const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
@@ -873,14 +874,14 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
                 phone: formData.phone,
                 attendance: formData.attendance === 'YES',
                 guestsCount: formData.guests,
-                dietaryRestrictions: formData.message,
+                dietaryRestrictions: formData.dietary.join(', '),
                 message: '',
                 customAnswers: customAnswers
             });
 
             if (result.success) {
                 setSuccess(true);
-                setFormData({ name: '', attendance: 'YES', message: '', email: '', phone: '', guests: 1 });
+                setFormData({ name: '', attendance: 'YES', message: '', email: '', phone: '', guests: 1, dietary: [] });
                 setCustomAnswers({});
             } else {
                 setError(result.error || 'Error al enviar');
@@ -961,7 +962,62 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
                 {formData.attendance === 'YES' && (
                     <>
                         <div className="relative">
-                            <label className="font-mono text-[10px] tracking-widest uppercase mb-2 block text-white font-bold">NOTAS ESPECIALES / ALERGIAS</label>
+                            <label className="font-mono text-[10px] tracking-widest uppercase mb-2 block text-white font-bold">RESTRICCIONES ALIMENTARIAS</label>
+                            <div className="relative">
+                                <DietaryRestrictionsDropdown
+                                value={formData.dietary}
+                                onChange={(value) => setFormData({...formData, dietary: value})}
+                                options={[
+                                    "Vegetariano",
+                                    "Vegano", 
+                                    "Sin gluten",
+                                    "Diabético",
+                                    "Sin lactosa",
+                                    "Kosher",
+                                    "Halal",
+                                    "ALERGIAS"
+                                ]}
+                                placeholder="SELECCIONA RESTRICCIONES..."
+                                allergyGroups={{
+                                    "ALERGIAS": [
+                                        "ALERGIA FRUTOS SECOS",
+                                        "ALERGIA MARISCOS", 
+                                        "ALERGIA LÁCTEOS",
+                                        "ALERGIA HUEVO",
+                                        "ALERGIA SOJA",
+                                        "ALERGIA PESCADO",
+                                        "ALERGIA MANÍ",
+                                        "ALERGIA SÉSAMO"
+                                    ]
+                                }}
+                                styles={{
+                                    triggerClassName: "w-full bg-black/20 border-2 border-black p-3 lg:p-4 font-mono text-sm text-white placeholder:text-white/70 focus:outline-none focus:border-white focus:bg-black/40 transition-colors resize-none uppercase",
+                                    dropdownClassName: "absolute z-50 w-full border-2 border-black bg-black/95 backdrop-blur-sm rounded-lg shadow-2xl mt-2",
+                                    optionClassName: "px-4 py-3 font-mono text-xs text-white hover:bg-white/20 cursor-pointer transition-colors border-b border-white/10 last:border-b-0",
+                                    tagClassName: "px-2 py-1 bg-white/20 text-white font-mono text-[10px] uppercase border border-white/30",
+                                    inputClassName: "px-3 py-2 bg-black/80 border border-white/50 text-white font-mono text-xs placeholder:text-white/50"
+                                }}
+                                colors={{
+                                    border: '#000000',
+                                    text: '#FFFFFF',
+                                    placeholder: '#FFFFFF70',
+                                    background: '#00000033',
+                                    hover: '#FFFFFF20',
+                                    selected: '#FFFFFF30',
+                                    tagBg: '#FFFFFF20',
+                                    tagText: '#FFFFFF',
+                                    buttonBg: '#FF0000',
+                                    buttonHover: '#CC0000',
+                                    buttonText: '#FFFFFF',
+                                    checkColor: '#FFFFFF',
+                                    checkBg: '#FF0000'
+                                }}
+                            />
+                            </div>
+                        </div>
+
+                        <div className="relative">
+                            <label className="font-mono text-[10px] tracking-widest uppercase mb-2 block text-white font-bold">NOTAS ESPECIALES</label>
                             <textarea 
                                 rows={3}
                                 value={formData.message}

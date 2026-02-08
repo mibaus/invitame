@@ -11,6 +11,7 @@ import {
   Pinyon_Script,
 } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 
 const cormorantGaramond = Cormorant_Garamond({
   variable: "--font-display-editorial",
@@ -101,7 +102,9 @@ export default function RootLayout({
           font-body antialiased
         `}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

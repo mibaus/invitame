@@ -10,6 +10,15 @@ function isConfigured(): boolean {
   return Boolean(supabaseUrl && supabaseAnonKey && !supabaseUrl.includes('tu-proyecto'));
 }
 
+export interface DietaryRestrictions {
+  celiac: boolean;
+  vegan: boolean;
+  vegetarian: boolean;
+  allergic: boolean;
+  other: boolean;
+  other_text?: string;
+}
+
 export interface RSVPRecord {
   id: string;
   name: string;
@@ -19,7 +28,7 @@ export interface RSVPRecord {
   attendance: boolean | null;
   guests_count: number;
   children_count: number;
-  dietary_restrictions: string | null;
+  dietary_restrictions: DietaryRestrictions | string | null;
   menu_notes: string | null;
   music_suggestion: string | null;
   custom_answers: Record<string, unknown> | null;

@@ -8,6 +8,8 @@ import { getRSVPs } from '@/app/actions/dashboard';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { InvitationEditForm } from './InvitationEditForm';
 import { ExportModal } from '@/components/dashboard/ExportModal';
+import { CateringSummaryWidget } from '@/components/dashboard/CateringSummaryWidget';
+import { CateringExportModal } from '@/components/dashboard/CateringExportModal';
 import { WhatsAppShare } from '@/components/dashboard/WhatsAppShare';
 
 interface GuestDashboardProps {
@@ -21,6 +23,7 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isCateringModalOpen, setIsCateringModalOpen] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected'>('disconnected');
 
   // Función para actualizar stats basado en RSVPs
@@ -258,6 +261,14 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
   const declined = rsvps.filter(r => r.attendance === false).length;
   const totalGuests = rsvps.reduce((sum, r) => sum + (r.guests_count || 1), 0);
 
+  const handleOpenCateringExport = () => {
+    if (rsvps.length === 0) {
+      alert('No hay invitados para exportar');
+      return;
+    }
+    setIsCateringModalOpen(true);
+  };
+
   const handleOpenExport = () => {
     if (rsvps.length === 0) {
       alert('No hay invitados para exportar');
@@ -342,13 +353,21 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           <button
             onClick={handleOpenExport}
             className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-stone-200 text-stone-600 rounded-xl text-[11px] font-medium hover:bg-stone-50 transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Exportar</span>
+          </button>
+          
+          <button
+            onClick={handleOpenCateringExport}
+            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-transparent border border-[#A27B5C] text-[#A27B5C] rounded-xl text-[11px] font-medium hover:bg-[#A27B5C] hover:text-white transition-all duration-300"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Catering</span>
           </button>
           
           {invitation.is_active && (
@@ -368,6 +387,9 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
             eventDate={content.logistics?.event_date}
           />
         </div>
+
+        {/* Catering Summary Widget */}
+        <CateringSummaryWidget rsvps={rsvps} />
 
         {/* Guests List */}
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
@@ -398,12 +420,23 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
                           {rsvp.name.charAt(0).toUpperCase()}
                         </span>
                       </div>
-                      <div>
+                      <div className="flex items-center gap-2">
                         <p className="font-medium text-stone-800 text-sm">{rsvp.name}</p>
-                        <p className="text-xs text-stone-400">
-                          {rsvp.guests_count > 1 ? `${rsvp.guests_count} personas` : '1 persona'}
-                          {rsvp.children_count ? ` · ${rsvp.children_count} niños` : ''}
-                        </p>
+                        {/* Critical Allergy Dot */}
+                        {(() => {
+                          const restrictions = rsvp.dietary_restrictions;
+                          let isAllergic = false;
+                          
+                          if (typeof restrictions === 'object' && restrictions !== null) {
+                            isAllergic = restrictions.allergic;
+                          } else if (typeof restrictions === 'string' && restrictions) {
+                            isAllergic = restrictions.toLowerCase().includes('alérg');
+                          }
+                          
+                          return isAllergic ? (
+                            <div className="w-1 h-1 rounded-full bg-[#A27B5C]"></div>
+                          ) : null;
+                        })()}
                       </div>
                     </div>
                     <span className={`px-2.5 py-1 rounded-full text-[10px] font-medium ${
@@ -416,7 +449,7 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
                   </div>
                   
                   {/* Additional details */}
-                  {(rsvp.music_suggestion || rsvp.dietary_restrictions || rsvp.menu_notes || rsvp.message || (rsvp.custom_answers && Object.keys(rsvp.custom_answers).length > 0)) && (
+                  {(rsvp.music_suggestion || rsvp.message || (rsvp.custom_answers && Object.keys(rsvp.custom_answers).length > 0)) && (
                     <div className="mt-3 space-y-2 pl-13 ml-13">
                       {rsvp.music_suggestion && (
                         <p className="text-xs text-stone-600 flex items-center gap-1.5">
@@ -424,18 +457,57 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
                           <span className="font-medium">Música:</span> {rsvp.music_suggestion}
                         </p>
                       )}
-                      {rsvp.dietary_restrictions && (
-                        <p className="text-xs text-stone-600 flex items-center gap-1.5">
-                          <span className="text-orange-500">⚠</span>
-                          <span className="font-medium">Restricciones:</span> {rsvp.dietary_restrictions}
-                        </p>
-                      )}
-                      {rsvp.menu_notes && (
-                        <p className="text-xs text-stone-600 flex items-center gap-1.5">
-                          <span className="text-blue-500">🍽</span>
-                          <span className="font-medium">Notas menú:</span> {rsvp.menu_notes}
-                        </p>
-                      )}
+                  {/* Guest Info */}
+                  <p className="text-xs text-stone-400 mb-3">
+                    {rsvp.guests_count > 1 ? `${rsvp.guests_count} personas` : '1 persona'}
+                    {rsvp.children_count ? ` · ${rsvp.children_count} niños` : ''}
+                  </p>
+                  
+                  {/* Dietary Restriction Tags */}
+                  {(() => {
+                    const restrictions = rsvp.dietary_restrictions;
+                    let restrictionTags = [];
+                    let isAllergic = false;
+                    
+                    if (typeof restrictions === 'object' && restrictions !== null) {
+                      // New checkbox format
+                      if (restrictions.celiac) restrictionTags.push('Celíaco');
+                      if (restrictions.vegan) restrictionTags.push('Vegano');
+                      if (restrictions.vegetarian) restrictionTags.push('Vegetariano');
+                      if (restrictions.allergic) {
+                        restrictionTags.push('Alérgico');
+                        isAllergic = true;
+                      }
+                      if (restrictions.other) {
+                        restrictionTags.push('Otros');
+                        if (restrictions.other_text) {
+                          restrictionTags.push(restrictions.other_text);
+                        }
+                      }
+                    } else if (typeof restrictions === 'string' && restrictions) {
+                      // Legacy text format
+                      restrictionTags.push(restrictions);
+                      isAllergic = restrictions.toLowerCase().includes('alérg');
+                    }
+                    
+                    // Add menu notes as tag
+                    if (rsvp.menu_notes) {
+                      restrictionTags.push(rsvp.menu_notes);
+                    }
+                    
+                    return restrictionTags.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        {restrictionTags.map((tag, index) => (
+                          <span 
+                            key={index}
+                            className="inline-block px-2 py-1 bg-[#F9F9F9] border border-stone-200 rounded text-xs text-stone-600 font-light"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null;
+                  })()}
                       
                       {/* Custom Answers - Displayed aesthetically */}
                       {rsvp.custom_answers && Object.keys(rsvp.custom_answers).length > 0 && (
@@ -489,6 +561,13 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         data={{ ...data, rsvps, stats }}
+      />
+      
+      {/* Catering Export Modal */}
+      <CateringExportModal
+        isOpen={isCateringModalOpen}
+        onClose={() => setIsCateringModalOpen(false)}
+        rsvps={rsvps}
       />
     </div>
   );
