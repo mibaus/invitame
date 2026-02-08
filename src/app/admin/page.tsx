@@ -48,10 +48,10 @@ export default async function AdminPage() {
           
           <div className="p-6 bg-[#A27B5C]/10 rounded-2xl">
             <p className="text-sm text-[#2C3333]">
-              {"✅ Login exitoso\n"}
-              {"✅ Sesión válida\n"}
-              {"✅ Email autorizado\n"}
-              {"✅ Panel funcional"}
+              {'✅ Login exitoso\n'}
+              {'✅ Sesión válida\n'}
+              {'✅ Email autorizado\n'}
+              {'✅ Panel funcional'}
             </p>
           </div>
           
