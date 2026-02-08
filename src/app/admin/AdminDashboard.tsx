@@ -10,6 +10,36 @@ interface AdminDashboardProps {
   invitations: PendingInvitation[];
 }
 
+function generateSlug(invitation: PendingInvitation): string {
+  // Try to generate from couple names or headline
+  const headline = invitation.content?.headline || '';
+  const person1 = invitation.content?.couple?.person1?.name || '';
+  const person2 = invitation.content?.couple?.person2?.name || '';
+  
+  let baseSlug = '';
+  
+  if (person1 && person2) {
+    // Use couple names: "juan-y-maria" -> "juan-y-maria"
+    baseSlug = `${person1.toLowerCase().replace(/\s+/g, '-')}-y-${person2.toLowerCase().replace(/\s+/g, '-')}`;
+  } else if (headline) {
+    // Use headline: "Boda María y Juan" -> "boda-maria-juan"
+    baseSlug = headline.toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .substring(0, 30);
+  } else {
+    // Fallback to random
+    baseSlug = `invitacion-${Date.now()}`;
+  }
+  
+  // Clean up the slug
+  return baseSlug
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .substring(0, 25);
+}
+
 export function AdminDashboard({ invitations: initialInvitations }: AdminDashboardProps) {
   const [invitations, setInvitations] = useState(initialInvitations);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -308,31 +338,6 @@ export function AdminDashboard({ invitations: initialInvitations }: AdminDashboa
       </div>
     </div>
   );
-}
-
-function generateSlug(invitation: PendingInvitation): string {
-  // Try to generate from couple names or headline
-  const headline = invitation.content?.headline || '';
-  const person1 = invitation.content?.couple?.person1?.name || '';
-  const person2 = invitation.content?.couple?.person2?.name || '';
-
-  let base = '';
-  if (person1 && person2) {
-    base = `${person1}-y-${person2}`;
-  } else if (headline) {
-    base = headline;
-  } else {
-    base = 'mi-invitacion';
-  }
-
-  // Normalize: lowercase, replace spaces and special chars with hyphens
-  return base
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Remove accents
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .substring(0, 50);
 }
 
 function formatDate(dateString: string): string {
