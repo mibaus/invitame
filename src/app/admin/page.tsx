@@ -54,26 +54,47 @@ async function InvitationsList() {
 
 async function AdminContent() {
   try {
-    console.log("=== ADMIN PAGE LOADING ===");
+    console.log("=== ADMIN PAGE LOADING START ===");
     
     // Validar sesión en servidor
+    console.log("Step 1: Calling auth()...");
     const session = await auth();
-    const ADMIN_EMAIL = "mi.baus.g@gmail.com";
-    
-    console.log("Session check:", { 
+    console.log("Step 2: Auth result:", { 
       hasSession: !!session, 
       hasUser: !!session?.user, 
-      email: session?.user?.email,
-      isAdmin: session?.user?.email === ADMIN_EMAIL 
+      email: session?.user?.email 
+    });
+    
+    const ADMIN_EMAIL = "mi.baus.g@gmail.com";
+    
+    console.log("Step 3: Checking authorization...", { 
+      userEmail: session?.user?.email,
+      adminEmail: ADMIN_EMAIL,
+      isAuthorized: session?.user?.email === ADMIN_EMAIL 
     });
     
     if (!session?.user?.email || session.user.email !== ADMIN_EMAIL) {
-      console.log("Redirecting to login - not authorized");
+      console.log("Step 4: Redirecting to login - not authorized");
       redirect('/login-admin');
     }
 
-    console.log("Admin authorized, loading dashboard...");
+    console.log("Step 5: Admin authorized, loading dashboard...");
 
+    console.log("Step 6: Importing AdminDashboard...");
+    const { AdminDashboard } = await import('./AdminDashboard');
+    console.log("Step 7: AdminDashboard imported successfully");
+
+    console.log("Step 8: Calling getPendingInvitations...");
+    const { getPendingInvitations } = await import('@/app/actions/admin');
+    const result = await getPendingInvitations();
+    console.log("Step 9: getPendingInvitations result:", { success: result.success, dataCount: result.data?.length });
+
+    if (!result.success) {
+      console.log("Step 10: Error in getPendingInvitations:", result.error);
+      throw new Error(result.error);
+    }
+
+    console.log("Step 11: Rendering admin page...");
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
         {/* Header */}
@@ -121,7 +142,9 @@ async function AdminContent() {
               <div className="w-10 h-10 border-2 border-[#A27B5C]/30 border-t-[#A27B5C] rounded-full animate-spin"></div>
             </div>
           }>
-            <InvitationsList />
+            <div className="p-8 bg-white rounded-2xl shadow-sm border border-[#A27B5C]/10">
+              <AdminDashboard invitations={result.data || []} />
+            </div>
           </Suspense>
         </main>
 
@@ -134,7 +157,13 @@ async function AdminContent() {
       </div>
     );
   } catch (error) {
-    console.error("Admin page error:", error);
+    console.error("=== ADMIN PAGE ERROR ===");
+    console.error("Error type:", typeof error);
+    console.error("Error name:", error instanceof Error ? error.name : 'Unknown');
+    console.error("Error message:", error instanceof Error ? error.message : 'Unknown error');
+    console.error("Error stack:", error instanceof Error ? error.stack : 'No stack available');
+    console.error("========================");
+    
     return (
       <ErrorBoundary>
         <div />
