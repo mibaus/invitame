@@ -59,7 +59,9 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
                       (typeof restrictions === 'string' && restrictions.toLowerCase().includes('alérg')),
         music: rsvp.music_suggestion || '',
         notes: rsvp.message || '',
-        status: rsvp.attendance === true ? 'Confirmado' : 'No asiste'
+        status: rsvp.attendance === true ? 'Confirmado' : 'No asiste',
+        email: rsvp.email || '',
+        phone: rsvp.phone || ''
       };
     });
   };
@@ -109,6 +111,11 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
       year: 'numeric'
     });
 
+    // Count statistics
+    const confirmedGuests = guestData.filter(g => g.status === 'Confirmado');
+    const totalConfirmed = confirmedGuests.reduce((sum, g) => sum + g.guests, 0);
+    const totalChildren = confirmedGuests.reduce((sum, g) => sum + g.children, 0);
+
     // Count restrictions
     const restrictionCounts = {
       celiac: 0,
@@ -118,7 +125,7 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
       other: 0
     };
 
-    guestData.forEach(guest => {
+    confirmedGuests.forEach(guest => {
       const restrictions = guest.restrictions.toLowerCase();
       if (restrictions.includes('celíaco')) restrictionCounts.celiac += guest.guests;
       if (restrictions.includes('vegano')) restrictionCounts.vegan += guest.guests;
@@ -188,7 +195,7 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
         
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 15px;
         }
         
@@ -245,6 +252,15 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
             color: #D32F2F;
         }
         
+        .music-note {
+            background: #F0F7FF;
+            border: 1px solid #B3D9FF;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #1976D2;
+        }
+        
         .footer {
             margin-top: 40px;
             padding-top: 20px;
@@ -258,7 +274,7 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
 <body>
     <div class="header">
         <div class="logo">VOWS<span>.</span></div>
-        <p class="subtitle">Reporte de Catering para Evento</p>
+        <p class="subtitle">Reporte de Invitados Filtrados</p>
         <p class="subtitle">Fecha: ${timestamp}</p>
     </div>
     
@@ -309,6 +325,7 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
                 <th>Mesa</th>
                 <th>Estado</th>
                 <th>Restricciones</th>
+                <th>Música</th>
                 <th>Contacto</th>
                 <th>Notas</th>
             </tr>
@@ -323,7 +340,9 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
                     <td>${guest.status}</td>
                     <td>
                         ${guest.hasAllergies ? `<div class="allergy-warning">⚠ ${guest.restrictions}</div>` : guest.restrictions}
-                        ${guest.music ? `<div class="music-note">♪ ${guest.music}</div>` : ''}
+                    </td>
+                    <td>
+                        ${guest.music ? `<div class="music-note">♪ ${guest.music}</div>` : '-'}
                     </td>
                     <td>
                         ${guest.email ? guest.email : ''}
@@ -337,7 +356,7 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
     
     <div class="footer">
         <p>Generado por VOWS. • Sistema de Gestión de Eventos Premium</p>
-        <p>Este documento es confidencial y para uso exclusivo del catering contratado.</p>
+        <p>Este documento es confidencial y para uso exclusivo de los organizadores del evento.</p>
     </div>
 </body>
 </html>`;
@@ -467,8 +486,8 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
                 }`}
               >
                 <FileImage className="w-5 h-5 mx-auto mb-1" />
-                <span className="text-xs font-medium">PDF Editorial</span>
-                <span className="text-xs text-stone-400 block">Para el salón</span>
+                <span className="text-xs font-medium">PDF</span>
+                <span className="text-xs text-stone-400 block">Reporte filtrado</span>
               </button>
               
               <button

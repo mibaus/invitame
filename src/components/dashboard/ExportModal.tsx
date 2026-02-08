@@ -331,6 +331,7 @@ export function ExportModal({ isOpen, onClose, data }: ExportModalProps) {
                 <th>Niños</th>
                 <th>Estado</th>
                 <th>Restricciones</th>
+                <th>Música</th>
                 <th>Contacto</th>
                 <th>Notas</th>
             </tr>
@@ -344,7 +345,9 @@ export function ExportModal({ isOpen, onClose, data }: ExportModalProps) {
                     <td>${guest.status}</td>
                     <td>
                         ${guest.hasAllergies ? `<div class="allergy-warning">⚠ ${guest.restrictions}</div>` : guest.restrictions}
-                        ${guest.music ? `<div class="music-note">♪ ${guest.music}</div>` : ''}
+                    </td>
+                    <td>
+                        ${guest.music ? `<div class="music-note">♪ ${guest.music}</div>` : '-'}
                     </td>
                     <td>
                         ${guest.email ? guest.email : ''}

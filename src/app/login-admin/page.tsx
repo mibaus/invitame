@@ -19,10 +19,13 @@ function LoginContent() {
       </div>
 
       {/* Mensaje de error si existe */}
-      {error === 'access_denied' && (
+      {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-center max-w-sm">
           <p className="text-red-700 text-sm">
-            Acceso denegado. Solo el administrador autorizado puede acceder a esta sección.
+            {error === 'access_denied' 
+              ? 'Acceso denegado. Solo el administrador autorizado puede acceder a esta sección.'
+              : 'Error en la autenticación. Por favor, intenta nuevamente.'
+            }
           </p>
         </div>
       )}
