@@ -9,7 +9,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-12 pb-16 border-b border-white/5">
           <div className="space-y-6">
-            <span className="text-2xl font-serif font-bold text-cloud tracking-tighter">Invitame.</span>
+            <span className="text-2xl font-serif font-bold text-cloud tracking-tighter">VOWS<span className="text-bronze">.</span></span>
             <p className="text-xs uppercase tracking-[0.3em] font-light max-w-xs leading-relaxed">
               Redefiniendo la estética nupcial digital. <br/> Hecho con calma en Argentina.
             </p>
@@ -18,7 +18,7 @@ export default function Footer() {
           <div className="flex flex-wrap gap-10 md:gap-16">
             <div className="space-y-4">
                <p className="text-[9px] uppercase tracking-[0.4em] text-bronze font-bold">Contacto</p>
-               <a href="mailto:hola@invitame.ar" className="block text-sm hover:text-cloud transition-colors">hola@invitame.ar</a>
+               <a href="mailto:hola@vows.ar" className="block text-sm hover:text-cloud transition-colors">hola@vows.ar</a>
                <a href="https://wa.me/5491100000000" className="block text-sm hover:text-cloud transition-colors">WhatsApp Concierge</a>
             </div>
             <div className="space-y-4">
@@ -32,7 +32,7 @@ export default function Footer() {
 
         <div className="mt-10 flex flex-col md:flex-row justify-between items-center gap-6">
            <p className="text-[10px] uppercase tracking-[0.2em] text-white/20">
-             © {new Date().getFullYear()} Invitame Studio. Todos los derechos reservados.
+             © {new Date().getFullYear()} VOWS. Todos los derechos reservados.
            </p>
            <div className="flex gap-8">
               <a href="#" className="text-[10px] uppercase tracking-[0.2em] hover:text-cloud transition-colors">Privacidad</a>

@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@supabase/supabase-js';
+import { revalidatePath } from 'next/cache';
 
 // Crear cliente Supabase para Server Actions
 function getSupabase() {
@@ -83,6 +84,9 @@ export async function submitRSVP(formData: RSVPFormData): Promise<RSVPResult> {
         error: 'No pudimos registrar tu confirmación. Por favor intenta de nuevo.',
       };
     }
+
+    // Revalidate dashboard to show new RSVP
+    revalidatePath('/dashboard/[slug]', 'page');
 
     return {
       success: true,

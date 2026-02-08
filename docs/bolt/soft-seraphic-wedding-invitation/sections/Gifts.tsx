@@ -27,7 +27,7 @@ const Gifts: React.FC = () => {
           </div>
 
           <p className="text-[11px] text-[#a9a9a9] tracking-widest leading-relaxed mb-8 italic italic">
-            "Vuestra presencia es nuestro mejor regalo, <br className="hidden md:block"/>
+            "Tu presencia es nuestro mejor regalo, <br className="hidden md:block"/>
             pero si deseáis tener un detalle con nosotros, <br className="hidden md:block"/>
             os agradecemos vuestro cariño a través de nuestro fondo de amor."
           </p>

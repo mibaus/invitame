@@ -3,11 +3,14 @@ import { MasterLayout } from '@/components/layouts/MasterLayout';
 import type { InvitationSchema, SkinId, EventType } from '@/types';
 import type { Invitation } from '@/types/database';
 import { createServerComponentClient } from '@/lib/supabase';
+import { Suspense } from 'react';
+import { PreviewClient } from './PreviewClient';
 
-const VALID_SKINS: SkinId[] = ['bolt-dark', 'avant-garde-editorial', 'soft-seraphic', 'cyberpunk-romance', 'japandi-zen', 'retro-love'];
+const VALID_SKINS: SkinId[] = ['avant-garde-editorial', 'japandi-zen', 'botanical-greenhouse'];
 
 interface PageProps {
   params: Promise<{ skinId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 function isUUID(str: string): boolean {
@@ -179,6 +182,8 @@ function createServerMockData(skinId: SkinId): InvitationSchema {
       show_countdown: true,
       show_agenda: true,
       show_venue_map: true,
+      show_ceremony: true,
+      show_reception: true,
       show_dress_code: true,
       show_gift_registry: true,
       show_rsvp: true,
@@ -193,21 +198,13 @@ function createServerMockData(skinId: SkinId): InvitationSchema {
       },
       gift_registry: {
         enabled: true,
-        message: 'Vuestra presencia es nuestro mejor regalo, pero si deseáis tener un detalle con nosotros, os agradecemos vuestro cariño a través de nuestro fondo de amor.',
+        message: 'Tu presencia es nuestro mejor regalo, pero si deseáis tener un detalle con nosotros, os agradecemos vuestro cariño a través de nuestro fondo de amor.',
         bank_details: {
           bank_name: 'Banco Demo',
           account_holder: 'María y Carlos',
           account_number: '0000003100094918237465',
           alias: 'MARIAYCARLOS.BODA',
         },
-        registries: [
-          {
-            id: 'demo-ml-1',
-            platform: 'mercado-libre',
-            name: 'Lista de Regalos',
-            url: 'https://listas.mercadolibre.com.ar/lista/mariaycarlos-boda',
-          }
-        ],
       },
       music: {
         enabled: true,
@@ -263,8 +260,18 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
-export default async function SkinPreviewPage({ params }: PageProps) {
+export default async function SkinPreviewPage({ params, searchParams }: PageProps) {
   const { skinId } = await params;
+  const search = await searchParams;
+
+  // Si hay datos en query params, usar PreviewClient
+  if (search.data) {
+    return (
+      <Suspense fallback={<div className="flex items-center justify-center h-screen">Cargando...</div>}>
+        <PreviewClient />
+      </Suspense>
+    );
+  }
 
   // Si es un UUID, buscar la invitación real
   if (isUUID(skinId)) {

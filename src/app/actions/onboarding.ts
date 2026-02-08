@@ -2,12 +2,40 @@
 
 import { createClient } from '@supabase/supabase-js';
 import type { Database, ClientInsert } from '@/types/database';
+import { generateFantasyData } from '@/app/onboarding/lib/mock-fantasy-data';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 function isConfigured(): boolean {
   return Boolean(supabaseUrl && supabaseAnonKey && !supabaseUrl.includes('tu-proyecto'));
+}
+
+export async function checkSlugExists(slug: string): Promise<boolean> {
+  if (!isConfigured()) {
+    // En modo desarrollo, simular que 'boda-real' y 'test' existen
+    return slug === 'boda-real' || slug === 'test';
+  }
+
+  try {
+    const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+    
+    const { data, error } = await supabase
+      .from('invitations')
+      .select('id')
+      .eq('slug', slug)
+      .limit(1);
+
+    if (error) {
+      console.error('Error checking slug:', error);
+      return false;
+    }
+
+    return data && data.length > 0;
+  } catch (error) {
+    console.error('Error checking slug:', error);
+    return false;
+  }
 }
 
 function generateTemporarySlug(): string {
@@ -23,6 +51,8 @@ export interface OnboardingData {
   clientPhone?: string;
   
   // Step 2: Datos del evento
+  slug: string;
+  isSlugValid?: boolean;
   eventType: 'wedding' | 'quinceañera' | 'birthday' | 'baby_shower' | 'corporate' | 'other';
   skinId: string;
   headline: string;
@@ -62,7 +92,6 @@ export interface OnboardingData {
   bankAccountNumber?: string;
   bankAccountType?: string;
   giftRegistryMessage?: string;
-  mercadoLibreUrl?: string;
   
   // Step 4: Multimedia
   coverImage?: string;
@@ -75,6 +104,8 @@ export interface OnboardingData {
   showCountdown?: boolean;
   showAgenda?: boolean;
   showVenueMap?: boolean;
+  showCeremony?: boolean;
+  showReception?: boolean;
   showDressCode?: boolean;
   showGiftRegistry?: boolean;
   showRSVP?: boolean;
@@ -97,6 +128,13 @@ export interface OnboardingData {
   allowChildren?: boolean;
   dietaryOptions?: string[];
   rsvpConfirmationMessage?: string;
+  
+  // Preguntas personalizadas para RSVP (hasta 3)
+  rsvpCustomQuestions?: Array<{
+    id: string;
+    question: string;
+    isActive: boolean;
+  }>;
 }
 
 export interface OnboardingResult {
@@ -110,15 +148,58 @@ export interface OnboardingResult {
 export async function submitOnboarding(
   data: OnboardingData
 ): Promise<OnboardingResult> {
+  // Aplicar datos de muestra para campos faltantes
+  const mockData = generateFantasyData(data as any);
+  
+  // Completar datos faltantes con valores de muestra
+  const completeData: OnboardingData = {
+    ...data,
+    // Datos del paso 2 - usar muestra si no se proporcionan
+    slug: data.slug && data.isSlugValid ? data.slug : generateTemporarySlug(),
+    headline: data.headline || mockData.headline,
+    mainMessage: data.mainMessage || mockData.mainMessage,
+    eventDate: data.eventDate || mockData.eventDate,
+    eventTime: data.eventTime || mockData.eventTime,
+    person1Name: data.person1Name || mockData.person1Name,
+    person2Name: data.person2Name || mockData.person2Name,
+    dressCode: data.dressCode || mockData.dressCode,
+    dressCodeDescription: data.dressCodeDescription || mockData.dressCodeDescription,
+    quote: data.quote || mockData.quote,
+    quoteAuthor: data.quoteAuthor || mockData.quoteAuthor,
+    // Datos del paso 3 - usar muestra si no se proporcionan
+    ceremonyName: data.ceremonyName || mockData.ceremonyName,
+    ceremonyAddress: data.ceremonyAddress || mockData.ceremonyAddress,
+    ceremonyTime: data.ceremonyTime || mockData.eventTime,
+    receptionName: data.receptionName || mockData.receptionName,
+    receptionAddress: data.receptionAddress || mockData.receptionAddress,
+    receptionTime: data.receptionTime || mockData.eventTime,
+    bankName: data.bankName || mockData.bankName,
+    bankAccountNumber: data.bankAccountNumber || mockData.bankAccountNumber,
+    giftRegistryMessage: data.giftRegistryMessage || mockData.giftRegistryMessage,
+    // Datos del paso 5 - usar muestra si no se proporcionan
+    agendaItems: data.agendaItems?.map((item, idx) => ({
+      time: item.time,
+      title: item.title,
+      description: item.description,
+      icon: item.icon,
+    })) || mockData.agendaItems.map((item) => ({
+      time: item.time,
+      title: item.title,
+    })),
+    rsvpDeadline: data.rsvpDeadline || mockData.rsvpDeadline,
+    rsvpConfirmationMessage: data.rsvpConfirmationMessage || mockData.rsvpConfirmationMessage,
+    maxCompanions: data.maxCompanions ?? mockData.maxCompanions,
+    allowChildren: data.allowChildren ?? mockData.allowChildren,
+  };
+
   // Development mode fallback
   if (!isConfigured()) {
-    console.log('[Dev Mode] Onboarding submission:', { data });
-    const tempSlug = generateTemporarySlug();
+    console.log('[Dev Mode] Onboarding submission:', { data: completeData });
     return {
       success: true,
       clientId: 'dev-client-' + Date.now(),
       invitationId: 'dev-invitation-' + Date.now(),
-      temporarySlug: tempSlug,
+      temporarySlug: completeData.slug,
     };
   }
 
@@ -169,23 +250,25 @@ export async function submitOnboarding(
           icon: item.icon || 'circle',
         })) || [],
         venues: [
-          ...(data.ceremonyName ? [{
+          ...(data.showCeremony !== false ? [{
             id: 'ceremony',
-            name: data.ceremonyName,
+            name: data.ceremonyName || 'Ceremonia',
             type: 'ceremony',
             address: data.ceremonyAddress || '',
             city: '',
             google_maps_url: data.ceremonyMapsUrl,
-            time: data.ceremonyTime,
+            time: data.ceremonyTime || data.eventTime || '18:00',
+            coordinates: { lat: -34.6037, lng: -58.3816 }, // Default coordinates (Buenos Aires)
           }] : []),
-          ...(data.receptionName ? [{
+          ...(data.showReception !== false && data.receptionName ? [{
             id: 'reception',
             name: data.receptionName,
             type: 'reception',
             address: data.receptionAddress || '',
             city: '',
             google_maps_url: data.receptionMapsUrl,
-            time: data.receptionTime,
+            time: data.receptionTime || data.eventTime || '18:00',
+            coordinates: { lat: -34.6037, lng: -58.3816 }, // Default coordinates (Buenos Aires)
           }] : []),
         ],
         dress_code: data.dressCode ? {
@@ -211,21 +294,23 @@ export async function submitOnboarding(
           allow_children: data.allowChildren ?? false,
           dietary_options: data.dietaryOptions || [],
           confirmation_message: data.rsvpConfirmationMessage,
+          custom_questions: data.rsvpCustomQuestions
+            ?.filter(q => q.isActive && q.question.trim() !== '')
+            ?.map((q, idx) => ({
+              id: q.id,
+              question: q.question,
+              type: 'text',
+              required: false,
+            })) || [],
         },
         gift_registry: {
-          enabled: data.showGiftRegistry ?? Boolean(data.bankName || data.mercadoLibreUrl),
+          enabled: data.showGiftRegistry ?? Boolean(data.bankName),
           message: data.giftRegistryMessage,
           bank_details: data.bankName ? {
             bank_name: data.bankName,
             account_holder: data.bankAccountHolder || '',
             account_number: data.bankAccountNumber || '',
           } : undefined,
-          registries: data.mercadoLibreUrl ? [{
-            id: 'mercadolibre',
-            platform: 'Mercado Libre',
-            name: 'Lista de Regalos',
-            url: data.mercadoLibreUrl,
-          }] : [],
         },
         music: {
           enabled: data.showMusic ?? Boolean(data.musicTrackUrl || data.spotifyPlaylistUrl),
@@ -258,11 +343,11 @@ export async function submitOnboarding(
     // 3. Create invitation record
     const invitationData = {
       onboarding_client_id: (client as any).id,
-      slug: temporarySlug,
+      slug: data.slug,
       skin_id: data.skinId,
       event_type: data.eventType,
       content: content,
-      is_active: false, // Draft until admin approves and sets final slug
+      is_active: true,
     };
 
     const { data: invitation, error: invitationError } = await supabase
@@ -280,7 +365,7 @@ export async function submitOnboarding(
       success: true,
       clientId: (client as any).id,
       invitationId: (invitation as any).id,
-      temporarySlug: temporarySlug,
+      temporarySlug: data.slug,
     };
   } catch (error) {
     console.error('Onboarding error:', error);

@@ -30,7 +30,7 @@ export default function HowItWorks() {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-8 reveal">
           <div className="space-y-4">
-            <p className="text-[9px] uppercase tracking-[0.6em] text-bronze font-bold">El Método Invitame</p>
+            <p className="text-[9px] uppercase tracking-[0.6em] text-bronze font-bold">El Método VOWS</p>
             <h2 className="text-3xl md:text-5xl font-serif font-light leading-tight">Del concepto <br/>a la <span className="italic">realidad digital.</span></h2>
           </div>
           <div className="hidden md:block w-32 h-[1px] bg-bronze/20 mb-4"></div>

@@ -76,7 +76,7 @@ const pinyonScript = Pinyon_Script({
 });
 
 export const metadata: Metadata = {
-  title: "invitame.design | Invitaciones Digitales de Lujo",
+  title: "VOWS | Invitaciones Digitales de Lujo",
   description: "Plataforma de invitaciones digitales premium para bodas y eventos exclusivos",
 };
 

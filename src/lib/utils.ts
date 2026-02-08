@@ -83,3 +83,22 @@ export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength).trim() + '...';
 }
+
+/**
+ * Parse a date string in a timezone-safe way.
+ * HTML date inputs return YYYY-MM-DD format, which when parsed as UTC
+ * can show the wrong day in negative timezones (e.g., Argentina UTC-3).
+ * This function appends T12:00:00 to ensure noon local time, preventing date boundary issues.
+ */
+export function parseDateLocal(dateString: string): Date {
+  // Handle null/undefined
+  if (!dateString) {
+    return new Date();
+  }
+  // If already has time component, parse normally
+  if (dateString.includes('T')) {
+    return new Date(dateString);
+  }
+  // Append noon time to prevent timezone boundary issues
+  return new Date(`${dateString}T12:00:00`);
+}

@@ -40,7 +40,7 @@ const DressCode: React.FC = () => {
         >
           <h4 className="font-script text-4xl text-[#4a4a4a] mb-2">Etiqueta Rigurosa</h4>
           <p className="text-[11px] text-[#a9a9a9] tracking-widest uppercase italic leading-relaxed">
-            Deseamos veros en vuestra mejor gala para celebrar este gran momento.
+            Deseamos veros en Tu mejor gala para celebrar este gran momento.
           </p>
         </motion.div>
       </div>

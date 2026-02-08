@@ -1,423 +1,495 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { 
-  Users, 
-  UserCheck, 
-  UserX, 
-  UtensilsCrossed, 
-  Music, 
-  Download, 
-  ExternalLink,
-  AlertTriangle,
-  Filter,
-  Pencil
-} from 'lucide-react';
+import { Users, Download, ExternalLink, RefreshCw } from 'lucide-react';
 import type { DashboardData, RSVPRecord } from '@/app/actions/dashboard';
+import { getRSVPs } from '@/app/actions/dashboard';
+import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { InvitationEditForm } from './InvitationEditForm';
+import { ExportModal } from '@/components/dashboard/ExportModal';
+import { WhatsAppShare } from '@/components/dashboard/WhatsAppShare';
 
 interface GuestDashboardProps {
   data: DashboardData;
 }
 
-type FilterType = 'all' | 'confirmed' | 'declined' | 'dietary';
-
-const TIER_STYLES = {
-  essential: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Essential' },
-  pro: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Pro' },
-  premium: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Premium' },
-};
-
 export function GuestDashboard({ data }: GuestDashboardProps) {
-  const [filter, setFilter] = useState<FilterType>('all');
-  const { invitation, rsvps, stats } = data;
-  const tierStyle = TIER_STYLES[invitation.tier as keyof typeof TIER_STYLES] || TIER_STYLES.essential;
+  const { invitation } = data;
+  const [rsvps, setRsvps] = useState(data.rsvps);
+  const [stats, setStats] = useState(data.stats);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected'>('disconnected');
 
-  // Extract invitation content for editing
-  const content = (invitation as any).content || {};
-  const logistics = content.logistics || {};
-  const venues = logistics.venues || [];
-  const ceremony = venues.find((v: any) => v.type === 'ceremony') || {};
-  const reception = venues.find((v: any) => v.type === 'reception') || {};
-  const features = content.features || {};
-  const rsvp = features.rsvp || {};
-  const giftRegistry = features.gift_registry || {};
-  const bankDetails = giftRegistry.bank_details || {};
-  const registries = giftRegistry.registries || [];
-  const mercadoLibre = registries.find((r: any) => r.id === 'mercadolibre') || {};
-  const music = features.music || {};
+  // Función para actualizar stats basado en RSVPs
+  const updateStats = useCallback((rsvpList: RSVPRecord[]) => {
+    const confirmedRsvps = rsvpList.filter(r => r.attendance === true);
+    const declinedRsvps = rsvpList.filter(r => r.attendance === false);
+    const specialMenus = rsvpList.filter(r => r.dietary_restrictions || r.menu_notes).length;
+    const musicSuggestions = rsvpList.filter(r => r.music_suggestion).length;
+
+    return {
+      totalGuests: confirmedRsvps.reduce((sum, r) => sum + r.guests_count, 0),
+      totalFamilies: rsvpList.length,
+      confirmed: confirmedRsvps.reduce((sum, r) => sum + r.guests_count, 0),
+      declined: declinedRsvps.length,
+      specialMenus,
+      musicSuggestions,
+    };
+  }, []);
+
+  // Carga inicial y fallback para modo dev
+  const refreshRSVPs = useCallback(async () => {
+    setIsRefreshing(true);
+    
+    try {
+      const result = await getRSVPs(invitation.id);
+      if (result.success && result.rsvps) {
+        setRsvps(result.rsvps);
+        if (result.stats) setStats(result.stats);
+        setLastUpdated(new Date());
+      }
+    } catch (error) {
+      console.error('Error refreshing RSVPs:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [invitation.id]);
+
+  // Supabase Realtime subscription
+  useEffect(() => {
+    // Si Supabase no está configurado (modo dev), solo hacemos carga inicial
+    if (!isSupabaseConfigured()) {
+      refreshRSVPs();
+      return;
+    }
+
+    const supabase = getSupabase();
+    if (!supabase) {
+      refreshRSVPs();
+      return;
+    }
+
+    // Carga inicial
+    refreshRSVPs();
+
+    // Suscribirse a cambios en la tabla rsvps para esta invitación
+    const channel = supabase
+      .channel(`rsvps-${invitation.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'rsvps',
+          filter: `invitation_id=eq.${invitation.id}`,
+        },
+        (payload) => {
+          console.log('Realtime RSVP update:', payload);
+          console.log('Event type:', payload.eventType);
+          console.log('New data:', payload.new);
+          console.log('Old data:', payload.old);
+          
+          // Helper para mapear datos crudos a RSVPRecord
+          const mapToRSVPRecord = (data: any): RSVPRecord => ({
+            id: data.id,
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+            status: data.status === 'pending' ? 'confirmed' : data.status,
+            attendance: data.attendance === null ? true : data.attendance,
+            guests_count: data.guests_count || 1,
+            children_count: data.children_count || 0,
+            dietary_restrictions: data.dietary_restrictions,
+            menu_notes: data.menu_notes,
+            music_suggestion: data.music_suggestion,
+            custom_answers: data.custom_answers,
+            message: data.message,
+            created_at: data.created_at,
+          });
+          
+          // Manejar diferentes tipos de eventos
+          if (payload.eventType === 'INSERT') {
+            const newRsvp = mapToRSVPRecord(payload.new);
+            console.log('Mapped new RSVP:', newRsvp);
+            setRsvps(prev => {
+              // Evitar duplicados
+              if (prev.some(r => r.id === newRsvp.id)) {
+                console.log('Duplicate RSVP, skipping');
+                return prev;
+              }
+              const updated = [newRsvp, ...prev];
+              console.log('Updated RSVP list:', updated);
+              setStats(updateStats(updated));
+              return updated;
+            });
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedRsvp = mapToRSVPRecord(payload.new);
+            console.log('Mapped updated RSVP:', updatedRsvp);
+            setRsvps(prev => {
+              const updated = prev.map(r => 
+                r.id === updatedRsvp.id ? updatedRsvp : r
+              );
+              setStats(updateStats(updated));
+              return updated;
+            });
+          } else if (payload.eventType === 'DELETE') {
+            const deletedRsvp = payload.old as RSVPRecord;
+            console.log('Deleted RSVP:', deletedRsvp);
+            setRsvps(prev => {
+              const updated = prev.filter(r => r.id !== deletedRsvp.id);
+              setStats(updateStats(updated));
+              return updated;
+            });
+          }
+          setLastUpdated(new Date());
+        }
+      )
+      .subscribe((status, err) => {
+        console.log('Realtime subscription status:', status);
+        if (err) {
+          console.error('Realtime subscription error:', err);
+        }
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to realtime updates');
+          setConnectionStatus('connected');
+        } else {
+          setConnectionStatus('disconnected');
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [invitation.id, refreshRSVPs, updateStats]);
+
+  const content = invitation.content || {};
+  
+  console.log('DEBUG - invitation:', invitation);
+  console.log('DEBUG - content:', content);
+  
   const couple = content.couple || {};
   const person1 = couple.person1 || {};
   const person2 = couple.person2 || {};
-  const quote = content.quote || {};
-  const dressCode = logistics.dress_code || {};
-  
-  const eventDate = logistics.event_date ? logistics.event_date.split('T')[0] : '';
-  const eventTime = logistics.event_date ? logistics.event_date.split('T')[1]?.slice(0, 5) : '';
+
+  const coupleNames = person1.name && person2.name 
+    ? `${person1.name} & ${person2.name}` 
+    : person1.name || person2.name || 'Los novios';
 
   const editData = {
+    // Basic
     headline: content.headline || '',
     subtitle: content.subtitle || '',
     mainMessage: content.main_message || '',
-    eventDate,
-    eventTime,
+    
+    // Couple
     person1Name: person1.name || '',
+    person1FullName: person1.full_name || '',
+    person1PhotoUrl: person1.photo_url || '',
     person2Name: person2.name || '',
+    person2FullName: person2.full_name || '',
+    person2PhotoUrl: person2.photo_url || '',
     coupleHashtag: couple.hashtag || '',
-    ceremonyName: ceremony.name || '',
-    ceremonyAddress: ceremony.address || '',
-    ceremonyTime: ceremony.time || '',
-    ceremonyMapsUrl: ceremony.google_maps_url || '',
-    receptionName: reception.name || '',
-    receptionAddress: reception.address || '',
-    receptionTime: reception.time || '',
-    receptionMapsUrl: reception.google_maps_url || '',
-    dressCode: dressCode.code || '',
-    dressCodeDescription: dressCode.description || '',
-    quote: quote.text || '',
-    quoteAuthor: quote.author || '',
-    bankName: bankDetails.bank_name || '',
-    bankAccountHolder: bankDetails.account_holder || '',
-    bankAccountNumber: bankDetails.account_number || '',
-    giftRegistryMessage: giftRegistry.message || '',
-    mercadoLibreUrl: mercadoLibre.url || '',
-    spotifyPlaylistUrl: music.spotify_playlist_url || '',
-    rsvpDeadline: rsvp.deadline || '',
-    maxCompanions: rsvp.max_companions || 2,
-    allowChildren: rsvp.allow_children || false,
-    rsvpConfirmationMessage: rsvp.confirmation_message || '',
+    loveStory: couple.love_story || '',
+    
+    // Multimedia
+    coverImage: content.cover_image || '',
+    galleryImages: content.gallery_images || [],
+    
+    // Event
+    eventDate: (content.logistics?.event_date || '').split('T')[0],
+    eventTime: (content.logistics?.event_date || '').split('T')[1]?.slice(0, 5) || '',
+    
+    // Venues
+    ceremonyName: content.logistics?.venues?.find((v: any) => v.type === 'ceremony')?.name || '',
+    ceremonyAddress: content.logistics?.venues?.find((v: any) => v.type === 'ceremony')?.address || '',
+    ceremonyCity: content.logistics?.venues?.find((v: any) => v.type === 'ceremony')?.city || '',
+    ceremonyTime: content.logistics?.venues?.find((v: any) => v.type === 'ceremony')?.time || '',
+    ceremonyMapsUrl: content.logistics?.venues?.find((v: any) => v.type === 'ceremony')?.google_maps_url || '',
+    ceremonyWazeUrl: content.logistics?.venues?.find((v: any) => v.type === 'ceremony')?.waze_url || '',
+    ceremonyInstructions: content.logistics?.venues?.find((v: any) => v.type === 'ceremony')?.instructions || '',
+    ceremonyImageUrl: content.logistics?.venues?.find((v: any) => v.type === 'ceremony')?.image_url || '',
+    receptionName: content.logistics?.venues?.find((v: any) => v.type === 'reception')?.name || '',
+    receptionAddress: content.logistics?.venues?.find((v: any) => v.type === 'reception')?.address || '',
+    receptionCity: content.logistics?.venues?.find((v: any) => v.type === 'reception')?.city || '',
+    receptionTime: content.logistics?.venues?.find((v: any) => v.type === 'reception')?.time || '',
+    receptionMapsUrl: content.logistics?.venues?.find((v: any) => v.type === 'reception')?.google_maps_url || '',
+    receptionWazeUrl: content.logistics?.venues?.find((v: any) => v.type === 'reception')?.waze_url || '',
+    receptionInstructions: content.logistics?.venues?.find((v: any) => v.type === 'reception')?.instructions || '',
+    receptionImageUrl: content.logistics?.venues?.find((v: any) => v.type === 'reception')?.image_url || '',
+    hasCeremony: !!content.logistics?.venues?.find((v: any) => v.type === 'ceremony')?.name,
+    hasReception: !!content.logistics?.venues?.find((v: any) => v.type === 'reception')?.name,
+    parkingInfo: content.logistics?.parking_info || '',
+    
+    // Dress Code
+    dressCode: content.logistics?.dress_code?.code || '',
+    dressCodeDescription: content.logistics?.dress_code?.description || '',
+    
+    // Quote
+    quote: content.quote?.text || '',
+    quoteAuthor: content.quote?.author || '',
+    
+    // Gift
+    giftRegistryMessage: content.features?.gift_registry?.message || '',
+    bankName: content.features?.gift_registry?.bank_details?.bank_name || '',
+    bankAccountHolder: content.features?.gift_registry?.bank_details?.account_holder || '',
+    bankAccountNumber: content.features?.gift_registry?.bank_details?.account_number || '',
+    
+    // Music
+    spotifyPlaylistUrl: content.features?.music?.spotify_playlist_url || '',
+    musicTrackUrl: content.features?.music?.track_url || '',
+    musicTrackName: content.features?.music?.track_name || '',
+    musicArtist: content.features?.music?.artist || '',
+    musicAutoplay: content.features?.music?.autoplay || false,
+    
+    // RSVP
+    rsvpDeadline: content.features?.rsvp?.deadline || '',
+    maxCompanions: content.features?.rsvp?.max_companions || 2,
+    allowChildren: content.features?.rsvp?.allow_children || false,
+    rsvpConfirmationMessage: content.features?.rsvp?.confirmation_message || '',
+    customQuestions: content.features?.rsvp?.custom_questions || [],
   };
+  
+  console.log('DEBUG - editData:', editData);
 
-  const filteredRsvps = rsvps.filter((rsvp) => {
-    switch (filter) {
-      case 'confirmed':
-        return rsvp.attendance === true;
-      case 'declined':
-        return rsvp.attendance === false;
-      case 'dietary':
-        return rsvp.dietary_restrictions || rsvp.menu_notes;
-      default:
-        return true;
+  const confirmed = rsvps.filter(r => r.attendance === true).length;
+  const declined = rsvps.filter(r => r.attendance === false).length;
+  const totalGuests = rsvps.reduce((sum, r) => sum + (r.guests_count || 1), 0);
+
+  const handleOpenExport = () => {
+    if (rsvps.length === 0) {
+      alert('No hay invitados para exportar');
+      return;
     }
-  });
-
-  const handleExport = () => {
-    // TODO: Implementar descarga real de archivo Excel/CSV
-    const csvData = rsvps.map(r => ({
-      Nombre: r.name,
-      Email: r.email || '',
-      Teléfono: r.phone || '',
-      Asistencia: r.attendance === true ? 'Sí' : 'No',
-      Acompañantes: r.guests_count,
-      'Restricciones Alimentarias': r.dietary_restrictions || '',
-      'Notas de Menú': r.menu_notes || '',
-      'Sugerencia Musical': r.music_suggestion || '',
-      Mensaje: r.message || '',
-    }));
-    
-    console.log('=== EXPORTACIÓN CSV ===');
-    console.log('Headers:', Object.keys(csvData[0] || {}).join(','));
-    csvData.forEach(row => {
-      console.log(Object.values(row).join(','));
-    });
-    console.log('=== FIN EXPORTACIÓN ===');
-    
-    alert('Datos exportados a la consola. Revisa las herramientas de desarrollo (F12).');
+    setIsExportModalOpen(true);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="min-h-screen bg-[#F8F7F4]">
+      {/* Mobile Header */}
+      <header className="bg-white border-b border-stone-100 sticky top-0 z-40">
+        <div className="max-w-3xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-2xl font-bold text-gray-900">{invitation.headline}</h1>
-                <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${tierStyle.bg} ${tierStyle.text}`}>
-                  {tierStyle.label}
-                </span>
-              </div>
-              <p className="text-gray-500 text-sm">
-                Panel de gestión de invitados
-                {invitation.event_date && (
-                  <span className="ml-2">
-                    • {new Date(invitation.event_date).toLocaleDateString('es-AR', { 
-                      day: 'numeric', 
-                      month: 'long', 
-                      year: 'numeric' 
-                    })}
-                  </span>
-                )}
+              <h1 className="text-xl font-light tracking-wide text-stone-800">
+                VOWS <span style={{ color: '#a27b5c' }}>.</span>
+              </h1>
+              <p className="text-xs text-stone-500 mt-0.5">
+                {person1.name || person2.name 
+                  ? `${person1.name || ''} & ${person2.name || ''}` 
+                  : 'Tu Boda'}
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-2 text-[10px] text-stone-400">
+                <span>{rsvps.length} respuestas · {totalGuests} invitados</span>
+                {connectionStatus === 'connected' && (
+                  <span className="flex items-center gap-1 text-emerald-500" title="Conectado en tiempo real">
+                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                    En vivo
+                  </span>
+                )}
+                <button
+                  onClick={refreshRSVPs}
+                  disabled={isRefreshing}
+                  className="p-1 hover:bg-stone-100 rounded transition-colors disabled:opacity-50"
+                  title="Actualizar ahora"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
               <InvitationEditForm 
                 slug={invitation.slug} 
                 initialData={editData}
                 onUpdate={() => window.location.reload()}
               />
-              <button
-                onClick={handleExport}
-                className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-              >
-                <Download className="w-4 h-4" />
-                Exportar Lista
-              </button>
-              {invitation.is_active && (
-                <Link
-                  href={`/${invitation.slug}`}
-                  target="_blank"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  Ver Invitación
-                </Link>
-              )}
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* KPIs Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <KPICard
-            icon={<Users className="w-5 h-5" />}
-            label="Total Personas"
-            value={stats.totalGuests}
-            color="blue"
-          />
-          <KPICard
-            icon={<UserCheck className="w-5 h-5" />}
-            label="Familias/Grupos"
-            value={stats.totalFamilies}
-            color="green"
-          />
-          <KPICard
-            icon={<UtensilsCrossed className="w-5 h-5" />}
-            label="Menús Especiales"
-            value={stats.specialMenus}
-            color="amber"
-            alert={stats.specialMenus > 0}
-          />
-          <KPICard
-            icon={<Music className="w-5 h-5" />}
-            label="Canciones Sugeridas"
-            value={stats.musicSuggestions}
-            color="purple"
-          />
-        </div>
-
-        {/* Stats Summary */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
-          <div className="flex flex-wrap items-center gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-              <span className="text-gray-600">Confirmados:</span>
-              <span className="font-semibold text-gray-900">{stats.confirmed} personas</span>
+      <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-100">
+            <p className="text-[10px] uppercase tracking-wider text-stone-400 font-medium">Confirmados</p>
+            <p className="text-2xl font-serif text-stone-800 mt-1">{confirmed}</p>
+            <div className="mt-2 h-1 bg-stone-100 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-emerald-500 rounded-full"
+                style={{ width: `${rsvps.length ? (confirmed / rsvps.length) * 100 : 0}%` }}
+              />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 bg-red-500 rounded-full"></span>
-              <span className="text-gray-600">No asisten:</span>
-              <span className="font-semibold text-gray-900">{stats.declined}</span>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-100">
+            <p className="text-[10px] uppercase tracking-wider text-stone-400 font-medium">No asisten</p>
+            <p className="text-2xl font-serif text-stone-800 mt-1">{declined}</p>
+            <div className="mt-2 h-1 bg-stone-100 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-rose-400 rounded-full"
+                style={{ width: `${rsvps.length ? (declined / rsvps.length) * 100 : 0}%` }}
+              />
             </div>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-100">
+            <p className="text-[10px] uppercase tracking-wider text-stone-400 font-medium">Total</p>
+            <p className="text-2xl font-serif text-stone-800 mt-1">{rsvps.length}</p>
+            <p className="text-xs text-stone-400 mt-2">personas</p>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2">
-          <Filter className="w-4 h-4 text-gray-400 flex-shrink-0" />
-          <FilterButton active={filter === 'all'} onClick={() => setFilter('all')}>
-            Todos ({rsvps.length})
-          </FilterButton>
-          <FilterButton active={filter === 'confirmed'} onClick={() => setFilter('confirmed')}>
-            Asisten ({rsvps.filter(r => r.attendance === true).length})
-          </FilterButton>
-          <FilterButton active={filter === 'declined'} onClick={() => setFilter('declined')}>
-            No Asisten ({rsvps.filter(r => r.attendance === false).length})
-          </FilterButton>
-          <FilterButton active={filter === 'dietary'} onClick={() => setFilter('dietary')}>
-            Con Alergias ({rsvps.filter(r => r.dietary_restrictions || r.menu_notes).length})
-          </FilterButton>
-        </div>
-
-        {/* Guests Table */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          {filteredRsvps.length === 0 ? (
-            <div className="text-center py-12">
-              <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No hay invitados en esta categoría</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nombre
-                    </th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Asistencia
-                    </th>
-                    <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acompañantes
-                    </th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Menú / Observaciones
-                    </th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Música
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredRsvps.map((rsvp) => (
-                    <GuestRow key={rsvp.id} rsvp={rsvp} />
-                  ))}
-                </tbody>
-              </table>
-            </div>
+        {/* Quick Actions */}
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            onClick={handleOpenExport}
+            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-stone-200 text-stone-600 rounded-xl text-[11px] font-medium hover:bg-stone-50 transition-colors"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Exportar</span>
+          </button>
+          
+          {invitation.is_active && (
+            <Link
+              href={`/${invitation.slug}`}
+              target="_blank"
+              className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-stone-800 text-white rounded-xl text-[11px] font-medium hover:bg-stone-700 transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Ver</span>
+            </Link>
           )}
+          
+          <WhatsAppShare
+            invitationSlug={invitation.slug}
+            coupleNames={coupleNames}
+            eventDate={content.logistics?.event_date}
+          />
         </div>
 
-        {/* Privacy Warning */}
-        <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-amber-800 font-medium">Este panel es privado</p>
-            <p className="text-amber-700 text-sm">
-              No compartas esta URL con tus invitados. Ellos deben usar el link público de la invitación.
+        {/* Guests List */}
+        <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+          <div className="px-4 py-4 border-b border-stone-100">
+            <p className="text-xs font-medium text-stone-500">
+              {rsvps.length === 0 ? 'Sin invitados aún' : `${rsvps.length} invitados`}
             </p>
           </div>
-        </div>
-      </main>
-    </div>
-  );
-}
 
-function KPICard({ 
-  icon, 
-  label, 
-  value, 
-  color,
-  alert = false 
-}: { 
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  color: 'blue' | 'green' | 'amber' | 'purple';
-  alert?: boolean;
-}) {
-  const colors = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    amber: 'bg-amber-50 text-amber-600',
-    purple: 'bg-purple-50 text-purple-600',
-  };
-
-  return (
-    <div className="bg-white p-5 rounded-xl border border-gray-200 relative">
-      {alert && value > 0 && (
-        <span className="absolute top-3 right-3 w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
-      )}
-      <div className={`w-10 h-10 rounded-lg ${colors[color]} flex items-center justify-center mb-3`}>
-        {icon}
-      </div>
-      <p className="text-sm text-gray-500 mb-1">{label}</p>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
-    </div>
-  );
-}
-
-function FilterButton({ 
-  active, 
-  onClick, 
-  children 
-}: { 
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-        active
-          ? 'bg-gray-900 text-white'
-          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function GuestRow({ rsvp }: { rsvp: RSVPRecord }) {
-  const getStatusBadge = () => {
-    if (rsvp.attendance === true) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-          <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-          Asiste
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">
-        <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-        No Asiste
-      </span>
-    );
-  };
-
-  return (
-    <tr className="hover:bg-gray-50">
-      <td className="px-6 py-4">
-        <div>
-          <p className="font-medium text-gray-900">{rsvp.name}</p>
-          {rsvp.email && (
-            <p className="text-sm text-gray-500">{rsvp.email}</p>
+          {rsvps.length === 0 ? (
+            <div className="px-4 py-12 text-center">
+              <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="w-8 h-8 text-stone-300" />
+              </div>
+              <p className="text-stone-600 font-medium">Aún no hay respuestas</p>
+              <p className="text-xs text-stone-400 mt-1">
+                Los invitados aparecerán aquí cuando confirmen
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-stone-100">
+              {rsvps.map((rsvp) => (
+                <div key={rsvp.id} className="px-4 py-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-stone-100 rounded-full flex items-center justify-center">
+                        <span className="font-serif text-sm text-stone-600">
+                          {rsvp.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-stone-800 text-sm">{rsvp.name}</p>
+                        <p className="text-xs text-stone-400">
+                          {rsvp.guests_count > 1 ? `${rsvp.guests_count} personas` : '1 persona'}
+                          {rsvp.children_count ? ` · ${rsvp.children_count} niños` : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-medium ${
+                      rsvp.attendance === true 
+                        ? 'bg-emerald-50 text-emerald-600' 
+                        : 'bg-rose-50 text-rose-500'
+                    }`}>
+                      {rsvp.attendance === true ? 'Asiste' : 'No asiste'}
+                    </span>
+                  </div>
+                  
+                  {/* Additional details */}
+                  {(rsvp.music_suggestion || rsvp.dietary_restrictions || rsvp.menu_notes || rsvp.message || (rsvp.custom_answers && Object.keys(rsvp.custom_answers).length > 0)) && (
+                    <div className="mt-3 space-y-2 pl-13 ml-13">
+                      {rsvp.music_suggestion && (
+                        <p className="text-xs text-stone-600 flex items-center gap-1.5">
+                          <span className="text-amber-500">♪</span>
+                          <span className="font-medium">Música:</span> {rsvp.music_suggestion}
+                        </p>
+                      )}
+                      {rsvp.dietary_restrictions && (
+                        <p className="text-xs text-stone-600 flex items-center gap-1.5">
+                          <span className="text-orange-500">⚠</span>
+                          <span className="font-medium">Restricciones:</span> {rsvp.dietary_restrictions}
+                        </p>
+                      )}
+                      {rsvp.menu_notes && (
+                        <p className="text-xs text-stone-600 flex items-center gap-1.5">
+                          <span className="text-blue-500">🍽</span>
+                          <span className="font-medium">Notas menú:</span> {rsvp.menu_notes}
+                        </p>
+                      )}
+                      
+                      {/* Custom Answers - Displayed aesthetically */}
+                      {rsvp.custom_answers && Object.keys(rsvp.custom_answers).length > 0 && (
+                        <div className="mt-3 pt-2 border-t border-stone-100">
+                          <p className="text-[10px] uppercase tracking-wider text-stone-400 font-medium mb-2">
+                            Respuestas personalizadas
+                          </p>
+                          <div className="space-y-1.5">
+                            {Object.entries(rsvp.custom_answers).map(([key, value]) => {
+                              // Find the corresponding question from customQuestions
+                              const questionDef = editData.customQuestions?.find((q: any) => q.id === key);
+                              const questionText = questionDef?.question || key.replace(/_/g, ' ').replace(/-/g, ' ');
+                              
+                              return (
+                                <div key={key} className="flex items-start gap-2 text-xs">
+                                  <span className="text-stone-400">•</span>
+                                  <span className="text-stone-500 font-medium">
+                                    {questionText}:
+                                  </span>
+                                  <span className="text-stone-700">
+                                    {typeof value === 'string' ? value : JSON.stringify(value)}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {rsvp.message && (
+                        <p className="text-xs text-stone-500 italic mt-2 border-l-2 border-stone-200 pl-2">
+                          "{rsvp.message}"
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
-      </td>
-      <td className="px-6 py-4">
-        {getStatusBadge()}
-      </td>
-      <td className="px-6 py-4 text-center">
-        <span className="inline-flex items-center justify-center w-8 h-8 bg-gray-100 text-gray-700 font-medium rounded-full">
-          {rsvp.guests_count}
-        </span>
-      </td>
-      <td className="px-6 py-4">
-        {(rsvp.dietary_restrictions || rsvp.menu_notes) ? (
-          <div className="space-y-1">
-            {rsvp.dietary_restrictions && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded">
-                <AlertTriangle className="w-3 h-3" />
-                {rsvp.dietary_restrictions}
-              </span>
-            )}
-            {rsvp.menu_notes && (
-              <p className="text-sm text-gray-600">{rsvp.menu_notes}</p>
-            )}
-          </div>
-        ) : (
-          <span className="text-gray-400 text-sm">—</span>
-        )}
-      </td>
-      <td className="px-6 py-4">
-        {rsvp.music_suggestion ? (
-          <span className="inline-flex items-center gap-1.5 text-sm text-gray-700">
-            <Music className="w-3.5 h-3.5 text-purple-500" />
-            {rsvp.music_suggestion}
-          </span>
-        ) : (
-          <span className="text-gray-400 text-sm">—</span>
-        )}
-      </td>
-    </tr>
+
+        {/* Footer Note */}
+        <p className="text-center text-xs text-stone-400 py-4">
+          Panel privado · No compartir este enlace
+        </p>
+      </main>
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        data={{ ...data, rsvps, stats }}
+      />
+    </div>
   );
 }

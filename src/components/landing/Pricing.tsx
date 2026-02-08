@@ -7,11 +7,11 @@ export default function Pricing() {
   const benefits = [
     { title: "Ecosistema Modular", desc: "Acceso a las 11 secciones premium (Countdown, Timeline, Galería, etc)." },
     { title: "Flexibilidad Total", desc: "Activá o desactivá secciones según la sobriedad que busques." },
-    { title: "RSVP Inteligente", desc: "Formulario de confirmación con restricciones alimentarias y alertas." },
-    { title: "Logística Integrada", desc: "Mapas interactivos con botones 'Cómo llegar' y 'Agendar Evento'." },
+    { title: "RSVP Inteligente", desc: "Formulario de confirmación con restricciones alimentarias, alertas y hasta 3 preguntas personalizadas." },
+    { title: "Logística Integrada", desc: "Información clara de ubicación con dirección detallada e indicaciones, con botón directo a Google Maps." },
     { title: "Galería de Autor", desc: "Layout Masonry curado para lucir tu sesión de fotos pre-boda." },
-    { title: "Gestión de Regalos", desc: "Sección de CBU con copiado rápido y links externos destacados." },
-    { title: "Dashboard en Vivo", desc: "Panel de control para exportar listas y gestionar invitados." },
+    { title: "Gestión de Regalos", desc: "Sección de CBU/CVU con copiado rápido para transferencias." },
+    { title: "Dashboard en Vivo", desc: "Panel de control para exportar listas, gestionar invitados y enviar invitaciones por WhatsApp con texto personalizado." },
     { title: "Sugerencia de Canciones", desc: "Tus invitados pueden proponer temas para la playlist de la fiesta directamente desde la invitación." },
   ];
 
@@ -56,7 +56,7 @@ export default function Pricing() {
                   <p className="text-[9px] uppercase tracking-[0.4em] text-charcoal/30 font-bold">Inversión Final</p>
                   <div className="flex items-baseline justify-center gap-1">
                     <span className="text-2xl font-serif text-charcoal/40">$</span>
-                    <span className="text-7xl md:text-8xl font-serif text-charcoal tracking-tighter">45.000</span>
+                    <span className="text-7xl md:text-8xl font-serif text-charcoal tracking-tighter">49.000</span>
                   </div>
                   <p className="text-[9px] text-charcoal/50 uppercase tracking-widest font-bold">Pesos Argentinos</p>
                </div>

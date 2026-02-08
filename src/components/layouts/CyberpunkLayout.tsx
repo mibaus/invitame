@@ -44,6 +44,7 @@ import { submitRSVP } from '@/app/actions/rsvp';
 interface CyberpunkLayoutProps {
     invitation: InvitationSchema;
     preview?: boolean;
+    previewMobile?: boolean;
 }
 
 const supabase = createClient(
@@ -1138,6 +1139,8 @@ function GiftRegistrySection({ features }: { features: InvitationSchema['feature
 // RSVP SECTION - The System Ping
 function RSVPSection({ features, content, metadata }: { features: InvitationSchema['features']; content: InvitationSchema['content']; metadata: InvitationSchema['metadata'] }) {
     const [formData, setFormData] = useState({ name: '', email: '', phone: '', attendance: true, guests: 1, dietary: '', message: '' });
+    // Estado para respuestas de preguntas personalizadas
+    const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -1158,12 +1161,14 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
                 attendance: formData.attendance,
                 guestsCount: formData.guests,
                 dietaryRestrictions: formData.dietary,
-                message: formData.message
+                message: formData.message,
+                customAnswers: customAnswers
             });
 
             if (result.success) {
                 setSuccess(true);
                 setFormData({ name: '', email: '', phone: '', attendance: true, guests: 1, dietary: '', message: '' });
+                setCustomAnswers({});
             } else {
                 setError(result.error || 'Error en la transmisión');
             }
@@ -1174,6 +1179,13 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
             setTimeout(() => setPingActive(false), 1000);
         }
     };
+
+    const handleCustomAnswerChange = (questionId: string, value: string) => {
+        setCustomAnswers(prev => ({ ...prev, [questionId]: value }));
+    };
+
+    // Obtener preguntas personalizadas desde features.rsvp
+    const customQuestions = features.rsvp?.custom_questions || [];
 
     if (success) {
         return (
@@ -1305,6 +1317,51 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
                                 disabled={loading}
                             />
                         </div>
+                        {/* Preguntas Personalizadas */}
+                        {customQuestions.length > 0 && (
+                            <div className="space-y-6 pt-4 border-t border-fuchsia-500/30">
+                                <p className="text-cyan-400 font-mono text-xs">&gt; PREGUNTAS_ADICIONALES</p>
+                                {customQuestions.map((question) => (
+                                    <div key={question.id}>
+                                        <label className="block text-cyan-400 font-mono text-sm mb-2">&gt; {question.question}{question.required && ' [REQ]'}</label>
+                                        {question.type === 'text' ? (
+                                            <input
+                                                type="text"
+                                                required={question.required}
+                                                value={customAnswers[question.id] || ''}
+                                                onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
+                                                className="w-full bg-zinc-950 border border-cyan-500/30 rounded px-4 py-3 text-cyan-300 font-mono focus:border-cyan-400 focus:outline-none"
+                                                placeholder="Ingresar dato..."
+                                                disabled={loading}
+                                            />
+                                        ) : question.type === 'select' ? (
+                                            <select
+                                                required={question.required}
+                                                value={customAnswers[question.id] || ''}
+                                                onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
+                                                className="w-full bg-zinc-950 border border-cyan-500/30 rounded px-4 py-3 text-cyan-300 font-mono focus:border-cyan-400 focus:outline-none"
+                                                disabled={loading}
+                                            >
+                                                <option value="" className="bg-zinc-950">SELECCIONAR_OPCION</option>
+                                                {question.options?.map((opt) => (
+                                                    <option key={opt} value={opt} className="bg-zinc-950">{opt}</option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <textarea
+                                                required={question.required}
+                                                value={customAnswers[question.id] || ''}
+                                                onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
+                                                className="w-full bg-zinc-950 border border-cyan-500/30 rounded px-4 py-3 text-cyan-300 font-mono focus:border-cyan-400 focus:outline-none h-24 resize-none"
+                                                placeholder="Ingresar dato extendido..."
+                                                disabled={loading}
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
                     </div>
 
                     <button
@@ -1502,7 +1559,7 @@ function Footer({ content }: { content: InvitationSchema['content'] }) {
 }
 
 // MAIN LAYOUT EXPORT
-export function CyberpunkLayout({ invitation, preview }: CyberpunkLayoutProps) {
+export function CyberpunkLayout({ invitation, preview, previewMobile }: CyberpunkLayoutProps) {
     const { metadata, content, logistics, features } = invitation;
 
     return (

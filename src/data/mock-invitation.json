@@ -2,7 +2,7 @@
   "metadata": {
     "id": "inv_001",
     "slug": "maria-y-carlos-2024",
-    "skin_id": "bolt-dark",
+    "skin_id": "crystal-glass",
     "event_type": "wedding",
     "created_at": "2024-01-15T10:00:00Z",
     "updated_at": "2024-01-20T15:30:00Z",
@@ -207,23 +207,7 @@
         "account_number": "0123456789",
         "routing_number": "012180",
         "alias": "MARIA.CARLOS.2024"
-      },
-      "registries": [
-        {
-          "id": "reg_1",
-          "platform": "Mercado Libre",
-          "name": "Lista de Regalos Mercado Libre",
-          "url": "https://mercadolibre.com.mx/lista/mariaycarlos",
-          "logo_url": "/images/logos/mercadolibre.png"
-        },
-        {
-          "id": "reg_2",
-          "platform": "Amazon",
-          "name": "Lista de Deseos Amazon",
-          "url": "https://amazon.com.mx/wishlist/mariaycarlos",
-          "logo_url": "/images/logos/amazon.png"
-        }
-      ]
+      }
     },
     "music": {
       "enabled": true,

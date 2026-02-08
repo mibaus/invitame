@@ -5,9 +5,9 @@
 
 // ----- ENUMS & TIPOS BASE -----
 
-export const VALID_SKINS: SkinId[] = ['bolt-dark', 'avant-garde-editorial', 'soft-seraphic', 'cyberpunk-romance', 'japandi-zen', 'retro-love'];
+export const VALID_SKINS: SkinId[] = ['avant-garde-editorial', 'japandi-zen', 'botanical-greenhouse'];
 
-export type SkinId = 'bolt-dark' | 'avant-garde-editorial' | 'soft-seraphic' | 'cyberpunk-romance' | 'japandi-zen' | 'retro-love';
+export type SkinId = 'avant-garde-editorial' | 'japandi-zen' | 'botanical-greenhouse';
 
 export type EventType =
   | 'wedding'
@@ -23,6 +23,8 @@ export type DressCode =
   | 'formal'
   | 'semi-formal'
   | 'cocktail'
+  | 'casual'
+  | 'smart-casual'
   | 'casual-elegante'
   | 'black-tie'
   | 'white-tie'
@@ -213,6 +215,8 @@ export interface InvitationFeatures {
   show_countdown: boolean;
   show_agenda: boolean;
   show_venue_map: boolean;
+  show_ceremony: boolean;
+  show_reception: boolean;
   show_dress_code: boolean;
   show_gift_registry: boolean;
   show_rsvp: boolean;

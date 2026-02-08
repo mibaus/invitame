@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <!-- Background matching landing page bg-cloud -->
+  <rect width="1080" height="1080" fill="#F8F9FA"/>
+  
+  <!-- Brand text "VOWS" with exact styling from landing -->
+  <text x="520" y="580" 
+        font-family="'Cormorant Garamond', Georgia, serif" 
+        font-size="240" 
+        font-weight="700" 
+        fill="#2C3333" 
+        text-anchor="middle"
+        letter-spacing="0.05em">VOWS</text>
+  
+  <!-- Bronze dot - positioned relative to text -->
+  <text x="805" y="580" 
+        font-family="'Cormorant Garamond', Georgia, serif" 
+        font-size="240" 
+        font-weight="700" 
+        fill="#A27B5C" 
+        text-anchor="middle">.</text>
+</svg>

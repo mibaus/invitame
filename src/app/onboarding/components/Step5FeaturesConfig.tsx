@@ -20,12 +20,10 @@ export function Step5FeaturesConfig({ data, onChange }: StepProps) {
             showHero: data.showHero,
             showCountdown: data.showCountdown,
             showAgenda: data.showAgenda,
-            showVenueMap: data.showVenueMap,
             showDressCode: data.showDressCode,
             showGiftRegistry: data.showGiftRegistry,
             showRSVP: data.showRSVP,
             showGallery: data.showGallery,
-            showMusic: data.showMusic,
             showGuestMessages: data.showGuestMessages,
           }}
           onChange={(features) => onChange(features)}

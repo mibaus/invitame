@@ -143,14 +143,6 @@ export async function seedTestWedding() {
             account_holder: 'María Elena González',
             account_number: 'CBU: 0720013220000001234567',
           },
-          registries: [
-            {
-              id: 'mercadolibre',
-              platform: 'Mercado Libre',
-              name: 'Lista de Regalos María & Carlos',
-              url: 'https://www.mercadolibre.com.ar/lista/regalos/mariaycarlos',
-            },
-          ],
         },
         music: {
           enabled: true,

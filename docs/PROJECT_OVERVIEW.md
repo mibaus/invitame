@@ -60,7 +60,7 @@ invitame/
 
 - **Un único precio** para todos los usuarios
 - **Todas las funcionalidades** disponibles sin restricciones de tier
-- **3 skins** estandarizados: `classic-standard`, `modern-dark`, `soft-floral`
+- **4 skins** estandarizados: `classic-standard`, `modern-dark`, `soft-floral`, `scandi-boho`, `botanical-greenhouse`
 - **Visibilidad** controlada por flags booleanos y presencia de datos
 
 ### Skins Disponibles
@@ -70,6 +70,8 @@ invitame/
 | `classic-standard` | Elegancia atemporal | Dorado, crema, carbón |
 | `modern-dark` | Minimalismo dramático | Negro, dorado, blanco |
 | `soft-floral` | Romance orgánico | Rosa polvo, verde salvia, marfil |
+| `scandi-boho` | Organic Minimalist | Nude, Terracota, Lino, Arena, Eucalipto |
+| `botanical-greenhouse` | Herbario científico del siglo XVIII | Papel envejecido, verde musgo, sepia, marfil |
 
 ### Límites Estándar
 
@@ -157,7 +159,8 @@ rsvps
 const SKIN_ORDER: Record<SkinId, string[]> = {
   'classic-standard': ['hero', 'quote', 'countdown', 'agenda', 'venues', 'gallery', 'dress_code', 'gift_registry', 'rsvp'],
   'modern-dark': ['hero', 'countdown', 'gallery', 'agenda', 'venues', 'dress_code', 'gift_registry', 'rsvp'],
-  'soft-floral': ['hero', 'quote', 'agenda', 'gallery', 'venues', 'dress_code', 'gift_registry', 'rsvp']
+  'soft-floral': ['hero', 'quote', 'agenda', 'gallery', 'venues', 'dress_code', 'gift_registry', 'rsvp'],
+  'botanical-greenhouse': ['hero', 'countdown', 'quote', 'agenda', 'venues', 'dress_code', 'gallery', 'gift_registry', 'rsvp']
 };
 ```
 
@@ -301,7 +304,7 @@ npm run lint     # ESLint
 ### Crear Invitación
 
 1. Usuario ingresa a `/onboarding`
-2. Selecciona skin (`classic-standard`, `modern-dark`, `soft-floral`)
+2. Selecciona skin (`classic-standard`, `modern-dark`, `soft-floral`, `scandi-boho`, `botanical-greenhouse`)
 3. Completa datos del evento
 4. Server Action crea invitación en Supabase
 5. Disponible en `/{slug}`

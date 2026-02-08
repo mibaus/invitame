@@ -31,6 +31,7 @@ import { submitRSVP } from '@/app/actions/rsvp';
 interface BoltDarkLayoutProps {
     invitation: InvitationSchema;
     preview?: boolean;
+    previewMobile?: boolean;
 }
 
 // Initialize Supabase client for music suggestions
@@ -612,14 +613,14 @@ function GiftRegistrySection({ features }: { features: InvitationSchema['feature
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-1 gap-6 max-w-xl mx-auto">
                     <motion.div
                         whileHover={{ scale: 1.02 }}
                         className="bg-black border-2 border-zinc-800 rounded-lg p-8"
                     >
                         <h3 className="text-xl text-white mb-4 font-light">Transferencia Bancaria</h3>
                         <div className="bg-zinc-900 rounded-lg p-4 mb-4">
-                            <p className="text-sm text-gray-400 mb-2">CBU</p>
+                            <p className="text-sm text-gray-400 mb-2">ALIAS</p>
                             <p className="text-lg text-amber-400 font-mono">{cbu}</p>
                         </div>
                         <button
@@ -634,39 +635,10 @@ function GiftRegistrySection({ features }: { features: InvitationSchema['feature
                             ) : (
                                 <>
                                     <Copy className="w-5 h-5" />
-                                    Copiar CBU
+                                    Copiar ALIAS
                                 </>
                             )}
                         </button>
-                    </motion.div>
-
-                    <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        className="bg-black border-2 border-zinc-800 rounded-lg p-8 flex flex-col justify-between"
-                    >
-                        <div>
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-10 h-10 rounded-lg bg-[#2D3277] flex items-center justify-center">
-                                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
-                                        <rect width="24" height="24" rx="4" fill="#2D3277"/>
-                                        <circle cx="12" cy="12" r="6" fill="#FFF059"/>
-                                    </svg>
-                                </div>
-                                <h3 className="text-xl text-white font-light">Lista de Regalos</h3>
-                            </div>
-                            <p className="text-gray-400 mb-6">
-                                Elegí un regalo de nuestra lista en Mercado Libre. ¡Te lo agradecemos mucho!
-                            </p>
-                        </div>
-                        <a
-                            href={features.gift_registry?.registries?.[0]?.url || 'https://listaderegalos.mercadolibre.com.ar'}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full bg-amber-400 text-black px-6 py-3 rounded-lg font-medium hover:bg-amber-500 transition-colors flex items-center justify-center gap-2"
-                        >
-                            <ExternalLink className="w-5 h-5" />
-                            Ver Lista de Regalos
-                        </a>
                     </motion.div>
                 </div>
             </motion.div>
@@ -683,8 +655,12 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
         attendance: true,
         guests: 1,
         dietary: '',
-        message: ''
+        message: '',
+        songTitle: '',
+        songArtist: ''
     });
+    // Estado para respuestas de preguntas personalizadas
+    const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -703,10 +679,20 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
                 attendance: formData.attendance,
                 guestsCount: formData.guests,
                 dietaryRestrictions: formData.dietary,
-                message: formData.message
+                message: formData.message,
+                customAnswers: customAnswers
             });
 
             if (result.success) {
+                // If song suggestion provided, save it
+                if (formData.songTitle && formData.songArtist) {
+                    await supabase.from('song_suggestions').insert([{
+                        guest_name: formData.name,
+                        song_title: formData.songTitle,
+                        artist: formData.songArtist,
+                        status: 'pending'
+                    }]);
+                }
                 setSuccess(true);
                 setFormData({
                     name: '',
@@ -715,8 +701,11 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
                     attendance: true,
                     guests: 1,
                     dietary: '',
-                    message: ''
+                    message: '',
+                    songTitle: '',
+                    songArtist: ''
                 });
+                setCustomAnswers({});
             } else {
                 setError(result.error || 'Error al enviar la confirmación');
             }
@@ -733,6 +722,13 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
         );
         window.open(`https://wa.me/5491112345678?text=${message}`, '_blank');
     };
+
+    const handleCustomAnswerChange = (questionId: string, value: string) => {
+        setCustomAnswers(prev => ({ ...prev, [questionId]: value }));
+    };
+
+    // Obtener preguntas personalizadas desde features.rsvp
+    const customQuestions = features.rsvp?.custom_questions || [];
 
     if (success) {
         return (
@@ -888,6 +884,81 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
                             disabled={loading}
                         />
                     </div>
+
+                    <div className="mb-6 border-t border-zinc-800 pt-6">
+                        <label className="block text-white mb-2 font-light flex items-center gap-2">
+                            <Music className="w-4 h-4 text-amber-400" />
+                            Sugiere una canción para la fiesta
+                        </label>
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <input
+                                type="text"
+                                value={formData.songTitle}
+                                onChange={(e) => setFormData({ ...formData, songTitle: e.target.value })}
+                                className="w-full bg-black border border-zinc-800 rounded-lg px-4 py-3 text-white focus:border-amber-400 focus:outline-none transition-colors"
+                                placeholder="Título de la canción"
+                                disabled={loading}
+                            />
+                            <input
+                                type="text"
+                                value={formData.songArtist}
+                                onChange={(e) => setFormData({ ...formData, songArtist: e.target.value })}
+                                className="w-full bg-black border border-zinc-800 rounded-lg px-4 py-3 text-white focus:border-amber-400 focus:outline-none transition-colors"
+                                placeholder="Artista"
+                                disabled={loading}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Preguntas Personalizadas */}
+                    {customQuestions.length > 0 && (
+                        <div className="mb-6 border-t border-zinc-800 pt-6">
+                            <label className="block text-white mb-4 font-light">Preguntas Adicionales</label>
+                            <div className="space-y-4">
+                                {customQuestions.map((question) => (
+                                    <div key={question.id}>
+                                        <label className="block text-gray-400 mb-2 text-sm">
+                                            {question.question}
+                                            {question.required && <span className="text-amber-400 ml-1">*</span>}
+                                        </label>
+                                        {question.type === 'text' ? (
+                                            <input
+                                                type="text"
+                                                required={question.required}
+                                                value={customAnswers[question.id] || ''}
+                                                onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
+                                                className="w-full bg-black border border-zinc-800 rounded-lg px-4 py-3 text-white focus:border-amber-400 focus:outline-none transition-colors"
+                                                placeholder="Tu respuesta..."
+                                                disabled={loading}
+                                            />
+                                        ) : question.type === 'select' ? (
+                                            <select
+                                                required={question.required}
+                                                value={customAnswers[question.id] || ''}
+                                                onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
+                                                className="w-full bg-black border border-zinc-800 rounded-lg px-4 py-3 text-white focus:border-amber-400 focus:outline-none transition-colors cursor-pointer"
+                                                disabled={loading}
+                                            >
+                                                <option value="" className="bg-zinc-950">Selecciona una opción</option>
+                                                {question.options?.map((opt) => (
+                                                    <option key={opt} value={opt} className="bg-zinc-950">{opt}</option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <textarea
+                                                required={question.required}
+                                                value={customAnswers[question.id] || ''}
+                                                onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
+                                                className="w-full bg-black border border-zinc-800 rounded-lg px-4 py-3 text-white focus:border-amber-400 focus:outline-none transition-colors h-24 resize-none"
+                                                placeholder="Tu respuesta..."
+                                                disabled={loading}
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     <button
                         type="submit"
@@ -1120,20 +1191,11 @@ function Footer({ content }: { content: InvitationSchema['content'] }) {
 }
 
 // Main Layout Component
-export function BoltDarkLayout({ invitation, preview }: BoltDarkLayoutProps) {
+export function BoltDarkLayout({ invitation, preview, previewMobile }: BoltDarkLayoutProps) {
     const { metadata, content, logistics, features } = invitation;
 
     return (
         <main className="min-h-screen bg-black text-white overflow-x-hidden">
-            {/* Music Player - Global floating button */}
-            <FeatureGate
-                isVisible={features.show_music}
-                data={features.music}
-                fallback={null}
-            >
-                <MusicPlayer features={features} />
-            </FeatureGate>
-
             {/* Hero Section */}
             <motion.div
                 initial={{ opacity: 0 }}

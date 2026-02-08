@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { StepProps } from '../types';
-import { ImageUploader } from './ImageUploader';
+import { ImageUploader, MultiImageUploader } from './ImageUploader';
 
 export function Step4Multimedia({ formData, updateFormData }: StepProps) {
-  const showAnything = formData.showHero || formData.showGallery || formData.showMusic;
+  const showAnything = formData.showHero || formData.showGallery;
 
   if (!showAnything) {
     return (
@@ -15,21 +15,11 @@ export function Step4Multimedia({ formData, updateFormData }: StepProps) {
     );
   }
 
-  const handleGalleryChange = (newImages: string[]) => {
-    updateFormData({ galleryImages: newImages });
-  };
-
-  const addGalleryImage = (url: string) => {
-    const current = formData.galleryImages || [];
-    if (current.length >= 15) return;
-    handleGalleryChange([...current, url]);
-  };
-
   return (
     <div className="max-w-4xl mx-auto py-4 fade-in">
       <div className="mb-10 text-center">
-        <h2 className="font-serif text-3xl md:text-4xl text-[#2C3333] mb-3">Multimedia</h2>
-        <p className="text-[#2C3333]/60 text-sm">Imágenes y atmósfera de tu invitación.</p>
+        <h2 className="font-serif text-3xl md:text-4xl text-[#2C3333] mb-3">Multimedia <span className="text-gray-400 text-lg font-normal normal-case">(opcional)</span></h2>
+        <p className="text-[#2C3333]/60 text-sm">Añadí fotos a la galería. Si no tenés las fotos finales a mano, podés avanzar ahora y subirlas después.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -46,66 +36,17 @@ export function Step4Multimedia({ formData, updateFormData }: StepProps) {
 
           {formData.showGallery && (
             <div className="fade-in">
-              <label className="block text-[10px] uppercase tracking-widest font-bold text-[#A27B5C] mb-4">Galería (Máx 15)</label>
-              <div className="grid grid-cols-4 gap-2">
-                {formData.galleryImages?.map((img, idx) => (
-                  <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-gray-100">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </div>
-                ))}
-                {(formData.galleryImages?.length || 0) < 15 && (
-                  <button 
-                    onClick={() => {
-                      const input = document.createElement('input');
-                      input.type = 'file';
-                      input.accept = 'image/*';
-                      input.onchange = (e: unknown) => {
-                        const target = e as { target: { files: FileList | null } };
-                        const file = target.target.files?.[0];
-                        if (file) {
-                          const r = new FileReader();
-                          r.onload = () => addGalleryImage(r.result as string);
-                          r.readAsDataURL(file);
-                        }
-                      };
-                      input.click();
-                    }}
-                    className="aspect-square border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center text-gray-300 hover:border-[#A27B5C] hover:text-[#A27B5C] transition-all"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                  </button>
-                )}
-              </div>
+              <MultiImageUploader
+                folder="temp"
+                currentImages={formData.galleryImages || []}
+                onUpload={(urls) => updateFormData({ galleryImages: urls })}
+                maxImages={15}
+                label="Galería (Máx 15)"
+                hint="Estas fotos aparecerán en la sección de galería de tu invitación"
+              />
             </div>
           )}
         </div>
-
-        {formData.showMusic && (
-          <div className="space-y-6 fade-in">
-            <section className="p-8 bg-[#2C3333] text-white rounded-3xl">
-              <h3 className="font-serif text-2xl italic mb-6">Música de Fondo</h3>
-              <div className="space-y-4">
-                <input
-                  type="url"
-                  placeholder="Link MP3 Directo"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm"
-                  value={formData.musicTrackUrl || ''}
-                  onChange={(e) => updateFormData({ musicTrackUrl: e.target.value })}
-                />
-                <input
-                  type="url"
-                  placeholder="Playlist de Spotify"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm"
-                  value={formData.spotifyPlaylistUrl || ''}
-                  onChange={(e) => updateFormData({ spotifyPlaylistUrl: e.target.value })}
-                />
-              </div>
-            </section>
-          </div>
-        )}
       </div>
     </div>
   );

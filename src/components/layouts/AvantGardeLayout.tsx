@@ -2,14 +2,16 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
-import { X, Copy, Check, ExternalLink } from 'lucide-react';
+import { X, Copy, Check, ExternalLink, MapPin, Calendar } from 'lucide-react';
 import { InvitationSchema } from '@/types';
 import { FeatureGate } from '@/components/shared/FeatureGate';
 import { submitRSVP } from '@/app/actions/rsvp';
+import { parseDateLocal } from '@/lib/utils';
 
 interface AvantGardeLayoutProps {
     invitation: InvitationSchema;
     preview?: boolean;
+    previewMobile?: boolean;
 }
 
 // Empty state component for preview mode
@@ -24,21 +26,22 @@ function EmptyStatePreview({ icon, title, description }: { icon: string; title: 
 }
 
 // Hero Section - Estilo editorial avant-garde
-function HeroSection({ content, logistics }: { content: InvitationSchema['content']; logistics: InvitationSchema['logistics'] }) {
-    const eventDate = new Date(logistics.event_date);
+function HeroSection({ content, logistics, previewMobile }: { content: InvitationSchema['content']; logistics: InvitationSchema['logistics']; previewMobile?: boolean }) {
+    const eventDate = parseDateLocal(logistics.event_date);
     const day = eventDate.getDate();
     const month = eventDate.toLocaleDateString('es-ES', { month: 'long' }).toUpperCase();
     const year = eventDate.getFullYear();
     const person1Name = content.couple?.person1.name || 'VALENTINA';
     const person2Name = content.couple?.person2.name || 'MATEO';
+    const headline = content.headline || 'NUESTRA BODA';
     const city = logistics.venues[0]?.city || 'BUENOS AIRES';
     const country = logistics.venues[0]?.country || 'ARGENTINA';
     const coverImage = content.cover_image || 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=1200&h=1800&auto=format&fit=crop';
 
     return (
         <section className="relative min-h-screen bg-white overflow-hidden">
-            {/* Desktop Layout - Editorial Grid */}
-            <div className="hidden lg:grid lg:grid-cols-12 lg:min-h-screen">
+            {/* Desktop Layout - Editorial Grid - hidden when previewMobile */}
+            <div className={`${previewMobile ? 'hidden' : 'hidden lg:grid'} lg:grid-cols-12 lg:min-h-screen`}>
                 {/* Left Column - Image */}
                 <motion.div 
                     className="lg:col-span-7 relative bg-neutral-100"
@@ -96,9 +99,12 @@ function HeroSection({ content, logistics }: { content: InvitationSchema['conten
                             transition={{ delay: 0.6, duration: 0.8 }}
                             className="pl-8"
                         >
-                            <h1 className="text-6xl xl:text-7xl font-black leading-[0.85] tracking-tighter uppercase">
-                                NUESTRA
-                                <span className="block text-red-600">BODA</span>
+                            <h1 className="text-5xl xl:text-6xl font-black leading-[0.85] tracking-tighter uppercase">
+                                {headline.split(' ').map((word, i) => (
+                                    <span key={i} className={i === headline.split(' ').length - 1 ? 'block text-red-600' : 'block'}>
+                                        {word}
+                                    </span>
+                                ))}
                             </h1>
                         </motion.div>
 
@@ -152,8 +158,8 @@ function HeroSection({ content, logistics }: { content: InvitationSchema['conten
                 </div>
             </div>
 
-            {/* Mobile/Tablet Layout - Original Design */}
-            <div className="lg:hidden relative min-h-screen flex flex-col justify-end pt-0 p-6 md:p-12">
+            {/* Mobile/Tablet Layout - shown when previewMobile OR on mobile */}
+            <div className={`${previewMobile ? 'flex' : 'lg:hidden flex'} relative min-h-screen flex-col justify-end pt-0 p-6 md:p-12`}>
                 {/* Texto en capas de fondo */}
                 <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center overflow-hidden pointer-events-none">
                     <motion.h1 
@@ -193,8 +199,12 @@ function HeroSection({ content, logistics }: { content: InvitationSchema['conten
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 1.2 }}
                         >
-                            <h1 className="text-5xl md:text-6xl font-black leading-[0.8] tracking-tighter uppercase">
-                                NUESTRA <br/> <span className="text-red-600">BODA</span>
+                            <h1 className="text-4xl md:text-5xl font-black leading-[0.8] tracking-tighter uppercase">
+                                {headline.split(' ').map((word, i) => (
+                                    <span key={i} className={i === headline.split(' ').length - 1 ? 'text-red-600' : ''}>
+                                        {word}{' '}
+                                    </span>
+                                ))}
                             </h1>
                         </motion.div>
                     </div>
@@ -214,7 +224,7 @@ function HeroSection({ content, logistics }: { content: InvitationSchema['conten
 
 // Countdown Marquee Section
 function CountdownMarquee({ logistics }: { logistics: InvitationSchema['logistics'] }) {
-    const targetDate = new Date(logistics.event_date).getTime();
+    const targetDate = parseDateLocal(logistics.event_date).getTime();
     const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
     useEffect(() => {
@@ -396,71 +406,151 @@ function TechnicalTimeline({ logistics }: { logistics: InvitationSchema['logisti
 }
 
 // Venues Section
-function VenuesSection({ logistics }: { logistics: InvitationSchema['logistics'] }) {
+function VenuesSection({ logistics, content }: { logistics: InvitationSchema['logistics']; content: InvitationSchema['content'] }) {
+    const generateCalendarLink = (venue: any, eventDate: string) => {
+        const eventTitle = encodeURIComponent(`${content.headline || content.couple?.person1.name + ' & ' + content.couple?.person2.name} - ${venue.title}`);
+        const location = encodeURIComponent(`${venue.name}, ${venue.address}`);
+        const details = encodeURIComponent(`Te esperamos para celebrar con nosotros.`);
+        let baseDate = new Date(eventDate);
+        if (isNaN(baseDate.getTime())) baseDate = new Date();
+        const [hours, minutes] = venue.time ? venue.time.split(':') : ['18', '00'];
+        baseDate.setHours(parseInt(hours), parseInt(minutes));
+        const formatDate = (date: Date) => date.toISOString().replace(/[-:]/g, '').split('.')[0];
+        const endDate = new Date(baseDate);
+        endDate.setHours(endDate.getHours() + 1);
+        return `https://www.google.com/calendar/render?action=TEMPLATE&text=${eventTitle}&dates=${formatDate(baseDate)}/${formatDate(endDate)}&details=${details}&location=${location}`;
+    };
+
     const venues = logistics.venues.length > 0
-        ? logistics.venues.map((venue, idx) => ({
-            title: venue.type === 'ceremony' ? 'LA CEREMONIA' : 'LA GALA',
-            name: venue.name.toUpperCase(),
-            address: `${venue.address}, ${venue.city}`.toUpperCase(),
-            mapUrl: `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284.0168753236905!2d${venue.coordinates.lng}!3d${venue.coordinates.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzTCsDM2JzEzLjQiUyA1OMKwMjUnMTMuNyJX!5e0!3m2!1sen!2sar!4v1234567890`,
-            mapsLink: venue.google_maps_url || `https://maps.google.com/?q=${venue.coordinates.lat},${venue.coordinates.lng}`,
-            isEven: idx % 2 === 0
-        }))
+        ? logistics.venues.slice(0, 2).map((venue, idx) => {
+            const hasCoordinates = venue.coordinates && typeof venue.coordinates.lat === 'number' && typeof venue.coordinates.lng === 'number';
+            const lat = venue.coordinates?.lat;
+            const lng = venue.coordinates?.lng;
+
+            return {
+                title: venue.type === 'ceremony' ? 'LA CEREMONIA' : 'LA GALA',
+                name: venue.name.toUpperCase(),
+                address: `${venue.address}, ${venue.city}`.toUpperCase(),
+                time: logistics.agenda?.[idx]?.time || '18:00',
+                mapsLink: venue.google_maps_url || (hasCoordinates ? `https://maps.google.com/?q=${lat},${lng}` : `https://maps.google.com/?q=${encodeURIComponent(venue.address + ', ' + venue.city)}`),
+                calendarLink: generateCalendarLink({ title: venue.type === 'ceremony' ? 'LA CEREMONIA' : 'LA GALA', name: venue.name, address: `${venue.address}, ${venue.city}`, time: logistics.agenda?.[idx]?.time || '18:00' }, logistics.event_date),
+                isEven: idx % 2 === 0
+            };
+        })
         : [
             {
                 title: 'LA CEREMONIA',
                 name: 'SANTA MARIA DEL AVANT',
                 address: 'CALLE DE LA MODA 1234, CABA.',
-                mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284.0168753236905!2d-58.420469!3d-34.603722!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzTCsDM2JzEzLjQiUyA1OMKwMjUnMTMuNyJX!5e0!3m2!1sen!2sar!4v1234567890',
+                time: '17:00',
                 mapsLink: 'https://maps.google.com/?q=Palermo,Buenos+Aires',
+                calendarLink: generateCalendarLink({ title: 'LA CEREMONIA', name: 'SANTA MARIA DEL AVANT', address: 'CALLE DE LA MODA 1234, CABA.', time: '17:00' }, logistics.event_date),
                 isEven: true
             },
             {
                 title: 'LA GALA',
                 name: 'THE WAREHOUSE STUDIO',
                 address: 'AVENIDA INDUSTRIAL 567, PUERTO MADERO.',
-                mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284.0168753236905!2d-58.420469!3d-34.603722!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzTCsDM2JzEzLjQiUyA1OMKwMjUnMTMuNyJX!5e0!3m2!1sen!2sar!4v1234567890',
+                time: '19:30',
                 mapsLink: 'https://maps.google.com/?q=Puerto+Madero,Buenos+Aires',
+                calendarLink: generateCalendarLink({ title: 'LA GALA', name: 'THE WAREHOUSE STUDIO', address: 'AVENIDA INDUSTRIAL 567, PUERTO MADERO.', time: '19:30' }, logistics.event_date),
                 isEven: false
             }
         ];
 
+    const hasSingleVenue = venues.length === 1;
+
     return (
-        <section className="bg-black text-white py-16 md:py-20 px-6 md:px-12 overflow-hidden">
+        <section className="bg-black text-white py-16 md:py-24 px-6 md:px-12 overflow-hidden">
             <div className="max-w-6xl mx-auto">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+                {/* Header editorial */}
+                <motion.div 
+                    className="mb-12 md:mb-16 flex items-end justify-between border-b-4 border-white pb-4"
+                    initial={{ opacity: 0, x: -50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                >
+                    <div>
+                        <div className="font-mono text-[10px] tracking-[0.3em] text-red-600 uppercase font-bold mb-2">
+                            Direcciones
+                        </div>
+                        <h2 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter uppercase">
+                            UBICACIONES
+                        </h2>
+                    </div>
+                    <div className="hidden md:block font-mono text-xs text-white/40 uppercase">
+                        {venues.length === 1 ? '01' : '02'} Lugares
+                    </div>
+                </motion.div>
+
+                <div className={`grid grid-cols-1 ${hasSingleVenue ? 'lg:grid-cols-1 lg:max-w-3xl lg:mx-auto' : 'lg:grid-cols-2'} gap-8 lg:gap-16`}>
                     {venues.map((venue, index) => (
                         <motion.div 
                             key={index}
-                            className={`relative ${index === 1 ? 'lg:mt-32' : ''}`}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 1, delay: index * 0.3 }}
+                            className={`relative ${index === 1 ? 'lg:mt-16' : ''}`}
+                            initial={{ opacity: 0, y: 50 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, delay: index * 0.2 }}
                         >
-                            <div className="aspect-[4/5] lg:aspect-[4/3] bg-neutral-900 overflow-hidden grayscale hover:grayscale-0 transition-all duration-700">
-                                <iframe
-                                    src={venue.mapUrl}
-                                    width="100%"
-                                    height="100%"
-                                    style={{ border: 0 }}
-                                    loading="lazy"
-                                    className="grayscale hover:grayscale-0 transition-all"
-                                />
-                            </div>
-                            <div className={`absolute ${venue.isEven ? '-bottom-8 -right-4 md:-right-8' : '-top-8 -left-4 md:-left-8'} bg-${venue.isEven ? 'red-600' : 'white text-black'} p-6 md:p-8 z-20 max-w-xs border-4 border-black shadow-[10px_10px_0px_0px_${venue.isEven ? 'rgba(255,255,255,1)' : 'rgba(255,0,0,1)'}]`}>
-                                <div className={`font-mono text-[10px] mb-2 tracking-widest ${venue.isEven ? 'text-black' : 'text-red-600'} font-bold uppercase`}>LUGAR {venue.isEven ? 'A' : 'B'}: {venue.title}</div>
-                                <h3 className="text-2xl md:text-3xl font-black mb-3 leading-none uppercase">{venue.name}</h3>
-                                <p className="font-mono text-xs leading-relaxed mb-4 opacity-80 uppercase">
+                            {/* Card constructivista sin imagen */}
+                            <div className={`relative p-8 md:p-10 border-4 ${venue.isEven ? 'bg-white text-black border-white' : 'bg-red-600 text-white border-red-600'} shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)]`}>
+                                {/* Número de lugar grande como decoración */}
+                                <div className={`absolute -top-6 ${venue.isEven ? '-left-2' : '-right-2'} text-7xl md:text-8xl font-black opacity-20 select-none`}>
+                                    {String(index + 1).padStart(2, '0')}
+                                </div>
+
+                                {/* Label */}
+                                <div className={`font-mono text-[10px] tracking-[0.3em] mb-4 uppercase font-bold ${venue.isEven ? 'text-red-600' : 'text-black'}`}>
+                                    Lugar {venue.isEven ? 'A' : 'B'}: {venue.title}
+                                </div>
+
+                                {/* Nombre del lugar */}
+                                <h3 className="text-2xl md:text-3xl lg:text-4xl font-black mb-4 leading-none uppercase tracking-tight">
+                                    {venue.name}
+                                </h3>
+
+                                {/* Divider */}
+                                <div className={`w-16 h-1 mb-6 ${venue.isEven ? 'bg-black' : 'bg-white'}`} />
+
+                                {/* Dirección */}
+                                <p className="font-mono text-xs md:text-sm leading-relaxed mb-2 opacity-90 uppercase">
                                     {venue.address}
                                 </p>
-                                <a 
-                                    href={venue.mapsLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={`w-full block text-center font-mono text-[10px] py-3 px-4 uppercase tracking-[0.2em] border-2 transition-all ${venue.isEven ? 'bg-black text-white border-black hover:bg-white hover:text-black' : 'bg-red-600 text-white border-red-600 hover:bg-black hover:border-black'}`}
-                                >
-                                    CÓMO LLEGAR
-                                </a>
+
+                                {/* Horario */}
+                                <p className="font-mono text-[10px] tracking-widest mb-8 opacity-70 uppercase">
+                                    {venue.time} HS
+                                </p>
+
+                                {/* Botones de acción */}
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                    <a 
+                                        href={venue.mapsLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={`flex-1 inline-flex items-center justify-center gap-3 font-mono text-[11px] py-3 px-6 uppercase tracking-[0.2em] font-bold transition-all border-2 ${
+                                            venue.isEven 
+                                                ? 'bg-black text-white border-black hover:bg-transparent hover:text-black' 
+                                                : 'bg-white text-red-600 border-white hover:bg-transparent hover:text-white'
+                                        }`}
+                                    >
+                                        <MapPin className="w-4 h-4" />
+                                        Ver en Maps
+                                    </a>
+                                    <a 
+                                        href={venue.calendarLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={`inline-flex items-center justify-center gap-3 font-mono text-[11px] py-3 px-6 uppercase tracking-[0.2em] font-bold transition-all border-2 ${
+                                            venue.isEven 
+                                                ? 'bg-white text-black border-black hover:bg-black hover:text-white' 
+                                                : 'bg-black text-white border-white hover:bg-white hover:text-red-600'
+                                        }`}
+                                    >
+                                        <Calendar className="w-4 h-4" />
+                                        Agendar
+                                    </a>
+                                </div>
                             </div>
                         </motion.div>
                     ))}
@@ -647,9 +737,125 @@ function LuxuryRegistry({ features }: { features: InvitationSchema['features'] }
     );
 }
 
+// Music Suggestion Field - Componente para integrar en el formulario RSVP
+function MusicSuggestionField({ onSongAdd }: { onSongAdd?: (song: string) => void }) {
+    const [song, setSong] = useState('');
+    const [songsList, setSongsList] = useState<string[]>([]);
+    const [showForm, setShowForm] = useState(false);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!song.trim()) return;
+        
+        setSongsList([...songsList, song]);
+        onSongAdd?.(song);
+        setSong('');
+        setShowForm(false);
+    };
+
+    return (
+        <div className="w-full">
+            {/* Suggested Songs List */}
+            {songsList.length > 0 && (
+                <motion.div
+                    className="mb-6 border-l-4 border-black pl-4"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                >
+                    <div className="font-mono text-[10px] tracking-widest text-black uppercase font-bold mb-2">
+                        CANCIONES SUGERIDAS
+                    </div>
+                    <ul className="space-y-2">
+                        {songsList.map((s, idx) => (
+                            <li key={idx} className="flex items-center gap-3">
+                                <span className="font-mono text-xs text-black font-bold">
+                                    {String(idx + 1).padStart(2, '0')}
+                                </span>
+                                <span className="font-mono text-sm text-white/90 uppercase">
+                                    {s}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </motion.div>
+            )}
+
+            {/* Add Song Button / Form */}
+            {!showForm ? (
+                <motion.button
+                    type="button"
+                    onClick={() => setShowForm(true)}
+                    className="w-full group flex items-center justify-center gap-4 border-2 border-black p-4 hover:border-white hover:bg-black transition-all"
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                >
+                    <div className="w-8 h-8 bg-black text-white flex items-center justify-center font-black text-lg group-hover:bg-white group-hover:text-black transition-colors">
+                        +
+                    </div>
+                    <div className="text-left">
+                        <div className="font-mono text-[10px] tracking-widest text-black/60 uppercase font-bold">
+                            SUGERIR CANCIÓN
+                        </div>
+                        <div className="font-black text-lg uppercase text-white">
+                            ¿Qué no puede faltar?
+                        </div>
+                    </div>
+                </motion.button>
+            ) : (
+                <motion.div
+                    className="border-2 border-black bg-black/20 p-5"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                >
+                    <div className="font-mono text-[10px] tracking-widest text-red-600 uppercase font-bold mb-3">
+                        AGREGAR CANCIÓN
+                    </div>
+                    <input
+                        type="text"
+                        value={song}
+                        onChange={(e) => setSong(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && song.trim()) {
+                                e.preventDefault();
+                                handleSubmit(e as unknown as React.FormEvent);
+                            }
+                        }}
+                        placeholder="ARTISTA - TÍTULO"
+                        className="w-full bg-transparent border-b-2 border-white/30 py-3 font-mono text-lg uppercase placeholder:text-white/30 focus:outline-none focus:border-red-600 mb-4"
+                        autoFocus
+                    />
+                    <div className="flex gap-3">
+                        <button
+                            type="button"
+                            onClick={handleSubmit}
+                            disabled={!song.trim()}
+                            className="flex-1 bg-white text-red-600 font-black py-3 uppercase tracking-tight hover:bg-black hover:text-white transition-colors disabled:opacity-50"
+                        >
+                            AGREGAR
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setShowForm(false)}
+                            className="px-4 border border-white/20 font-mono text-xs uppercase text-white hover:border-white transition-colors"
+                        >
+                            CANCELAR
+                        </button>
+                    </div>
+                </motion.div>
+            )}
+            
+            <p className="font-mono text-[10px] tracking-widest text-white/50 uppercase mt-4 text-center">
+                ¿Qué canción no puede faltar en nuestra fiesta? Sugiere ese tema especial.
+            </p>
+        </div>
+    );
+}
+
 // RSVP Section
 function RSVPSection({ features, content, metadata }: { features: InvitationSchema['features']; content: InvitationSchema['content']; metadata: InvitationSchema['metadata'] }) {
     const [formData, setFormData] = useState({ name: '', attendance: 'YES', message: '', email: '', phone: '', guests: 1 });
+    // Estado para respuestas de preguntas personalizadas
+    const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -668,11 +874,14 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
                 attendance: formData.attendance === 'YES',
                 guestsCount: formData.guests,
                 dietaryRestrictions: formData.message,
-                message: ''
+                message: '',
+                customAnswers: customAnswers
             });
 
             if (result.success) {
                 setSuccess(true);
+                setFormData({ name: '', attendance: 'YES', message: '', email: '', phone: '', guests: 1 });
+                setCustomAnswers({});
             } else {
                 setError(result.error || 'Error al enviar');
             }
@@ -682,6 +891,13 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
             setLoading(false);
         }
     };
+
+    const handleCustomAnswerChange = (questionId: string, value: string) => {
+        setCustomAnswers(prev => ({ ...prev, [questionId]: value }));
+    };
+
+    // Obtener preguntas personalizadas desde features.rsvp
+    const customQuestions = features.rsvp?.custom_questions || [];
 
     if (success) {
         return (
@@ -741,16 +957,90 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
                     </button>
                 </div>
 
-                <div className="relative">
-                    <label className="font-mono text-[10px] tracking-widest uppercase mb-2 block text-white font-bold">NOTAS ESPECIALES / ALERGIAS</label>
-                    <textarea 
-                        rows={3}
-                        value={formData.message}
-                        onChange={(e) => setFormData({...formData, message: e.target.value})}
-                        placeholder="DATOS ADICIONALES..."
-                        className="w-full bg-black/20 border-2 border-black p-3 lg:p-4 font-mono text-sm text-white placeholder:text-white/70 focus:outline-none focus:border-white focus:bg-black/40 transition-colors resize-none uppercase"
-                    />
-                </div>
+                {/* Preguntas que se ocultan si no asiste */}
+                {formData.attendance === 'YES' && (
+                    <>
+                        <div className="relative">
+                            <label className="font-mono text-[10px] tracking-widest uppercase mb-2 block text-white font-bold">NOTAS ESPECIALES / ALERGIAS</label>
+                            <textarea 
+                                rows={3}
+                                value={formData.message}
+                                onChange={(e) => setFormData({...formData, message: e.target.value})}
+                                placeholder="DATOS ADICIONALES..."
+                                className="w-full bg-black/20 border-2 border-black p-3 lg:p-4 font-mono text-sm text-white placeholder:text-white/70 focus:outline-none focus:border-white focus:bg-black/40 transition-colors resize-none uppercase"
+                            />
+                        </div>
+
+                        {/* Preguntas Personalizadas */}
+                        {customQuestions.length > 0 && (
+                            <div className="space-y-6 pt-4 border-t-4 border-black">
+                                <p className="font-mono text-[10px] tracking-widest uppercase mb-2 block text-black font-bold">PREGUNTAS ADICIONALES</p>
+                                {customQuestions.map((question) => (
+                                    <div key={question.id}>
+                                        <label className="font-mono text-[10px] tracking-widest uppercase mb-2 block text-white font-bold">
+                                            {question.question}
+                                            {question.required && <span className="text-red-300 ml-1">*</span>}
+                                        </label>
+                                        {question.type === 'text' ? (
+                                            <input
+                                                type="text"
+                                                required={question.required}
+                                                value={customAnswers[question.id] || ''}
+                                                onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
+                                                className="w-full bg-black/20 border-2 border-black p-3 lg:p-4 font-mono text-sm text-white placeholder:text-white/70 focus:outline-none focus:border-white focus:bg-black/40 transition-colors uppercase"
+                                                placeholder="TU RESPUESTA..."
+                                                disabled={loading}
+                                            />
+                                        ) : question.type === 'select' ? (
+                                            <select
+                                                required={question.required}
+                                                value={customAnswers[question.id] || ''}
+                                                onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
+                                                className="w-full bg-black/20 border-2 border-black p-3 lg:p-4 font-mono text-sm text-white focus:outline-none focus:border-white focus:bg-black/40 transition-colors cursor-pointer uppercase"
+                                                disabled={loading}
+                                            >
+                                                <option value="" className="bg-red-800">SELECCIONAR OPCIÓN</option>
+                                                {question.options?.map((opt) => (
+                                                    <option key={opt} value={opt} className="bg-red-800 uppercase">{opt}</option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <textarea
+                                                required={question.required}
+                                                value={customAnswers[question.id] || ''}
+                                                onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
+                                                className="w-full bg-black/20 border-2 border-black p-3 lg:p-4 font-mono text-sm text-white placeholder:text-white/70 focus:outline-none focus:border-white focus:bg-black/40 transition-colors resize-none uppercase"
+                                                rows={3}
+                                                placeholder="TU RESPUESTA..."
+                                                disabled={loading}
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Música integrada en el formulario */}
+                        {features.show_music && (
+                            <div className="pt-6 border-t-4 border-black">
+                                <div className="text-left mb-4">
+                                    <div className="font-mono text-[10px] tracking-widest text-black uppercase font-bold mb-1">
+                                        BANDA SONORA
+                                    </div>
+                                    <h3 className="font-black text-xl md:text-2xl uppercase tracking-tight">
+                                        LA MÚSICA
+                                    </h3>
+                                </div>
+                                <MusicSuggestionField 
+                                    onSongAdd={(song: string) => {
+                                        // Almacenar la canción en customAnswers para enviar con el RSVP
+                                        handleCustomAnswerChange('suggested_song', song);
+                                    }}
+                                />
+                            </div>
+                        )}
+                    </>
+                )}
 
                 {error && (
                     <div className="font-mono text-sm text-black bg-white p-4 border-4 border-black text-center">
@@ -775,221 +1065,6 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
     );
 }
 
-// Song Request Section
-function SongRequestSection({ features, metadata }: { features: InvitationSchema['features']; metadata: InvitationSchema['metadata'] }) {
-    const [song, setSong] = useState('');
-    const [submitted, setSubmitted] = useState(false);
-    const [loading, setLoading] = useState(false);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!song.trim()) return;
-        
-        setLoading(true);
-        // Aquí se enviaría a la base de datos
-        // await submitSongRequest({ invitationId: metadata.id, song });
-        
-        setTimeout(() => {
-            setSubmitted(true);
-            setLoading(false);
-        }, 500);
-    };
-
-    if (submitted) {
-        return (
-            <section className="bg-black text-white py-16 md:py-20 px-6 md:px-12 flex flex-col items-center justify-center">
-                <motion.div 
-                    className="max-w-4xl w-full text-center"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                >
-                    <div className="text-5xl lg:text-6xl mb-6">♪</div>
-                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tighter mb-4 uppercase">¡GRACIAS!</h2>
-                    <p className="font-mono text-sm tracking-[0.2em] uppercase text-white/60">Tu canción será parte de nuestra banda sonora</p>
-                </motion.div>
-            </section>
-        );
-    }
-
-    return (
-        <section className="bg-black text-white py-16 md:py-20 px-6 md:px-12 flex flex-col items-center justify-center">
-            <motion.div 
-                className="max-w-4xl w-full text-center mb-10 lg:mb-12"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-            >
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter mb-4 uppercase">LA BANDA SONORA</h2>
-                <div className="font-mono text-xs tracking-[0.4em] uppercase text-red-600 font-bold">SUGERENCIAS MUSICALES</div>
-            </motion.div>
-
-            <form className="max-w-xl lg:max-w-2xl w-full" onSubmit={handleSubmit}>
-                <div className="relative mb-6 lg:mb-8">
-                    <label className="font-mono text-[10px] tracking-widest uppercase mb-3 block text-white/60 font-bold">¿QUÉ CANCIÓN NO PUEDE FALTAR EN LA PISTA?</label>
-                    <input 
-                        type="text" 
-                        required
-                        value={song}
-                        onChange={(e) => setSong(e.target.value)}
-                        placeholder="ARTISTA - TÍTULO DE LA CANCIÓN"
-                        className="w-full bg-transparent border-b-4 border-red-600 p-3 lg:p-4 font-black text-xl md:text-2xl lg:text-3xl placeholder:text-white/30 focus:outline-none focus:border-white transition-colors uppercase"
-                    />
-                </div>
-
-                <motion.button 
-                    whileHover={{ backgroundColor: '#ffffff', color: '#000000', scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    disabled={loading || !song.trim()}
-                    className="w-full bg-red-600 text-white font-black text-lg lg:text-xl py-4 lg:py-5 tracking-tighter shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all uppercase disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {loading ? 'ENVIANDO...' : 'AGREGAR A LA PLAYLIST'}
-                </motion.button>
-
-                <p className="text-center font-mono text-[10px] tracking-[0.2em] mt-4 lg:mt-6 text-white/40 uppercase">
-                    Las sugerencias serán agregadas a nuestra playlist especial
-                </p>
-            </form>
-        </section>
-    );
-}
-
-// Music Section - Song Suggestions Only
-function MusicSection({ features, metadata }: { features: InvitationSchema['features']; metadata: InvitationSchema['metadata'] }) {
-    const [song, setSong] = useState('');
-    const [songsList, setSongsList] = useState<string[]>([]);
-    const [showForm, setShowForm] = useState(false);
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!song.trim()) return;
-        
-        setSongsList([...songsList, song]);
-        setSong('');
-        setShowForm(false);
-    };
-
-    return (
-        <section id="music-section" className="bg-black text-white py-16 md:py-20 overflow-hidden">
-            <div className="max-w-4xl mx-auto px-6 md:px-12">
-                {/* Header */}
-                <motion.div
-                    className="text-center mb-12"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                >
-                    <div className="font-mono text-[10px] tracking-widest text-red-600 uppercase font-bold mb-2">
-                        BANDA SONORA
-                    </div>
-                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter uppercase">
-                        LA MÚSICA
-                    </h2>
-                </motion.div>
-
-                {/* Content */}
-                <div className="max-w-2xl mx-auto">
-                    {/* Intro Text */}
-                    <motion.p
-                        className="text-center font-mono text-xs leading-relaxed text-white/60 uppercase mb-10"
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        ¿Qué canción no puede faltar en nuestra fiesta? 
-                        Sugiere ese tema especial que quieres escuchar.
-                    </motion.p>
-
-                    {/* Suggested Songs List */}
-                    {songsList.length > 0 && (
-                        <motion.div
-                            className="mb-8 border-l-4 border-red-600 pl-6"
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                        >
-                            <div className="font-mono text-[10px] tracking-widest text-red-600 uppercase font-bold mb-4">
-                                CANCIONES SUGERIDAS
-                            </div>
-                            <ul className="space-y-3">
-                                {songsList.map((s, idx) => (
-                                    <li key={idx} className="flex items-center gap-3">
-                                        <span className="font-mono text-xs text-red-600 font-bold">
-                                            {String(idx + 1).padStart(2, '0')}
-                                        </span>
-                                        <span className="font-mono text-sm text-white/90 uppercase">
-                                            {s}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </motion.div>
-                    )}
-
-                    {/* Add Song Button / Form */}
-                    {!showForm ? (
-                        <motion.button
-                            onClick={() => setShowForm(true)}
-                            className="w-full group flex items-center justify-center gap-4 border-2 border-white/20 p-5 hover:border-red-600 hover:bg-red-600 transition-all"
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            whileHover={{ scale: 1.01 }}
-                            whileTap={{ scale: 0.99 }}
-                        >
-                            <div className="w-10 h-10 bg-white text-black flex items-center justify-center font-black text-xl group-hover:bg-black group-hover:text-white transition-colors">
-                                +
-                            </div>
-                            <div className="text-left">
-                                <div className="font-mono text-[10px] tracking-widest text-white/40 uppercase">
-                                    SUGERIR CANCIÓN
-                                </div>
-                                <div className="font-black text-lg uppercase">
-                                    ¿Qué no puede faltar?
-                                </div>
-                            </div>
-                        </motion.button>
-                    ) : (
-                        <motion.form
-                            onSubmit={handleSubmit}
-                            className="border-2 border-red-600 p-6"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                        >
-                            <div className="font-mono text-[10px] tracking-widest text-red-600 uppercase font-bold mb-4">
-                                AGREGAR CANCIÓN
-                            </div>
-                            <input
-                                type="text"
-                                value={song}
-                                onChange={(e) => setSong(e.target.value)}
-                                placeholder="ARTISTA - TÍTULO"
-                                className="w-full bg-transparent border-b-2 border-white/30 py-3 font-mono text-lg uppercase placeholder:text-white/30 focus:outline-none focus:border-red-600 mb-4"
-                                autoFocus
-                            />
-                            <div className="flex gap-3">
-                                <button
-                                    type="submit"
-                                    disabled={!song.trim()}
-                                    className="flex-1 bg-red-600 text-white font-black py-3 uppercase tracking-tight hover:bg-white hover:text-black transition-colors disabled:opacity-50"
-                                >
-                                    AGREGAR
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowForm(false)}
-                                    className="px-4 border border-white/20 font-mono text-xs uppercase hover:border-white transition-colors"
-                                >
-                                    CANCELAR
-                                </button>
-                            </div>
-                        </motion.form>
-                    )}
-                </div>
-            </div>
-        </section>
-    );
-}
-
 // Footer Credits
 function FooterCredits({ content }: { content: InvitationSchema['content'] }) {
     const person1Name = content.couple?.person1.name || 'VALENTINA';
@@ -1010,12 +1085,12 @@ function FooterCredits({ content }: { content: InvitationSchema['content'] }) {
                     <div className="font-mono text-[10px] font-bold text-red-600 tracking-widest uppercase">CRÉDITOS</div>
                     <div className="font-mono text-[10px] text-black uppercase">DIRECTOR: {person2Name}</div>
                     <div className="font-mono text-[10px] text-black uppercase">DIR. CREATIVA: {person1Name}</div>
-                    <div className="font-mono text-[10px] text-black uppercase">PRODUCCIÓN: INVITAME APPS</div>
+                    <div className="font-mono text-[10px] text-black uppercase">PRODUCCIÓN: VOWS</div>
                 </div>
 
                 <div className="flex flex-col items-end justify-end">
                     <div className="w-12 h-12 bg-black flex items-center justify-center mb-4">
-                        <div className="text-white font-mono text-[8px] font-bold rotate-90 tracking-widest uppercase">INVITAME</div>
+                        <div className="text-white font-mono text-[8px] font-bold rotate-90 tracking-widest uppercase">VOWS</div>
                     </div>
                     <div className="font-mono text-[8px] text-black/40 text-right uppercase">
                         EDICIÓN ESPECIAL — VARIANTE: VANGUARDIA <br/>
@@ -1108,7 +1183,7 @@ function FloatingRSVPButton({ features }: { features: InvitationSchema['features
 }
 
 // Main Layout Component
-export function AvantGardeLayout({ invitation, preview }: AvantGardeLayoutProps) {
+export function AvantGardeLayout({ invitation, preview, previewMobile }: AvantGardeLayoutProps) {
     const { metadata, content, logistics, features } = invitation;
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -1150,7 +1225,7 @@ export function AvantGardeLayout({ invitation, preview }: AvantGardeLayoutProps)
             </AnimatePresence>
 
             <main className="relative lg:max-w-6xl xl:max-w-7xl lg:mx-auto">
-                <HeroSection content={content} logistics={logistics} />
+                <HeroSection content={content} logistics={logistics} previewMobile={previewMobile} />
             </main>
                 
             <FeatureGate 
@@ -1180,7 +1255,7 @@ export function AvantGardeLayout({ invitation, preview }: AvantGardeLayoutProps)
                     isVisible={features.show_venue_map}
                     fallback={preview ? <EmptyStatePreview icon="📍" title="UBICACIONES" description="Se mostrarán los lugares del evento" /> : null}
                 >
-                    <VenuesSection logistics={logistics} />
+                    <VenuesSection logistics={logistics} content={content} />
                 </FeatureGate>
 
                 <FeatureGate 
@@ -1210,13 +1285,6 @@ export function AvantGardeLayout({ invitation, preview }: AvantGardeLayoutProps)
                     fallback={preview ? <EmptyStatePreview icon="✉️" title="CONFIRMAR ASISTENCIA" description="Se mostrará el formulario RSVP" /> : null}
                 >
                     <RSVPSection features={features} content={content} metadata={metadata} />
-                </FeatureGate>
-
-                <FeatureGate 
-                    isVisible={features.show_music}
-                    fallback={preview ? <EmptyStatePreview icon="🎵" title="BANDA SONORA" description="Se mostrará la sección de música y sugerencias" /> : null}
-                >
-                    <MusicSection features={features} metadata={metadata} />
                 </FeatureGate>
 
                 <FooterCredits content={content} />

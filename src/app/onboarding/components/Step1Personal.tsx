@@ -1,22 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { StepProps } from '../types';
-import { getAllSkins, SkinConfig } from '@/lib/skins';
+import { getAllSkins } from '@/lib/skins';
 
-export function Step1Personal({ formData, updateFormData }: StepProps) {
-  const [activeDemo, setActiveDemo] = useState<string | null>(null);
+interface Step1PersonalProps extends StepProps {
+  onNext?: () => void;
+  isNextDisabled?: boolean;
+}
 
+export function Step1Personal({ formData, updateFormData, onNext, isNextDisabled }: Step1PersonalProps) {
   const designs = getAllSkins();
-
-  const currentSkin = designs.find(d => d.id === (activeDemo || formData.skinId));
 
   return (
     <div className="max-w-4xl mx-auto py-4 fade-in">
       <div className="mb-10 text-center">
         <h2 className="font-serif text-3xl md:text-4xl text-[#2C3333] mb-3">Comencemos tu Historia</h2>
         <p className="text-[#2C3333]/60 text-sm leading-relaxed max-w-lg mx-auto">
-          Elige la esencia visual de tu invitación. Puedes previsualizar cada estilo antes de elegirlo.
+          Elegí el estilo de tu invitación. No te preocupes, podrás cambiar de diseño (Skin) con un clic desde tu panel más adelante.
         </p>
       </div>
 
@@ -57,21 +58,6 @@ export function Step1Personal({ formData, updateFormData }: StepProps) {
                       </svg>
                     </div>
                   )}
-
-                  {/* Demo Button */}
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveDemo(design.id);
-                    }}
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm text-[#2C3333] px-4 py-2 rounded-full text-[9px] uppercase tracking-widest font-bold shadow-xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-2 hover:bg-[#2C3333] hover:text-white"
-                  >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    Ver Demo
-                  </button>
                 </div>
                 <div className="mt-4 pb-2 text-center">
                   <p className={`text-[10px] uppercase tracking-[0.2em] font-bold ${formData.skinId === design.id ? 'text-[#A27B5C]' : 'text-gray-400'}`}>
@@ -84,133 +70,59 @@ export function Step1Personal({ formData, updateFormData }: StepProps) {
         </div>
 
         {/* PERSONAL DATA */}
-        <div className="lg:col-span-5 space-y-8 bg-gray-50/50 p-8 rounded-[2.5rem] border border-gray-100">
-          <label className="block text-[10px] uppercase tracking-[0.3em] font-bold text-[#A27B5C] mb-2">Tus Datos</label>
-          <div className="space-y-6">
+        <div className="lg:col-span-5 space-y-4 bg-gray-50/50 p-5 rounded-2xl border border-gray-100 self-start">
+          <label className="block text-[10px] uppercase tracking-[0.3em] font-bold text-[#A27B5C]">Tus Datos</label>
+          <div className="space-y-3">
             <div>
-              <label className="block text-[9px] uppercase tracking-widest font-bold text-gray-400 mb-2">Nombre Completo *</label>
+              <label className="block text-[9px] uppercase tracking-widest font-bold text-gray-400 mb-1.5">Nombre Completo *</label>
               <input
                 type="text"
                 required
-                className="w-full px-5 py-4 bg-white border border-gray-100 rounded-2xl transition-all focus:shadow-xl focus:shadow-black/5 text-sm"
+                className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl transition-all focus:shadow-lg focus:shadow-black/5 text-sm"
                 value={formData.clientName || ''}
                 onChange={(e) => updateFormData({ clientName: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-[9px] uppercase tracking-widest font-bold text-gray-400 mb-2">Correo Electrónico *</label>
+              <label className="block text-[9px] uppercase tracking-widest font-bold text-gray-400 mb-1.5">Correo Electrónico *</label>
               <input
                 type="email"
                 required
-                className="w-full px-5 py-4 bg-white border border-gray-100 rounded-2xl transition-all focus:shadow-xl focus:shadow-black/5 text-sm"
+                className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl transition-all focus:shadow-lg focus:shadow-black/5 text-sm"
                 value={formData.clientEmail || ''}
                 onChange={(e) => updateFormData({ clientEmail: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-[9px] uppercase tracking-widest font-bold text-gray-400 mb-2">WhatsApp</label>
+              <label className="block text-[9px] uppercase tracking-widest font-bold text-gray-400 mb-1.5">WhatsApp *</label>
               <input
                 type="tel"
-                className="w-full px-5 py-4 bg-white border border-gray-100 rounded-2xl transition-all focus:shadow-xl focus:shadow-black/5 text-sm"
+                required
+                placeholder="+54 9 11 1234 5678"
+                pattern="^[+]?[0-9\s-]{8,20}$"
+                className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl transition-all focus:shadow-lg focus:shadow-black/5 text-sm"
                 value={formData.clientPhone || ''}
                 onChange={(e) => updateFormData({ clientPhone: e.target.value })}
               />
+              <p className="text-[8px] text-gray-400 mt-1 ml-1">Formato: +54 9 11 1234 5678</p>
             </div>
           </div>
+          
+          {/* Botón Siguiente dentro de Tus Datos */}
+          {onNext && (
+            <button
+              onClick={onNext}
+              disabled={isNextDisabled}
+              className="w-full mt-4 bg-[#2C3333] disabled:bg-gray-200 text-white px-6 py-3 rounded-xl font-bold tracking-premium text-[10px] uppercase hover:bg-[#A27B5C] transition-all duration-500 shadow-lg shadow-black/10 flex items-center justify-center gap-2"
+            >
+              Siguiente
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
-
-      {/* DEMO MODAL */}
-      {activeDemo && currentSkin && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#2C3333]/90 backdrop-blur-md fade-in">
-          <button 
-            onClick={() => setActiveDemo(null)}
-            className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors p-2"
-          >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-
-          <div className="flex flex-col md:flex-row items-center gap-12 max-w-5xl w-full">
-            {/* Info Section */}
-            <div className="md:w-1/2 text-white space-y-6 text-center md:text-left">
-              <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#A27B5C]">Diseño Seleccionado</span>
-              <h3 className="font-serif text-5xl">{currentSkin.name}</h3>
-              <p className="text-white/60 text-lg italic font-light">{currentSkin.description}</p>
-              <div className="pt-8 flex flex-col items-center md:items-start gap-4">
-                <button 
-                  onClick={() => {
-                    updateFormData({ skinId: currentSkin.id });
-                    setActiveDemo(null);
-                  }}
-                  className="bg-[#A27B5C] text-white px-10 py-4 rounded-full font-bold text-[10px] uppercase tracking-widest hover:bg-white hover:text-[#2C3333] transition-all duration-500"
-                >
-                  Elegir este Diseño
-                </button>
-                <p className="text-white/30 text-[9px] uppercase tracking-widest">* Previsualización simulada</p>
-              </div>
-            </div>
-
-            {/* Mobile Phone Frame */}
-            <div className="md:w-1/2 flex justify-center">
-              <div className="relative w-[300px] h-[600px] bg-black rounded-[3rem] border-[8px] border-black shadow-2xl overflow-hidden ring-4 ring-white/10 ring-inset">
-                {/* Speaker/Camera detail */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-20"></div>
-                
-                {/* Content Area */}
-                <div className="w-full h-full p-8 pt-16 flex flex-col items-center text-center overflow-y-auto custom-scrollbar relative" style={{ backgroundColor: currentSkin.style.bg }}>
-                  {/* Decorative corner */}
-                  <div className="absolute top-10 left-0 w-20 h-20 border-l border-t opacity-20" style={{ borderColor: currentSkin.style.accent }}></div>
-                  <div className="absolute bottom-10 right-0 w-20 h-20 border-r border-b opacity-20" style={{ borderColor: currentSkin.style.accent }}></div>
-
-                  <span className="text-[8px] uppercase tracking-[0.4em] mb-4 opacity-60" style={{ color: currentSkin.style.text }}>¡Nos Casamos!</span>
-                  
-                  <h4 className="font-serif text-4xl mb-6" style={{ color: currentSkin.style.text }}>
-                    {formData.person1Name || 'Novia'} <br/> 
-                    <span className="italic text-2xl font-light opacity-50">&</span> <br/>
-                    {formData.person2Name || 'Novio'}
-                  </h4>
-
-                  <div className="w-10 h-[1px] mb-8" style={{ backgroundColor: currentSkin.style.accent }}></div>
-
-                  <p className="text-[10px] leading-relaxed italic opacity-70 mb-10" style={{ color: currentSkin.style.text }}>
-                    "Encontré a quien mi alma ama." <br/>
-                    <span className="not-italic font-bold tracking-widest block mt-2 text-[8px]">— CANTAR DE LOS CANTARES</span>
-                  </p>
-
-                  <div className="grid grid-cols-3 gap-4 w-full mb-10">
-                    {[
-                      { l: 'Días', v: '124' },
-                      { l: 'Horas', v: '08' },
-                      { l: 'Min', v: '45' }
-                    ].map((t, i) => (
-                      <div key={i} className="flex flex-col items-center">
-                        <span className="text-xl font-serif" style={{ color: currentSkin.style.text }}>{t.v}</span>
-                        <span className="text-[7px] uppercase tracking-widest opacity-40" style={{ color: currentSkin.style.text }}>{t.l}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button 
-                    disabled
-                    className="w-full py-4 rounded-full text-[8px] uppercase tracking-[0.3em] font-bold transition-all"
-                    style={{ backgroundColor: currentSkin.style.accent, color: '#FFF' }}
-                  >
-                    Confirmar Asistencia
-                  </button>
-
-                  <div className="mt-12 opacity-20">
-                    <svg className="w-12 h-12" style={{ color: currentSkin.style.text }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

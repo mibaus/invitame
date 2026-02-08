@@ -14,11 +14,38 @@ export function Step5Config({ formData, updateFormData }: StepProps) {
     updateFormData({ agendaItems: [...(formData.agendaItems || []), newItem] });
   };
 
+  // Funciones para preguntas personalizadas
+  const addCustomQuestion = () => {
+    const currentQuestions = formData.rsvpCustomQuestions || [];
+    if (currentQuestions.length >= 3) return; // Máximo 3 preguntas
+    
+    const newQuestion = {
+      id: Math.random().toString(36).substr(2, 9),
+      question: '',
+      isActive: true
+    };
+    updateFormData({ rsvpCustomQuestions: [...currentQuestions, newQuestion] });
+  };
+
+  const updateCustomQuestion = (id: string, question: string) => {
+    const updatedQuestions = formData.rsvpCustomQuestions?.map(q => 
+      q.id === id ? { ...q, question } : q
+    ) || [];
+    updateFormData({ rsvpCustomQuestions: updatedQuestions });
+  };
+
+  const removeCustomQuestion = (id: string) => {
+    const filteredQuestions = formData.rsvpCustomQuestions?.filter(q => q.id !== id) || [];
+    updateFormData({ rsvpCustomQuestions: filteredQuestions });
+  };
+
+  const activeQuestionsCount = formData.rsvpCustomQuestions?.filter(q => q.isActive).length || 0;
+
   return (
     <div className="max-w-4xl mx-auto py-4 fade-in">
       <div className="mb-10 text-center">
-        <h2 className="font-serif text-3xl md:text-4xl text-[#2C3333] mb-3">Últimos Detalles</h2>
-        <p className="text-[#2C3333]/60 text-sm">Configura el cronograma y la gestión de invitados.</p>
+        <h2 className="font-serif text-3xl md:text-4xl text-[#2C3333] mb-3">Últimos Detalles <span className="text-gray-400 text-lg font-normal normal-case">(opcional)</span></h2>
+        <p className="text-[#2C3333]/60 text-sm">Configurá los detalles finales. Recordá que tu invitación es un espacio vivo: podés ajustar horarios y gestionar invitados incluso después del pago.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
@@ -99,6 +126,69 @@ export function Step5Config({ formData, updateFormData }: StepProps) {
               />
             </div>
           </div>
+        </section>
+
+        {/* Preguntas Personalizadas */}
+        <section className="p-6 bg-white border border-gray-200 rounded-3xl shadow-sm fade-in">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#A27B5C]/10 flex items-center justify-center text-[#A27B5C]">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#2C3333]">Preguntas Personalizadas</h3>
+                <p className="text-[9px] text-gray-400 mt-0.5">Máximo 3 preguntas para tus invitados</p>
+              </div>
+            </div>
+            <button 
+              onClick={addCustomQuestion} 
+              disabled={activeQuestionsCount >= 3}
+              className="text-[9px] font-bold text-[#A27B5C] uppercase transition-colors hover:text-[#2C3333] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              + Agregar
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {formData.rsvpCustomQuestions?.map((q, index) => (
+              <div key={q.id} className="flex items-center gap-3">
+                <span className="text-xs font-bold text-[#A27B5C] w-4">{index + 1}.</span>
+                <input
+                  type="text"
+                  value={q.question}
+                  onChange={(e) => updateCustomQuestion(q.id, e.target.value)}
+                  placeholder={`Escribe tu pregunta ${index + 1}...`}
+                  className="flex-1 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#A27B5C] transition-colors"
+                />
+                <button 
+                  onClick={() => removeCustomQuestion(q.id)}
+                  className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                  title="Eliminar pregunta"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+            
+            {(!formData.rsvpCustomQuestions || formData.rsvpCustomQuestions.length === 0) && (
+              <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                <p className="text-xs text-gray-400">No hay preguntas personalizadas</p>
+                <p className="text-[10px] text-gray-300 mt-1">Las respuestas aparecerán en el dashboard</p>
+              </div>
+            )}
+          </div>
+
+          {activeQuestionsCount > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <p className="text-[9px] text-gray-400">
+                {activeQuestionsCount} de 3 preguntas configuradas
+              </p>
+            </div>
+          )}
         </section>
       </div>
     </div>

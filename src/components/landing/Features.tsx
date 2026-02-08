@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { PieChart, Download, BellRing, ShieldCheck } from 'lucide-react';
+import { PieChart, Download, ShieldCheck, Settings, MessageCircle } from 'lucide-react';
 
 export default function Features() {
   const items = [
@@ -11,14 +11,19 @@ export default function Features() {
       text: "Controlá confirmaciones y restricciones en tiempo real."
     },
     {
+      icon: <MessageCircle className="w-4 h-4" />,
+      title: "Envío por WhatsApp",
+      text: "Compartí la invitación con texto personalizado directamente desde el panel."
+    },
+    {
       icon: <Download className="w-4 h-4" />,
       title: "Listas inteligentes",
       text: "Exportá archivos listos para tu salón o Wedding Planner."
     },
     {
-      icon: <BellRing className="w-4 h-4" />,
-      title: "Notificaciones",
-      text: "Alertas sutiles cada vez que un invitado confirma."
+      icon: <Settings className="w-4 h-4" />,
+      title: "Edición ilimitada",
+      text: "Modificá tu invitación cuando quieras, las veces que quieras."
     },
     {
       icon: <ShieldCheck className="w-4 h-4" />,

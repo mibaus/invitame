@@ -43,7 +43,6 @@ export interface OnboardingData {
   bankAccountHolder?: string;
   bankAccountNumber?: string;
   giftRegistryMessage?: string;
-  mercadoLibreUrl?: string;
   
   // Paso 4
   coverImage?: string;
@@ -56,6 +55,8 @@ export interface OnboardingData {
   showCountdown?: boolean;
   showAgenda?: boolean;
   showVenueMap?: boolean;
+  showCeremony?: boolean;
+  showReception?: boolean;
   showDressCode?: boolean;
   showGiftRegistry?: boolean;
   showRSVP?: boolean;
@@ -70,6 +71,13 @@ export interface OnboardingData {
   maxCompanions?: number;
   allowChildren?: boolean;
   rsvpConfirmationMessage?: string;
+  
+  // Preguntas personalizadas para RSVP (hasta 3)
+  rsvpCustomQuestions?: Array<{
+    id: string;
+    question: string;
+    isActive: boolean;
+  }>;
 }
 
 export interface StepProps {

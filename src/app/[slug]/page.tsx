@@ -15,6 +15,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const supabase = createServerComponentClient();
 
   // Fetch invitation data
+  console.log('[InvitationPage] Fetching invitation for slug:', slug);
   const { data: rawData, error } = await supabase
     .from('invitations')
     .select('*')
@@ -22,6 +23,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
     .single();
 
   if (error || !rawData) {
+    console.error('[InvitationPage] Error or no data:', error, 'Raw data:', rawData);
     notFound();
   }
 

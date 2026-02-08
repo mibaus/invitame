@@ -7,7 +7,7 @@ export default function FloatingWhatsApp() {
   return (
     <div className="fixed bottom-6 right-6 z-50 reveal active">
       <a 
-        href="https://wa.me/5491100000000?text=Hola!%20Me%20gustaría%20recibir%20más%20información%20sobre%20las%20invitaciones%20de%20Invitame." 
+        href="https://wa.me/5491100000000?text=Hola!%20Me%20gustaría%20recibir%20más%20información%20sobre%20las%20invitaciones%20de%20VOWS." 
         target="_blank" 
         rel="noopener noreferrer"
         className="group relative flex items-center justify-center w-14 h-14 bg-charcoal text-cloud rounded-full shadow-2xl transition-all duration-500 hover:bg-bronze hover:scale-110 active:scale-95 border border-white/10"

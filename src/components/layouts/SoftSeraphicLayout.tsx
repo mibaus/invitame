@@ -23,6 +23,7 @@ import { submitRSVP } from '@/app/actions/rsvp';
 interface SoftSeraphicLayoutProps {
     invitation: InvitationSchema;
     preview?: boolean;
+    previewMobile?: boolean;
 }
 
 // Empty state component for preview mode
@@ -165,7 +166,7 @@ function HeroSection() {
                 transition={{ duration: 1.5, ease: "easeOut" }}
                 className="md:hidden text-center w-full max-w-lg mx-auto"
             >
-                <span className="text-[10px] uppercase tracking-[0.6em] text-[#a9a9a9] mb-8 block font-light">Nuestra Boda</span>
+                <span className="text-[10px] uppercase tracking-[0.6em] text-[#a9a9a9] mb-8 block font-light">Nos casamos</span>
 
                 <div className="relative mb-10 mx-auto w-[260px]">
                     <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-32 h-10 text-[#c0c0c0] opacity-60 z-20">
@@ -271,7 +272,7 @@ function HeroSection() {
 
                 {/* Columna derecha: Nombres y fecha */}
                 <div className="w-[55%] lg:w-[55%] text-left pl-4 lg:pl-8">
-                    <span className="text-[11px] uppercase tracking-[0.5em] text-[#a9a9a9] mb-6 block font-light">Nuestra Boda</span>
+                    <span className="text-[11px] uppercase tracking-[0.5em] text-[#a9a9a9] mb-6 block font-light">Nos casamos</span>
 
                     <div className="mb-8">
                         <h2 className="font-script text-7xl lg:text-8xl xl:text-9xl text-[#4a4a4a] leading-[1.3]">
@@ -394,7 +395,7 @@ function CountdownSection() {
                     transition={{ duration: 1.5 }}
                     className="max-w-xl mx-auto text-center"
                 >
-                    <h3 className="font-pinyon text-2xl text-[#96adc0] mb-10 tracking-widest">The Wait</h3>
+                    <h3 className="font-pinyon text-2xl text-[#96adc0] mb-10 tracking-widest">Falta poco</h3>
                     <div className="flex justify-center gap-4 md:gap-8">
                         <TimeUnit label="Días" value={timeLeft.days} />
                         <TimeUnit label="Horas" value={timeLeft.hours} />
@@ -446,7 +447,7 @@ function QuoteSection() {
                         {quote}
                     </p>
                     <div className="w-20 h-[1px] bg-[#c0c0c0] mx-auto mb-6" />
-                    <span className="text-[10px] uppercase tracking-[0.4em] text-[#a9a9a9]">{content.quote?.author || 'Nuestro Voto Eterno'}</span>
+                    <span className="text-[10px] uppercase tracking-[0.4em] text-[#a9a9a9]">{content.quote?.author || '—'}</span>
                 </motion.div>
             </section>
         </FeatureGate>
@@ -485,8 +486,8 @@ function TimelineSection() {
                         whileInView={{ opacity: 1 }}
                         className="text-center mb-16"
                     >
-                        <h3 className="font-pinyon text-3xl text-[#96adc0] mb-2">The Fairytale</h3>
-                        <p className="text-[10px] uppercase tracking-[0.3em] text-[#a9a9a9]">Cronograma del Gran Día</p>
+                        <h3 className="font-pinyon text-3xl text-[#96adc0] mb-2">El día</h3>
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-[#a9a9a9]">Así será la celebración</p>
                     </motion.div>
 
                     <div className="relative">
@@ -542,11 +543,11 @@ function VenuesSection() {
                         whileInView={{ opacity: 1 }}
                         className="text-center mb-16"
                     >
-                        <h3 className="font-pinyon text-3xl text-[#96adc0] mb-2">The Venues</h3>
-                        <p className="text-[10px] uppercase tracking-[0.3em] text-[#a9a9a9]">Donde celebraremos</p>
+                        <h3 className="font-pinyon text-3xl text-[#96adc0] mb-2">Ubicación</h3>
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-[#a9a9a9]">Te esperamos aquí</p>
                     </motion.div>
 
-                    <div className="grid md:grid-cols-2 gap-12">
+                    <div className={`grid gap-12 ${venues.length === 1 ? 'md:grid-cols-1 max-w-xl mx-auto' : 'md:grid-cols-2'}`}>
                         {venues.map((venue, index) => (
                             <motion.div
                                 key={venue.id}
@@ -615,8 +616,8 @@ function DressCodeSection() {
                         whileInView={{ opacity: 1 }}
                         className="text-center mb-12"
                     >
-                        <h3 className="font-pinyon text-3xl text-[#96adc0] mb-2">The Attire</h3>
-                        <p className="text-[10px] uppercase tracking-[0.3em] text-[#a9a9a9]">Código de Vestimenta</p>
+                        <h3 className="font-pinyon text-3xl text-[#96adc0] mb-2">Vestimenta</h3>
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-[#a9a9a9]">Código de vestimenta</p>
                     </motion.div>
 
                     <motion.div
@@ -721,8 +722,8 @@ function GallerySection() {
                         whileInView={{ opacity: 1 }}
                         className="text-center mb-12"
                     >
-                        <h3 className="font-pinyon text-4xl text-[#96adc0] mb-2">The Keepsakes</h3>
-                        <p className="text-[10px] uppercase tracking-[0.4em] text-[#a9a9a9]">Nuestros momentos favoritos</p>
+                        <h3 className="font-pinyon text-4xl text-[#96adc0] mb-2">Nosotros</h3>
+                        <p className="text-[10px] uppercase tracking-[0.4em] text-[#a9a9a9]">Algunos momentos</p>
                     </motion.div>
 
                     <div className="relative overflow-hidden">
@@ -799,8 +800,8 @@ function GiftsSection() {
                         whileInView={{ opacity: 1 }}
                         className="mb-12"
                     >
-                        <h3 className="font-pinyon text-3xl text-[#96adc0] mb-2">The Love Fund</h3>
-                        <p className="text-[10px] uppercase tracking-[0.3em] text-[#a9a9a9]">Mesa de Regalos</p>
+                        <h3 className="font-pinyon text-3xl text-[#96adc0] mb-2">Regalos</h3>
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-[#a9a9a9]">Tu presencia es el mejor regalo</p>
                     </motion.div>
 
                     <div className="bg-white/40 backdrop-blur-sm p-10 rounded-[30px] border border-[#c0c0c0]/20 shadow-sm relative overflow-hidden">
@@ -813,7 +814,7 @@ function GiftsSection() {
                         </div>
 
                         <p className="text-[11px] text-[#a9a9a9] tracking-widest leading-relaxed mb-8 italic">
-                            {giftRegistry?.message || `"Vuestra presencia es nuestro mejor regalo,
+                            {giftRegistry?.message || `"Tu presencia es nuestro mejor regalo,
                             pero si deseáis tener un detalle con nosotros,
                             os agradecemos vuestro cariño a través de nuestro fondo de amor."`}
                         </p>
@@ -870,7 +871,18 @@ function RSVPSection() {
     const rsvp = features.rsvp;
 
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const [formData, setFormData] = useState({ name: '', attendance: 'yes', message: '' });
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        attendance: 'yes',
+        guests: 1,
+        dietary: '',
+        musicSuggestion: '',
+        message: ''
+    });
+    // Estado para respuestas de preguntas personalizadas
+    const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -881,17 +893,30 @@ function RSVPSection() {
             await submitRSVP({
                 invitationId: metadata.id,
                 name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
                 attendance: formData.attendance === 'yes',
-                guestsCount: 0,
-                message: formData.message
+                guestsCount: formData.guests,
+                dietaryRestrictions: formData.dietary,
+                musicSuggestion: formData.musicSuggestion,
+                message: formData.message,
+                customAnswers: customAnswers
             });
             setIsSubmitted(true);
+            setCustomAnswers({});
         } catch (error) {
             console.error('Error submitting RSVP:', error);
         } finally {
             setIsSubmitting(false);
         }
     };
+
+    const handleCustomAnswerChange = (questionId: string, value: string) => {
+        setCustomAnswers(prev => ({ ...prev, [questionId]: value }));
+    };
+
+    // Obtener preguntas personalizadas desde features.rsvp
+    const customQuestions = rsvp?.custom_questions || [];
 
     return (
         <FeatureGate
@@ -906,8 +931,8 @@ function RSVPSection() {
                         whileInView={{ opacity: 1 }}
                         className="text-center mb-12"
                     >
-                        <h3 className="font-pinyon text-4xl text-[#96adc0] mb-2">The Response</h3>
-                        <p className="text-[10px] uppercase tracking-[0.4em] text-[#a9a9a9]">Por favor confirma tu asistencia</p>
+                        <h3 className="font-pinyon text-4xl text-[#96adc0] mb-2">Confirmación</h3>
+                        <p className="text-[10px] uppercase tracking-[0.4em] text-[#a9a9a9]">¿Nos acompañás?</p>
                     </motion.div>
 
                     <div className="relative">
@@ -921,7 +946,7 @@ function RSVPSection() {
                                 >
                                     <div className="absolute inset-0 border-[15px] border-white z-0 pointer-events-none" />
 
-                                    <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
+                                    <form onSubmit={handleSubmit} className="relative z-10 space-y-6">
                                         <div>
                                             <label className="text-[9px] uppercase tracking-widest text-[#a9a9a9] block mb-2">Nombre Completo</label>
                                             <input
@@ -935,7 +960,30 @@ function RSVPSection() {
                                         </div>
 
                                         <div>
-                                            <label className="text-[9px] uppercase tracking-widest text-[#a9a9a9] block mb-2">¿Asistirás?</label>
+                                            <label className="text-[9px] uppercase tracking-widest text-[#a9a9a9] block mb-2">Email</label>
+                                            <input
+                                                type="email"
+                                                required
+                                                className="w-full bg-transparent border-b border-[#c0c0c0] py-2 text-sm focus:outline-none focus:border-[#96adc0] transition-colors font-light tracking-wide"
+                                                placeholder="tu@email.com"
+                                                value={formData.email}
+                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[9px] uppercase tracking-widest text-[#a9a9a9] block mb-2">Teléfono</label>
+                                            <input
+                                                type="tel"
+                                                className="w-full bg-transparent border-b border-[#c0c0c0] py-2 text-sm focus:outline-none focus:border-[#96adc0] transition-colors font-light tracking-wide"
+                                                placeholder="Tu teléfono..."
+                                                value={formData.phone}
+                                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[9px] uppercase tracking-widest text-[#a9a9a9] block mb-2">¿Asistirás a la celebración?</label>
                                             <div className="flex gap-8 mt-2">
                                                 <label className="flex items-center gap-2 cursor-pointer">
                                                     <input
@@ -963,15 +1011,99 @@ function RSVPSection() {
                                         </div>
 
                                         <div>
-                                            <label className="text-[9px] uppercase tracking-widest text-[#a9a9a9] block mb-2">Algún mensaje o restricción alimentaria</label>
+                                            <label className="text-[9px] uppercase tracking-widest text-[#a9a9a9] block mb-2">Número de Invitados</label>
+                                            <select
+                                                value={formData.guests}
+                                                onChange={(e) => setFormData({ ...formData, guests: parseInt(e.target.value) })}
+                                                className="w-full bg-transparent border-b border-[#c0c0c0] py-2 text-sm focus:outline-none focus:border-[#96adc0] transition-colors font-light tracking-wide cursor-pointer"
+                                            >
+                                                {[1, 2, 3, 4, 5, 6].map((num) => (
+                                                    <option key={num} value={num}>{num} {num === 1 ? 'persona' : 'personas'}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[9px] uppercase tracking-widest text-[#a9a9a9] block mb-2">Restricciones alimentarias</label>
                                             <textarea
-                                                rows={3}
-                                                className="w-full bg-transparent border border-[#c0c0c0]/50 p-4 text-sm focus:outline-none focus:border-[#96adc0] transition-colors font-light tracking-wide resize-none italic"
+                                                rows={2}
+                                                className="w-full bg-transparent border border-[#c0c0c0]/50 p-3 text-sm focus:outline-none focus:border-[#96adc0] transition-colors font-light tracking-wide resize-none italic"
                                                 placeholder="Ej. Vegetariano, alergias..."
+                                                value={formData.dietary}
+                                                onChange={(e) => setFormData({ ...formData, dietary: e.target.value })}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[9px] uppercase tracking-widest text-[#a9a9a9] block mb-2">Sugerencia Musical</label>
+                                            <input
+                                                type="text"
+                                                className="w-full bg-transparent border-b border-[#c0c0c0] py-2 text-sm focus:outline-none focus:border-[#96adc0] transition-colors font-light tracking-wide"
+                                                placeholder="¿Qué canción no puede faltar? (Ej: Perfect - Ed Sheeran)"
+                                                value={formData.musicSuggestion}
+                                                onChange={(e) => setFormData({ ...formData, musicSuggestion: e.target.value })}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[9px] uppercase tracking-widest text-[#a9a9a9] block mb-2">Mensaje para los novios</label>
+                                            <textarea
+                                                rows={2}
+                                                className="w-full bg-transparent border border-[#c0c0c0]/50 p-3 text-sm focus:outline-none focus:border-[#96adc0] transition-colors font-light tracking-wide resize-none italic"
+                                                placeholder="Un mensaje especial..."
                                                 value={formData.message}
                                                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                                            ></textarea>
+                                            />
                                         </div>
+
+                                        {/* Preguntas Personalizadas */}
+                                        {customQuestions.length > 0 && (
+                                            <div className="space-y-6 pt-4 border-t border-[#c0c0c0]/30">
+                                                <p className="text-[9px] uppercase tracking-widest text-[#a9a9a9]">Preguntas Adicionales</p>
+                                                {customQuestions.map((question) => (
+                                                    <div key={question.id}>
+                                                        <label className="text-[9px] uppercase tracking-widest text-[#a9a9a9] block mb-2">
+                                                            {question.question}
+                                                            {question.required && <span className="text-red-500 ml-1">*</span>}
+                                                        </label>
+                                                        {question.type === 'text' ? (
+                                                            <input
+                                                                type="text"
+                                                                required={question.required}
+                                                                value={customAnswers[question.id] || ''}
+                                                                onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
+                                                                className="w-full bg-transparent border-b border-[#c0c0c0] py-2 text-sm focus:outline-none focus:border-[#96adc0] transition-colors font-light tracking-wide"
+                                                                placeholder="Tu respuesta..."
+                                                                disabled={isSubmitting}
+                                                            />
+                                                        ) : question.type === 'select' ? (
+                                                            <select
+                                                                required={question.required}
+                                                                value={customAnswers[question.id] || ''}
+                                                                onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
+                                                                className="w-full bg-transparent border-b border-[#c0c0c0] py-2 text-sm focus:outline-none focus:border-[#96adc0] transition-colors font-light tracking-wide cursor-pointer"
+                                                                disabled={isSubmitting}
+                                                            >
+                                                                <option value="">Selecciona una opción</option>
+                                                                {question.options?.map((opt) => (
+                                                                    <option key={opt} value={opt}>{opt}</option>
+                                                                ))}
+                                                            </select>
+                                                        ) : (
+                                                            <textarea
+                                                                required={question.required}
+                                                                value={customAnswers[question.id] || ''}
+                                                                onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
+                                                                className="w-full bg-transparent border border-[#c0c0c0]/50 p-3 text-sm focus:outline-none focus:border-[#96adc0] transition-colors font-light tracking-wide resize-none italic"
+                                                                rows={2}
+                                                                placeholder="Tu respuesta..."
+                                                                disabled={isSubmitting}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
 
                                         <div className="text-center pt-4">
                                             <button
@@ -985,7 +1117,7 @@ function RSVPSection() {
 
                                         {rsvp.deadline && (
                                             <p className="text-center text-[9px] text-[#a9a9a9] mt-6 tracking-widest">
-                                                Favor de confirmar antes del {new Date(rsvp.deadline).toLocaleDateString('es-ES')}
+                                                Confirmar antes del {new Date(rsvp.deadline).toLocaleDateString('es-ES')}
                                             </p>
                                         )}
                                     </form>
@@ -1015,7 +1147,7 @@ function RSVPSection() {
 
                                     <h4 className="font-pinyon text-4xl text-[#4a4a4a] mb-4">Gracias</h4>
                                     <p className="text-[11px] text-[#a9a9a9] tracking-widest uppercase italic max-w-xs mx-auto">
-                                        Tu mensaje ha sido sellado con amor. <br /> Esperamos verte pronto.
+                                        Tu mensaje fue enviado.<br />Gracias por acompañarnos.
                                     </p>
                                 </motion.div>
                             )}
@@ -1075,8 +1207,8 @@ function MusicSection() {
                         whileInView={{ opacity: 1 }}
                         className="text-center mb-10"
                     >
-                        <h3 className="font-pinyon text-4xl text-[#96adc0] mb-2">The Melody</h3>
-                        <p className="text-[10px] uppercase tracking-[0.3em] text-[#a9a9a9]">Sugiere una canción</p>
+                        <h3 className="font-pinyon text-4xl text-[#96adc0] mb-2">Música</h3>
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-[#a9a9a9]">¿Qué tema no puede faltar?</p>
                         <div className="w-12 h-[1px] bg-[#c0c0c0]/40 mx-auto mt-6" />
                     </motion.div>
 
@@ -1149,7 +1281,7 @@ function FooterSection() {
                     <Heart className="w-16 h-16 stroke-1 text-[#4a4a4a]" />
                 </div>
 
-                <h3 className="font-pinyon text-4xl text-[#96adc0] mb-4">Contando los días para vernos</h3>
+                <h3 className="font-pinyon text-4xl text-[#96adc0] mb-4">Nos vemos pronto</h3>
                 <p className="font-script text-5xl text-[#4a4a4a] mb-12">
                     {content.couple?.person1.name || 'Alejandro'} & {content.couple?.person2.name || 'Luciana'}
                 </p>
@@ -1280,7 +1412,7 @@ function AudioControl({ isPlaying, onToggle }: { isPlaying: boolean; onToggle: (
 }
 
 // Main Layout Component
-export function SoftSeraphicLayout({ invitation, preview }: SoftSeraphicLayoutProps) {
+export function SoftSeraphicLayout({ invitation, preview, previewMobile }: SoftSeraphicLayoutProps) {
     // Store data for child components
     invitationData = invitation;
     previewMode = preview || false;
@@ -1355,7 +1487,6 @@ export function SoftSeraphicLayout({ invitation, preview }: SoftSeraphicLayoutPr
                     <GallerySection />
                     <GiftsSection />
                     <RSVPSection />
-                    <MusicSection />
                     <FooterSection />
                 </motion.main>
             )}

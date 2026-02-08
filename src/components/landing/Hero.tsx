@@ -4,6 +4,14 @@ import React from 'react';
 import { ChevronDown, Download, CheckCircle2, LayoutDashboard, Users } from 'lucide-react';
 
 export default function Hero() {
+  const scrollToPricing = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const element = document.getElementById('precio');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <section className="relative min-h-[95vh] flex flex-col justify-center pt-28 pb-12 px-6 md:px-12 lg:pt-32 lg:pb-32 overflow-hidden bg-cloud">
       {/* Background Decorative Element */}
@@ -33,18 +41,11 @@ export default function Hero() {
           </div>
           
           <div className="flex flex-col sm:flex-row gap-3.5 justify-center lg:justify-start pt-2">
-            <a 
-              href="/onboarding" 
-              className="px-9 py-4 bg-charcoal text-cloud text-center text-[10px] uppercase tracking-widest font-bold hover:bg-bronze hover:shadow-[0_15px_30px_rgba(162,123,92,0.15)] transition-all duration-500"
+            <button 
+              onClick={scrollToPricing}
+              className="px-9 py-4 bg-charcoal text-cloud text-center text-[10px] uppercase tracking-widest font-bold hover:bg-bronze hover:shadow-[0_15px_30px_rgba(162,123,92,0.15)] transition-all duration-500 cursor-pointer"
             >
               Comenzar Ahora
-            </a>
-            <button className="px-9 py-4 border border-charcoal/10 text-charcoal/80 text-[10px] uppercase tracking-widest font-bold hover:bg-white/50 transition-all flex items-center justify-center gap-2 cursor-pointer">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-bronze opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-bronze"></span>
-              </span>
-              Demo Dashboard
             </button>
           </div>
         </div>
@@ -121,7 +122,7 @@ export default function Hero() {
 
       {/* Scroll Indicator */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center space-y-3 opacity-30 hover:opacity-100 transition-all cursor-pointer group">
-        <span className="text-[8px] uppercase tracking-[0.5em] font-bold text-charcoal group-hover:text-bronze">Explorar Invitame</span>
+        <span className="text-[8px] uppercase tracking-[0.5em] font-bold text-charcoal group-hover:text-bronze">Explorar VOWS</span>
         <div className="h-10 w-[1px] bg-gradient-to-b from-charcoal to-transparent relative">
            <div className="absolute top-0 left-0 w-full h-1/2 bg-bronze animate-scroll-down"></div>
         </div>

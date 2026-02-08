@@ -1,7 +1,22 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { uploadImage, uploadMultipleImages } from '@/app/actions/storage';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+
+console.log('[ImageUploader] Supabase URL configured:', !!supabaseUrl && !supabaseUrl.includes('tu-proyecto'));
+console.log('[ImageUploader] Supabase Key configured:', !!supabaseAnonKey && supabaseAnonKey.length > 10);
+
+// Create Supabase client for client-side uploads
+const supabase = supabaseUrl && supabaseAnonKey && !supabaseUrl.includes('tu-proyecto') 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
+
+if (!supabase) {
+  console.log('[ImageUploader] Supabase client not created - will use dev mode');
+}
 
 interface ImageUploaderProps {
   folder?: string;
@@ -44,28 +59,76 @@ export function ImageUploader({
 
   const handleFile = useCallback(async (file: File) => {
     setError(null);
+    
+    // Validate file size before uploading (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('La imagen es muy grande. Máximo 5MB.');
+      return;
+    }
+    
     setIsUploading(true);
 
-    // Create preview
-    const reader = new FileReader();
-    reader.onload = (e) => setPreview(e.target?.result as string);
-    reader.readAsDataURL(file);
+    // Create preview using object URL (more efficient than data URL)
+    const objectUrl = URL.createObjectURL(file);
+    setPreview(objectUrl);
 
-    const formData = new FormData();
-    formData.append('file', file);
+    try {
+      console.log('[ImageUploader] Uploading file:', file.name, file.type, file.size);
+      
+      if (!supabase) {
+        // Dev mode - simulate upload
+        console.log('[Dev Mode] Simulating upload');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const fakeUrl = `https://picsum.photos/seed/${Date.now()}/800/600`;
+        URL.revokeObjectURL(objectUrl);
+        setPreview(fakeUrl);
+        onUpload?.(fakeUrl);
+        onChange?.(fakeUrl);
+        setIsUploading(false);
+        return;
+      }
 
-    const result = await uploadImage(formData, folder);
+      // Upload directly to Supabase Storage from client
+      const timestamp = Date.now();
+      const randomId = Math.random().toString(36).substring(2, 8);
+      const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${timestamp}-${randomId}.${extension}`;
+      const filePath = `${folder}/${fileName}`;
 
-    if (result.success && result.url) {
-      setPreview(result.url);
-      onUpload?.(result.url);
-      onChange?.(result.url);
-    } else {
-      setError(result.error || 'Error al subir la imagen');
+      const { error: uploadError } = await supabase.storage
+        .from('invitations')
+        .upload(filePath, file, {
+          contentType: file.type,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        setError('Error al subir la imagen: ' + uploadError.message);
+        URL.revokeObjectURL(objectUrl);
+        setPreview(value || currentImage || null);
+        setIsUploading(false);
+        return;
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('invitations')
+        .getPublicUrl(filePath);
+
+      console.log('[ImageUploader] Upload successful:', urlData.publicUrl);
+      URL.revokeObjectURL(objectUrl);
+      setPreview(urlData.publicUrl);
+      onUpload?.(urlData.publicUrl);
+      onChange?.(urlData.publicUrl);
+    } catch (err: any) {
+      console.error('[ImageUploader] Upload error:', err);
+      setError(`Error al procesar: ${err.message || 'Error desconocido'}`);
+      URL.revokeObjectURL(objectUrl);
       setPreview(value || currentImage || null);
+    } finally {
+      setIsUploading(false);
     }
-
-    setIsUploading(false);
   }, [folder, onUpload, onChange, currentImage, value]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -218,25 +281,83 @@ export function MultiImageUploader({
     const filesToUpload = Array.from(files).slice(0, remainingSlots);
     setIsUploading(true);
 
-    const formData = new FormData();
-    filesToUpload.forEach(file => {
-      if (file.type.startsWith('image/')) {
-        formData.append('files', file);
+    const newUrls: string[] = [];
+    const uploadErrors: string[] = [];
+    for (const file of filesToUpload) {
+      if (!file.type.startsWith('image/')) {
+        uploadErrors.push(`${file.name}: No es una imagen`);
+        continue;
       }
-    });
 
-    const result = await uploadMultipleImages(formData, folder);
+      if (file.size > 5 * 1024 * 1024) {
+        uploadErrors.push(`${file.name}: Muy grande (máx 5MB)`);
+        continue;
+      }
 
-    if (result.urls.length > 0) {
-      const newImages = [...images, ...result.urls];
-      setImages(newImages);
-      onUpload(newImages);
+      try {
+        if (!supabase) {
+          const fakeUrl = `https://picsum.photos/seed/${Date.now()}-${Math.random()}/800/600`;
+          newUrls.push(fakeUrl);
+          continue;
+        }
+
+        const timestamp = Date.now();
+        const randomId = Math.random().toString(36).substring(2, 8);
+        const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const fileName = `${timestamp}-${randomId}.${extension}`;
+        const filePath = `${folder}/${fileName}`;
+
+        console.log('[ImageUploader] File path:', filePath);
+
+        // Add timeout to prevent hanging
+        const uploadWithTimeout = Promise.race([
+          supabase.storage
+            .from('invitations')
+            .upload(filePath, file, {
+              contentType: file.type,
+              upsert: false,
+            }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout - upload took too long')), 30000)
+          )
+        ]);
+
+        const { error: uploadError } = await uploadWithTimeout as any;
+
+        if (uploadError) {
+          console.error('[ImageUploader] Upload error:', uploadError);
+          uploadErrors.push(`${file.name}: ${uploadError.message}`);
+          continue;
+        }
+
+        console.log('[ImageUploader] Upload successful, getting public URL...');
+
+        const { data: urlData } = supabase.storage
+          .from('invitations')
+          .getPublicUrl(filePath);
+
+        newUrls.push(urlData.publicUrl);
+      } catch (err: any) {
+        console.error('[ImageUploader] Exception for file:', file.name, err);
+        uploadErrors.push(`${file.name}: ${err.message || 'Error desconocido'}`);
+      }
     }
 
-    if (result.errors.length > 0) {
-      setError(result.errors[0]);
+    console.log('[ImageUploader] Upload loop complete. New URLs:', newUrls.length, 'Errors:', uploadErrors.length);
+
+    if (newUrls.length > 0) {
+      console.log('[ImageUploader] Updating state with', newUrls.length, 'new images');
+      const updatedImages = [...images, ...newUrls];
+      setImages(updatedImages);
+      onUpload(updatedImages);
     }
 
+    if (uploadErrors.length > 0) {
+      console.error('[ImageUploader] Upload errors:', uploadErrors);
+      setError(uploadErrors[0] + (uploadErrors.length > 1 ? ` y ${uploadErrors.length - 1} más` : ''));
+    }
+
+    console.log('[ImageUploader] Setting isUploading to false');
     setIsUploading(false);
   }, [folder, images, maxImages, onUpload]);
 
@@ -295,7 +416,7 @@ export function MultiImageUploader({
               <button
                 type="button"
                 onClick={() => handleRemove(index)}
-                className="absolute top-1 right-1 w-6 h-6 bg-black/60 hover:bg-red-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-1 right-1 w-6 h-6 bg-stone-800/80 hover:bg-stone-700 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all"
               >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -332,7 +453,7 @@ export function MultiImageUploader({
 
           <div className="p-6 text-center">
             {isUploading ? (
-              <div className="flex items-center justify-center gap-2 text-gray-600">
+              <div className="flex flex-col items-center gap-2 text-gray-600">
                 <Spinner />
                 <span className="text-sm">Subiendo imágenes...</span>
               </div>

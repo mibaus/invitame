@@ -5,12 +5,10 @@ interface FeaturesSelectorProps {
     showHero?: boolean;
     showCountdown?: boolean;
     showAgenda?: boolean;
-    showVenueMap?: boolean;
     showDressCode?: boolean;
     showGiftRegistry?: boolean;
     showRSVP?: boolean;
     showGallery?: boolean;
-    showMusic?: boolean;
     showGuestMessages?: boolean;
   };
   onChange: (features: Partial<FeaturesSelectorProps['features']>) => void;
@@ -20,12 +18,10 @@ const FEATURES_CONFIG = [
   { key: 'showHero', label: 'Portada con foto principal', description: 'Muestra la imagen de portada con los nombres', defaultValue: true },
   { key: 'showCountdown', label: 'Cuenta regresiva', description: 'Muestra los días restantes hasta el evento', defaultValue: true },
   { key: 'showAgenda', label: 'Agenda del día', description: 'Muestra la línea de tiempo con los eventos', defaultValue: true },
-  { key: 'showVenueMap', label: 'Mapas de ubicación', description: 'Muestra los mapas de ceremonia y recepción', defaultValue: true },
   { key: 'showDressCode', label: 'Código de vestimenta', description: 'Muestra la sección de dress code', defaultValue: true },
   { key: 'showGiftRegistry', label: 'Mesa de regalos', description: 'Muestra la sección de regalos y datos bancarios', defaultValue: true },
   { key: 'showRSVP', label: 'Confirmación de asistencia', description: 'Permite a los invitados confirmar asistencia', defaultValue: true },
   { key: 'showGallery', label: 'Galería de fotos', description: 'Muestra la galería de fotos del evento', defaultValue: true },
-  { key: 'showMusic', label: 'Reproductor de música', description: 'Muestra el reproductor de música y playlist', defaultValue: true },
   { key: 'showGuestMessages', label: 'Libro de visitas', description: 'Permite a los invitados dejar mensajes', defaultValue: false },
 ] as const;
 

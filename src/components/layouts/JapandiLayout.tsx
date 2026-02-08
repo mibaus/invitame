@@ -21,10 +21,12 @@ import { InvitationSchema } from '@/types';
 import { FeatureGate } from '@/components/shared/FeatureGate';
 import { createClient } from '@supabase/supabase-js';
 import { submitRSVP } from '@/app/actions/rsvp';
+import { parseDateLocal } from '@/lib/utils';
 
 interface JapandiLayoutProps {
   invitation: InvitationSchema;
   preview?: boolean;
+  previewMobile?: boolean;
 }
 
 const supabase = createClient(
@@ -44,15 +46,16 @@ function EmptyStatePreview({ icon, title, description }: { icon: string; title: 
 }
 
 // 1. Hero Section - The Still Point
-function HeroSection({ content, logistics }: { content: InvitationSchema['content']; logistics: InvitationSchema['logistics'] }) {
+function HeroSection({ content, logistics, previewMobile }: { content: InvitationSchema['content']; logistics: InvitationSchema['logistics']; previewMobile?: boolean }) {
   const scrollToContent = () => {
     window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
   };
 
-  const eventDate = new Date(logistics.event_date);
+  const eventDate = parseDateLocal(logistics.event_date);
   const day = eventDate.getDate().toString().padStart(2, '0');
   const month = eventDate.toLocaleDateString('es-ES', { month: 'long' });
   const year = eventDate.getFullYear();
+  const headline = content.headline || 'Nuestra Boda';
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden" style={{ backgroundColor: '#FAF8F5' }}>
@@ -60,15 +63,15 @@ function HeroSection({ content, logistics }: { content: InvitationSchema['conten
         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
       }} />
       
-      {/* Mobile: layout centrado original */}
-      <div className="md:hidden absolute inset-0 flex items-center justify-center px-4">
-        <div className="relative w-full max-w-2xl">
+      {/* Mobile: layout vertical fluido */}
+      <div className={`${previewMobile ? 'flex' : 'md:hidden flex'} flex-col items-center justify-center px-4 py-8 min-h-screen`}>
+        <div className="relative w-full max-w-2xl flex flex-col items-center">
           <motion.div
             initial={{ opacity: 0, scale: 1.1 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.5, ease: "easeOut" }}
-            className="relative mx-auto mb-8"
-            style={{ maxWidth: '320px' }}
+            className="relative mx-auto mb-6"
+            style={{ maxWidth: '280px' }}
           >
             <div className="relative overflow-hidden" style={{ borderRadius: '2px', boxShadow: '0 20px 60px rgba(92, 91, 87, 0.15)' }}>
               <img
@@ -82,28 +85,45 @@ function HeroSection({ content, logistics }: { content: InvitationSchema['conten
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.5 }} className="text-center">
-            <h1 className="font-serif font-normal tracking-wide mb-2" style={{ color: '#5C5B57', fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontFamily: "'Playfair Display', serif" }}>
+            {/* Headline */}
+            <p className="text-xs uppercase tracking-[0.4em] font-light mb-4" style={{ color: '#B8956A', fontFamily: "'Montserrat', sans-serif" }}>
+              {headline}
+            </p>
+            <h1 className="font-serif font-normal tracking-wide mb-1" style={{ color: '#5C5B57', fontSize: 'clamp(2rem, 8vw, 3rem)', fontFamily: "'Playfair Display', serif" }}>
               {content.couple?.person1.name || 'Sakura'}
             </h1>
-            <span className="font-serif italic text-2xl" style={{ color: '#B8956A', fontFamily: "'Playfair Display', serif" }}>&</span>
-            <h1 className="font-serif font-normal tracking-wide mt-2" style={{ color: '#5C5B57', fontSize: 'clamp(2rem, 5vw, 3rem)', fontFamily: "'Playfair Display', serif" }}>
+            <span className="font-serif italic text-xl" style={{ color: '#B8956A', fontFamily: "'Playfair Display', serif" }}>&</span>
+            <h1 className="font-serif font-normal tracking-wide mt-1" style={{ color: '#5C5B57', fontSize: 'clamp(1.75rem, 7vw, 2.5rem)', fontFamily: "'Playfair Display', serif" }}>
               {content.couple?.person2.name || 'Kenji'}
             </h1>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.8 }} className="text-center mt-8">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.8 }} className="text-center mt-6">
             <p className="text-xs uppercase tracking-[0.3em] font-light" style={{ color: '#8A8986', fontFamily: "'Montserrat', sans-serif" }}>
               {day} {month} {year}
             </p>
             <p className="text-xs uppercase tracking-[0.2em] font-light mt-2" style={{ color: '#A8A6A2', fontFamily: "'Montserrat', sans-serif" }}>
-              {logistics.venues[0]?.city || 'Kioto'}, {logistics.venues[0]?.country || 'Japón'}
+              {logistics.venues[0]?.name || 'Ceremonia'}
             </p>
           </motion.div>
+
+          {/* Explorar button - ahora en el flujo normal, no absolute */}
+          <motion.button
+            onClick={scrollToContent}
+            className="mt-12 mb-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1 }}
+          >
+            <div className="flex flex-col items-center">
+              <span className="text-xs uppercase tracking-[0.3em] font-light" style={{ color: '#8A8986', fontFamily: "'Montserrat', sans-serif" }}>Explorar</span>
+            </div>
+          </motion.button>
         </div>
       </div>
 
       {/* Desktop: layout horizontal de dos columnas */}
-      <div className="hidden md:flex absolute inset-0 items-center justify-center px-8 lg:px-16">
+      <div className={`${previewMobile ? 'hidden' : 'hidden md:flex'} absolute inset-0 items-center justify-center px-8 lg:px-16`}>
         <div className="relative w-full max-w-6xl mx-auto">
           <div className="grid grid-cols-12 gap-8 lg:gap-12 items-center">
             {/* Columna izquierda: Imagen */}
@@ -135,6 +155,11 @@ function HeroSection({ content, logistics }: { content: InvitationSchema['conten
                 {/* Línea decorativa superior */}
                 <div className="w-16 h-px mb-8" style={{ backgroundColor: '#B8956A' }} />
                 
+                {/* Headline */}
+                <p className="text-xs uppercase tracking-[0.4em] font-light mb-6" style={{ color: '#B8956A', fontFamily: "'Montserrat', sans-serif" }}>
+                  {headline}
+                </p>
+                
                 {/* Nombres */}
                 <h1 className="font-serif font-normal tracking-wide" style={{ color: '#5C5B57', fontSize: 'clamp(2.5rem, 4vw, 3.5rem)', fontFamily: "'Playfair Display', serif", lineHeight: 1.2 }}>
                   {content.couple?.person1.name || 'Sakura'}
@@ -159,7 +184,7 @@ function HeroSection({ content, logistics }: { content: InvitationSchema['conten
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-px" style={{ backgroundColor: '#D4CFC4' }} />
                     <p className="text-xs uppercase tracking-[0.2em] font-light" style={{ color: '#A8A6A2', fontFamily: "'Montserrat', sans-serif" }}>
-                      {logistics.venues[0]?.city || 'Kioto'}, {logistics.venues[0]?.country || 'Japón'}
+                      {logistics.venues[0]?.name || 'Ceremonia'}
                     </p>
                   </div>
                 </div>
@@ -169,9 +194,10 @@ function HeroSection({ content, logistics }: { content: InvitationSchema['conten
         </div>
       </div>
 
+      {/* Desktop: Botón Explorar */}
       <motion.button
         onClick={scrollToContent}
-        className="absolute bottom-4 md:bottom-16 left-1/2 transform -translate-x-1/2 z-20"
+        className={`${previewMobile ? 'hidden' : 'hidden md:block'} absolute bottom-8 md:bottom-16 left-1/2 transform -translate-x-1/2 z-20`}
         animate={{ opacity: [0.4, 1, 0.4] }}
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
       >
@@ -186,11 +212,15 @@ function HeroSection({ content, logistics }: { content: InvitationSchema['conten
 
 // 2. Countdown Section - The Unfolding Moment
 function CountdownSection({ logistics }: { logistics: InvitationSchema['logistics'] }) {
-  const targetDate = new Date(logistics.event_date).getTime();
+  const eventDate = logistics.event_date || new Date().toISOString();
+  console.log('[Countdown] Event date received:', eventDate);
+  const targetDate = parseDateLocal(eventDate).getTime();
+  console.log('[Countdown] Target timestamp:', targetDate, 'Current:', Date.now(), 'Diff:', targetDate - Date.now());
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    // Calculate immediately
+    const calculateTimeLeft = () => {
       const now = new Date().getTime();
       const distance = targetDate - now;
       if (distance > 0) {
@@ -201,7 +231,11 @@ function CountdownSection({ logistics }: { logistics: InvitationSchema['logistic
           seconds: Math.floor((distance % (1000 * 60)) / 1000)
         });
       }
-    }, 1000);
+    };
+    
+    calculateTimeLeft(); // Run immediately
+    
+    const interval = setInterval(calculateTimeLeft, 1000);
     return () => clearInterval(interval);
   }, [targetDate]);
 
@@ -238,7 +272,7 @@ function CountdownSection({ logistics }: { logistics: InvitationSchema['logistic
 
 // 3. Quote Section - The Reflection
 function QuoteSection({ content }: { content: InvitationSchema['content'] }) {
-  const quoteText = content.quote?.text || content.couple?.love_story ||
+  const quoteText = content.quote?.text || content.main_message || content.couple?.love_story ||
     '"En el silencio del ahora, encontramos la eternidad de nuestro amor. Como dos gotas de rocío que se funden en la bruma de la mañana."';
   const words = quoteText.split(' ');
 
@@ -271,7 +305,7 @@ function QuoteSection({ content }: { content: InvitationSchema['content'] }) {
 
 // 4. Timeline - The Path
 function TimelineSection({ logistics }: { logistics: InvitationSchema['logistics'] }) {
-  const events = logistics.agenda.length > 0
+  const events = logistics.agenda?.length > 0
     ? logistics.agenda.map((item) => ({ time: item.time, title: item.title, description: item.description || '' }))
     : [
         { time: '16:00', title: 'Ceremonia del Té', description: 'Ritual de unión en el jardín zen' },
@@ -322,12 +356,16 @@ function TimelineSection({ logistics }: { logistics: InvitationSchema['logistics
 }
 
 // 5. Venues - The Havens
-function VenuesSection({ logistics, content }: { logistics: InvitationSchema['logistics']; content: InvitationSchema['content'] }) {
+function VenuesSection({ logistics, content, features }: { logistics: InvitationSchema['logistics']; content: InvitationSchema['content']; features: InvitationSchema['features'] }) {
   const generateCalendarLink = (venue: any, eventDate: string) => {
     const eventTitle = encodeURIComponent(`${content.headline || content.couple?.person1.name + ' & ' + content.couple?.person2.name} - ${venue.title}`);
     const location = encodeURIComponent(`${venue.name}, ${venue.address}`);
     const details = encodeURIComponent(`Te esperamos para celebrar con nosotros. ${content.couple?.hashtag || ''}`);
-    const baseDate = new Date(eventDate);
+    // Handle invalid or missing event date
+    let baseDate = new Date(eventDate);
+    if (isNaN(baseDate.getTime())) {
+      baseDate = new Date(); // Default to today if invalid
+    }
     const [hours, minutes] = venue.time ? venue.time.split(':') : ['18', '00'];
     baseDate.setHours(parseInt(hours), parseInt(minutes));
     const formatDate = (date: Date) => date.toISOString().replace(/[-:]/g, '').split('.')[0];
@@ -336,62 +374,191 @@ function VenuesSection({ logistics, content }: { logistics: InvitationSchema['lo
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${eventTitle}&dates=${formatDate(baseDate)}/${formatDate(endDate)}&details=${details}&location=${location}`;
   };
 
-  const venues = logistics.venues.length > 0
-    ? logistics.venues.map((venue, idx) => ({
-        title: venue.type === 'ceremony' ? 'Ceremonia' : venue.type === 'reception' ? 'Celebración' : venue.name,
-        name: venue.name,
-        address: venue.address,
-        time: logistics.agenda[idx]?.time || '18:00',
-        mapUrl: `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284.0168753236905!2d${venue.coordinates.lng}!3d${venue.coordinates.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!5e0!3m2!1sen!2sar!4v1234567890`,
-        mapsLink: venue.google_maps_url || `https://maps.google.com/?q=${venue.coordinates.lat},${venue.coordinates.lng}`,
-        calendarLink: generateCalendarLink({ title: venue.type === 'ceremony' ? 'Ceremonia' : 'Celebración', name: venue.name, address: venue.address, time: logistics.agenda[idx]?.time || '18:00' }, logistics.event_date)
-      }))
+  // Filter venues based on show_ceremony and show_reception toggles
+  const showCeremony = features.show_ceremony ?? true;
+  const showReception = features.show_reception ?? true;
+  
+  const allVenues = logistics.venues?.length > 0
+    ? logistics.venues.map((venue, idx) => {
+        const hasCoordinates = venue.coordinates?.lat != null && venue.coordinates?.lng != null;
+        const lat = venue.coordinates?.lat;
+        const lng = venue.coordinates?.lng;
+        
+        // Prioridad 1: Usar google_maps_url del usuario si existe (convertir a embed)
+        // Prioridad 2: Usar coordenadas si existen
+        // Prioridad 3: Usar dirección codificada como fallback
+        let mapUrl: string;
+        if (venue.google_maps_url) {
+          // Convertir URL de Google Maps a formato embed
+          const userUrl = venue.google_maps_url;
+          if (userUrl.includes('/maps/place/')) {
+            // URL tipo: https://www.google.com/maps/place/...
+            mapUrl = userUrl.replace('/maps/place/', '/maps/embed?pb=!1m18!1m12!1m3!1d0!2d0!3d0!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s') + '&output=embed';
+          } else if (userUrl.includes('?q=')) {
+            // Ya tiene query params, agregar output=embed
+            mapUrl = userUrl + (userUrl.includes('?') ? '&' : '?') + 'output=embed';
+          } else {
+            // URL corta u otra forma, usar directamente con output=embed
+            mapUrl = userUrl + (userUrl.includes('?') ? '&' : '?') + 'output=embed';
+          }
+        } else if (hasCoordinates) {
+          mapUrl = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+        } else {
+          mapUrl = `https://maps.google.com/maps?q=${encodeURIComponent(venue.address)}&z=15&output=embed`;
+        }
+        
+        return {
+          title: venue.type === 'ceremony' ? 'Ceremonia' : venue.type === 'reception' ? 'Celebración' : venue.name,
+          name: venue.name,
+          address: venue.address,
+          type: venue.type,
+          time: logistics.agenda?.[idx]?.time || '18:00',
+          mapUrl,
+          mapsLink: venue.google_maps_url || (hasCoordinates ? `https://maps.google.com/?q=${lat},${lng}` : `https://maps.google.com/?q=${encodeURIComponent(venue.address)}`),
+          calendarLink: generateCalendarLink({ title: venue.type === 'ceremony' ? 'Ceremonia' : 'Celebración', name: venue.name, address: venue.address, time: logistics.agenda?.[idx]?.time || '18:00' }, logistics.event_date)
+        };
+      })
     : [
-        { title: 'Ceremonia', name: 'Templo Zen Ryōan-ji', address: 'Jardín de Piedras 13, Kioto', time: '17:00', mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284.0168753236905!2d135.7186!3d35.0345!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!5e0!3m2!1sen!2sar!4v1234567890', mapsLink: 'https://maps.google.com/?q=Ryōan-ji,Kioto', calendarLink: generateCalendarLink({ title: 'Ceremonia', name: 'Templo Zen Ryōan-ji', address: 'Jardín de Piedras 13, Kioto', time: '17:00' }, logistics.event_date) },
-        { title: 'Celebración', name: 'Pabellón de Bambú', address: 'Camino del Arroyo 88, Arashiyama', time: '19:30', mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284.0168753236905!2d135.6738!3d35.0095!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!5e0!3m2!1sen!2sar!4v1234567890', mapsLink: 'https://maps.google.com/?q=Arashiyama,Kioto', calendarLink: generateCalendarLink({ title: 'Celebración', name: 'Pabellón de Bambú', address: 'Camino del Arroyo 88, Arashiyama', time: '19:30' }, logistics.event_date) }
+        { title: 'Ceremonia', name: 'Templo Zen Ryōan-ji', address: 'Jardín de Piedras 13, Kioto', type: 'ceremony', time: '17:00', mapUrl: 'https://maps.google.com/maps?q=35.0345,135.7186&z=15&output=embed', mapsLink: 'https://maps.google.com/?q=Ryōan-ji,Kioto', calendarLink: generateCalendarLink({ title: 'Ceremonia', name: 'Templo Zen Ryōan-ji', address: 'Jardín de Piedras 13, Kioto', time: '17:00' }, logistics.event_date) },
+        { title: 'Celebración', name: 'Pabellón de Bambú', address: 'Camino del Arroyo 88, Arashiyama', type: 'reception', time: '19:30', mapUrl: 'https://maps.google.com/maps?q=35.0095,135.6738&z=15&output=embed', mapsLink: 'https://maps.google.com/?q=Arashiyama,Kioto', calendarLink: generateCalendarLink({ title: 'Celebración', name: 'Pabellón de Bambú', address: 'Camino del Arroyo 88, Arashiyama', time: '19:30' }, logistics.event_date) }
       ];
+
+  // Filter venues based on toggles
+  const filteredVenues = allVenues.filter(venue => {
+    if (venue.type === 'ceremony' && !showCeremony) return false;
+    if (venue.type === 'reception' && !showReception) return false;
+    return true;
+  });
+
+  // Adjust grid based on number of venues
+  const gridClass = filteredVenues.length === 1 
+    ? 'grid md:grid-cols-1 gap-12 max-w-2xl mx-auto' 
+    : 'grid md:grid-cols-2 gap-12';
 
   return (
     <section className="py-24 md:py-32 px-4" style={{ backgroundColor: '#F0EDE6' }}>
-      <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="max-w-6xl mx-auto">
-        <h2 className="text-center font-serif text-2xl md:text-3xl tracking-wide mb-16" style={{ color: '#5C5B57', fontFamily: "'Playfair Display', serif" }}>Las Ubicaciones</h2>
-        <div className="grid md:grid-cols-2 gap-8">
-          {venues.map((venue, index) => (
+      <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="max-w-5xl mx-auto">
+        {/* Header minimalista con línea decorativa */}
+        <div className="text-center mb-16">
+          <div className="flex items-center justify-center gap-6 mb-6">
+            <div className="w-16 md:w-24 h-px" style={{ backgroundColor: '#D4CFC4' }} />
+            <h2 className="font-serif text-2xl md:text-3xl tracking-wide" style={{ color: '#5C5B57', fontFamily: "'Playfair Display', serif" }}>
+              {filteredVenues.length === 1 ? 'La Ubicación' : 'Las Ubicaciones'}
+            </h2>
+            <div className="w-16 md:w-24 h-px" style={{ backgroundColor: '#D4CFC4' }} />
+          </div>
+          <p className="text-xs uppercase tracking-[0.2em] font-light" style={{ color: '#A8A6A2', fontFamily: "'Montserrat', sans-serif" }}>
+            Direcciones del evento
+          </p>
+        </div>
+
+        <div className={gridClass}>
+          {filteredVenues.map((venue, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.2 }}
-              className="overflow-hidden"
-              style={{ backgroundColor: '#FAF8F5', borderRadius: '4px', boxShadow: '0 4px 20px rgba(92, 91, 87, 0.08)' }}
+              className="relative"
             >
-              {/* Map placeholder with link */}
-              <a 
-                href={venue.mapsLink} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="relative h-48 md:h-56 overflow-hidden m-4 mb-0 flex items-center justify-center group transition-all"
-                style={{ border: '1px solid #D4CFC4', borderRadius: '2px', backgroundColor: '#F5F2EB' }}
+              {/* Card minimalista sin imagen */}
+              <div 
+                className="p-8 md:p-10"
+                style={{ 
+                  backgroundColor: '#FAF8F5', 
+                  border: '1px solid #D4CFC4',
+                  borderRadius: '2px'
+                }}
               >
-                <div className="text-center">
-                  <MapPin className="w-8 h-8 mx-auto mb-3 transition-transform group-hover:scale-110" style={{ color: '#B8956A' }} />
-                  <span className="text-xs uppercase tracking-[0.2em] font-light" style={{ color: '#8A8986', fontFamily: "'Montserrat', sans-serif" }}>Ver en Google Maps</span>
+                {/* Indicador de tipo de evento */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div 
+                    className="w-8 h-8 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: 'rgba(184, 149, 106, 0.1)' }}
+                  >
+                    <MapPin className="w-4 h-4" style={{ color: '#B8956A' }} />
+                  </div>
+                  <span 
+                    className="text-[10px] uppercase tracking-[0.25em] font-light"
+                    style={{ color: '#B8956A', fontFamily: "'Montserrat', sans-serif" }}
+                  >
+                    {venue.title}
+                  </span>
                 </div>
-                {/* Subtle hover overlay */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: 'rgba(184, 149, 106, 0.05)' }} />
-              </a>
-              <div className="p-6">
-                <h3 className="text-xs uppercase tracking-[0.2em] font-light mb-2" style={{ color: '#B8956A', fontFamily: "'Montserrat', sans-serif" }}>{venue.title}</h3>
-                <h4 className="font-serif text-xl mb-3" style={{ color: '#5C5B57', fontFamily: "'Playfair Display', serif" }}>{venue.name}</h4>
-                <p className="text-sm font-light mb-6 flex items-start" style={{ color: '#8A8986', fontFamily: "'Montserrat', sans-serif" }}>
-                  <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" style={{ color: '#B8956A' }} />{venue.address}
+
+                {/* Nombre del lugar */}
+                <h3 
+                  className="font-serif text-2xl md:text-3xl mb-4 tracking-wide"
+                  style={{ color: '#5C5B57', fontFamily: "'Playfair Display', serif" }}
+                >
+                  {venue.name}
+                </h3>
+
+                {/* Divider elegante */}
+                <div className="w-12 h-px mb-6" style={{ backgroundColor: '#D4CFC4' }} />
+
+                {/* Dirección */}
+                <p 
+                  className="text-sm font-light mb-2 leading-relaxed"
+                  style={{ color: '#8A8986', fontFamily: "'Montserrat', sans-serif" }}
+                >
+                  {venue.address}
                 </p>
-                <div className="flex gap-3">
-                  <a href={venue.mapsLink} target="_blank" rel="noopener noreferrer" className="flex-1 px-4 py-3 text-center text-xs uppercase tracking-[0.15em] font-light transition-all duration-300 hover:bg-[#F5F2EB]" style={{ color: '#5C5B57', border: '1px solid #D4CFC4', borderRadius: '2px', fontFamily: "'Montserrat', sans-serif" }}>Cómo llegar</a>
-                  <a href={venue.calendarLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-4 py-3 text-xs uppercase tracking-[0.15em] font-light transition-all duration-300 hover:bg-[#F5F2EB]" style={{ color: '#5C5B57', border: '1px solid #D4CFC4', borderRadius: '2px', fontFamily: "'Montserrat', sans-serif" }}><Calendar className="w-4 h-4" />Agendar</a>
+
+                {/* Horario si está disponible */}
+                {venue.time && (
+                  <p 
+                    className="text-xs uppercase tracking-[0.15em] font-light mb-8"
+                    style={{ color: '#A8A6A2', fontFamily: "'Montserrat', sans-serif" }}
+                  >
+                    {venue.time} hs
+                  </p>
+                )}
+
+                {/* Botones de acción minimalistas */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t" style={{ borderColor: '#E8E4DB' }}>
+                  <a 
+                    href={venue.mapsLink} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex-1 flex items-center justify-center gap-2 px-5 py-3 text-[11px] uppercase tracking-[0.15em] font-light transition-all duration-300 hover:bg-[#F5F2EB]"
+                    style={{ 
+                      color: '#5C5B57', 
+                      border: '1px solid #D4CFC4', 
+                      borderRadius: '2px', 
+                      fontFamily: "'Montserrat', sans-serif" 
+                    }}
+                  >
+                    <MapPin className="w-4 h-4" style={{ color: '#B8956A' }} />
+                    Cómo llegar
+                  </a>
+                  <a 
+                    href={venue.calendarLink} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex items-center justify-center gap-2 px-5 py-3 text-[11px] uppercase tracking-[0.15em] font-light transition-all duration-300 hover:bg-[#F5F2EB]"
+                    style={{ 
+                      color: '#5C5B57', 
+                      border: '1px solid #D4CFC4', 
+                      borderRadius: '2px', 
+                      fontFamily: "'Montserrat', sans-serif" 
+                    }}
+                  >
+                    <Calendar className="w-4 h-4" style={{ color: '#B8956A' }} />
+                    Agendar
+                  </a>
                 </div>
               </div>
+
+              {/* Decoración sutil: esquina con acento */}
+              <div 
+                className="absolute -top-2 -right-2 w-8 h-8 opacity-30"
+                style={{ 
+                  background: 'linear-gradient(135deg, transparent 50%, #B8956A 50%)',
+                  borderRadius: '2px'
+                }}
+              />
             </motion.div>
           ))}
         </div>
@@ -402,10 +569,19 @@ function VenuesSection({ logistics, content }: { logistics: InvitationSchema['lo
 
 // 6. Dress Code - The Attire Flow
 function DressCodeSection({ logistics }: { logistics: InvitationSchema['logistics'] }) {
-  const dressCodeText = logistics.dress_code?.code === 'formal' ? 'Formal Elegante' : logistics.dress_code?.code === 'black-tie' ? 'Black Tie' : logistics.dress_code?.code === 'cocktail' ? 'Cocktail' : logistics.dress_code?.description || 'Elegancia Natural';
+  const dressCodeText = logistics.dress_code?.code === 'formal' ? 'Formal Elegante' : 
+    logistics.dress_code?.code === 'black-tie' ? 'Black Tie' : 
+    logistics.dress_code?.code === 'cocktail' ? 'Cocktail' : 
+    logistics.dress_code?.code === 'semi-formal' ? 'Semi Formal' : 
+    logistics.dress_code?.code === 'casual-elegante' ? 'Casual Elegante' :
+    logistics.dress_code?.code === 'casual' ? 'Casual' :
+    logistics.dress_code?.code === 'smart-casual' ? 'Smart Casual' :
+    logistics.dress_code?.code === 'themed' ? 'Temática Especial' :
+    logistics.dress_code?.description || 'Elegancia Natural';
+  const dressCodeDetail = logistics.dress_code?.description;
 
   return (
-    <section className="py-24 md:py-32 px-4" style={{ backgroundColor: '#F5F2EB' }}>
+    <section className="pt-24 md:pt-32 pb-12 md:pb-16 px-4" style={{ backgroundColor: '#F5F2EB' }}>
       <motion.div 
         initial={{ opacity: 0 }} 
         whileInView={{ opacity: 1 }} 
@@ -417,7 +593,20 @@ function DressCodeSection({ logistics }: { logistics: InvitationSchema['logistic
         
         <div className="w-px h-12 mx-auto mb-8" style={{ backgroundColor: '#B8956A' }} />
         
-        <h3 className="font-serif text-2xl md:text-3xl tracking-wide" style={{ color: '#5C5B57', fontFamily: "'Playfair Display', serif" }}>{dressCodeText}</h3>
+        <h3 className="font-serif text-2xl md:text-3xl tracking-wide mb-6" style={{ color: '#5C5B57', fontFamily: "'Playfair Display', serif" }}>{dressCodeText}</h3>
+        
+        {dressCodeDetail && (
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-sm font-light leading-relaxed max-w-md mx-auto"
+            style={{ color: '#8A8986', fontFamily: "'Montserrat', sans-serif" }}
+          >
+            {dressCodeDetail}
+          </motion.p>
+        )}
       </motion.div>
     </section>
   );
@@ -462,23 +651,23 @@ function GallerySection({ content }: { content: InvitationSchema['content'] }) {
           </p>
         </div>
 
-        {/* Mobile: Carrusel horizontal original */}
+        {/* Mobile: Carrusel horizontal - una imagen por slide */}
         <div className="md:hidden relative px-4" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
-          <div className="overflow-hidden" style={{ borderRadius: '2px' }}>
+          <div className="overflow-hidden rounded-sm">
             <motion.div 
               className="flex" 
-              animate={{ x: -currentIndex * 100 + '%' }} 
-              transition={{ duration: 0.8, ease: "easeInOut" }} 
+              animate={{ x: `-${currentIndex * (100 / photos.length)}%` }} 
+              transition={{ duration: 0.5, ease: "easeInOut" }} 
               style={{ width: `${photos.length * 100}%` }}
             >
               {photos.map((photo, index) => (
-                <div key={index} className="flex-shrink-0" style={{ width: `${100 / photos.length}%`, padding: '0 8px' }}>
-                  <div style={{ aspectRatio: '4/3', maxHeight: '50vh', width: '100%' }}>
+                <div key={index} className="flex-shrink-0 px-2" style={{ width: `${100 / photos.length}%` }}>
+                  <div className="aspect-[4/3] max-h-[50vh] w-full">
                     <img 
                       src={photo} 
                       alt={`Gallery ${index + 1}`} 
-                      className="w-full h-full object-cover" 
-                      style={{ filter: 'sepia(10%) saturate(90%) contrast(0.95)', borderRadius: '2px' }} 
+                      className="w-full h-full object-cover rounded-sm" 
+                      style={{ filter: 'sepia(10%) saturate(90%) contrast(0.95)' }} 
                     />
                   </div>
                 </div>
@@ -604,7 +793,6 @@ function GallerySection({ content }: { content: InvitationSchema['content'] }) {
 function GiftRegistrySection({ features }: { features: InvitationSchema['features'] }) {
   const [copied, setCopied] = useState(false);
   const alias = features.gift_registry?.bank_details?.alias || 'SAKURAYKENJI.BODA';
-  const mercadoLibreUrl = features.gift_registry?.registries?.[0]?.url || 'https://listas.mercadolibre.com.ar';
 
   const handleCopy = () => {
     navigator.clipboard.writeText(alias);
@@ -620,7 +808,7 @@ function GiftRegistrySection({ features }: { features: InvitationSchema['feature
         <div className="w-px h-8 mx-auto mb-8" style={{ backgroundColor: '#D4CFC4' }} />
         
         <p className="text-sm font-light leading-relaxed mb-10 max-w-md mx-auto" style={{ color: '#8A8986', fontFamily: "'Montserrat', sans-serif" }}>
-          {features.gift_registry?.message || 'Vuestra presencia es el regalo más valioso. Si deseáis contribuir a nuestro nuevo hogar, os lo agradecemos con el corazón.'}
+          {features.gift_registry?.message || 'Tu presencia es el regalo más valioso. Si deseás contribuir a nuestro nuevo hogar, te lo agradecemos con el corazón.'}
         </p>
         
         {/* Alias minimalista */}
@@ -637,19 +825,6 @@ function GiftRegistrySection({ features }: { features: InvitationSchema['feature
             </button>
           </div>
         </div>
-
-        {/* Link a Mercado Libre - estilo ghost */}
-        <div className="pt-8" style={{ borderTop: '1px solid #E8E4DB' }}>
-          <a
-            href={mercadoLibreUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block text-xs uppercase tracking-[0.2em] font-light px-8 py-3 transition-all duration-300 hover:bg-[#F5F2EB]"
-            style={{ color: '#5C5B57', border: '1px solid #D4CFC4', borderRadius: '2px', fontFamily: "'Montserrat', sans-serif" }}
-          >
-            Ver lista de regalos
-          </a>
-        </div>
       </motion.div>
     </section>
   );
@@ -657,20 +832,50 @@ function GiftRegistrySection({ features }: { features: InvitationSchema['feature
 
 // 9. RSVP - The Gentle Affirmation
 function RSVPSection({ features, content, metadata }: { features: InvitationSchema['features']; content: InvitationSchema['content']; metadata: InvitationSchema['metadata'] }) {
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', attendance: true, guests: 1, dietary: '', message: '' });
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    email: '', 
+    phone: '', 
+    attendance: true, 
+    guests: 1, 
+    dietary: '', 
+    musicSuggestion: '', 
+    message: '' 
+  });
+  // Estado para respuestas de preguntas personalizadas
+  const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Obtener preguntas personalizadas desde features.rsvp
+  const customQuestions = features.rsvp?.custom_questions || [];
+
+  const handleCustomAnswerChange = (questionId: string, value: string) => {
+    setCustomAnswers(prev => ({ ...prev, [questionId]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const result = await submitRSVP({ invitationId: metadata.id, name: formData.name, email: formData.email, phone: formData.phone, attendance: formData.attendance, guestsCount: formData.guests, dietaryRestrictions: formData.dietary, message: formData.message });
+      const result = await submitRSVP({ 
+        invitationId: metadata.id, 
+        name: formData.name, 
+        email: formData.email, 
+        phone: formData.phone, 
+        attendance: formData.attendance, 
+        guestsCount: formData.guests, 
+        dietaryRestrictions: formData.dietary, 
+        musicSuggestion: formData.musicSuggestion, 
+        message: formData.message,
+        customAnswers: customAnswers // Enviar respuestas personalizadas
+      });
       if (result.success) {
         setSuccess(true);
-        setFormData({ name: '', email: '', phone: '', attendance: true, guests: 1, dietary: '', message: '' });
+        setFormData({ name: '', email: '', phone: '', attendance: true, guests: 1, dietary: '', musicSuggestion: '', message: '' });
+        setCustomAnswers({}); // Limpiar respuestas personalizadas
       } else {
         setError(result.error || 'Error al enviar la confirmación');
       }
@@ -711,7 +916,7 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
           </div>
           <div>
             <label className="block text-xs uppercase tracking-[0.15em] font-light mb-3" style={{ color: '#A8A6A2', fontFamily: "'Montserrat', sans-serif" }}>Email</label>
-            <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full py-3 bg-transparent focus:outline-none transition-colors text-sm font-light" style={{ color: '#5C5B57', borderBottom: '1px solid #D4CFC4', fontFamily: "'Montserrat', sans-serif" }} placeholder="tu@email.com" disabled={loading} />
+            <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full py-3 bg-transparent focus:outline-none transition-colors text-sm font-light [&:-webkit-autofill]:bg-transparent [&:-webkit-autofill]:shadow-[inset_0_0_0_50px_#FAF8F5] [&:-webkit-autofill]:text-[#5C5B57]" style={{ color: '#5C5B57', borderBottom: '1px solid #D4CFC4', fontFamily: "'Montserrat', sans-serif" }} placeholder="tu@email.com" disabled={loading} />
           </div>
           <div>
             <label className="block text-xs uppercase tracking-[0.15em] font-light mb-3" style={{ color: '#A8A6A2', fontFamily: "'Montserrat', sans-serif" }}>¿Asistirás?</label>
@@ -720,16 +925,76 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
               <button type="button" onClick={() => setFormData({ ...formData, attendance: false })} className="flex-1 py-3 text-xs uppercase tracking-[0.15em] font-light transition-all duration-300" style={{ backgroundColor: !formData.attendance ? '#A8A6A2' : 'transparent', color: !formData.attendance ? '#FAF8F5' : '#5C5B57', border: '1px solid #D4CFC4', borderRadius: '2px', fontFamily: "'Montserrat', sans-serif" }} disabled={loading}>No podré ir</button>
             </div>
           </div>
-          <div>
-            <label className="block text-xs uppercase tracking-[0.15em] font-light mb-3" style={{ color: '#A8A6A2', fontFamily: "'Montserrat', sans-serif" }}>Número de Invitados</label>
-            <select value={formData.guests} onChange={(e) => setFormData({ ...formData, guests: parseInt(e.target.value) })} className="w-full py-3 bg-transparent focus:outline-none transition-colors text-sm font-light cursor-pointer" style={{ color: '#5C5B57', borderBottom: '1px solid #D4CFC4', fontFamily: "'Montserrat', sans-serif" }} disabled={loading}>
-              {[1, 2, 3, 4].map((num) => <option key={num} value={num} style={{ backgroundColor: '#FAF8F5' }}>{num} {num === 1 ? 'persona' : 'personas'}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs uppercase tracking-[0.15em] font-light mb-3" style={{ color: '#A8A6A2', fontFamily: "'Montserrat', sans-serif" }}>Mensaje (opcional)</label>
-            <textarea value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} className="w-full py-3 bg-transparent focus:outline-none transition-colors text-sm font-light resize-none" style={{ color: '#5C5B57', borderBottom: '1px solid #D4CFC4', fontFamily: "'Montserrat', sans-serif", minHeight: '80px' }} placeholder="Unas palabras para los novios..." disabled={loading} />
-          </div>
+          {/* Preguntas que se ocultan si no asiste */}
+          {formData.attendance && (
+            <>
+              <div>
+                <label className="block text-xs uppercase tracking-[0.15em] font-light mb-3" style={{ color: '#A8A6A2', fontFamily: "'Montserrat', sans-serif" }}>Número de Invitados</label>
+                <select value={formData.guests} onChange={(e) => setFormData({ ...formData, guests: parseInt(e.target.value) })} className="w-full py-3 bg-transparent focus:outline-none transition-colors text-sm font-light cursor-pointer" style={{ color: '#5C5B57', borderBottom: '1px solid #D4CFC4', fontFamily: "'Montserrat', sans-serif" }} disabled={loading}>
+                  {[1, 2, 3, 4].map((num) => <option key={num} value={num} style={{ backgroundColor: '#FAF8F5' }}>{num} {num === 1 ? 'persona' : 'personas'}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-[0.15em] font-light mb-3" style={{ color: '#A8A6A2', fontFamily: "'Montserrat', sans-serif" }}>Restricciones Alimentarias</label>
+                <textarea value={formData.dietary} onChange={(e) => setFormData({ ...formData, dietary: e.target.value })} className="w-full py-3 bg-transparent focus:outline-none transition-colors text-sm font-light resize-none" style={{ color: '#5C5B57', borderBottom: '1px solid #D4CFC4', fontFamily: "'Montserrat', sans-serif", minHeight: '80px' }} placeholder="¿Tienes alguna restricción alimentaria o alergia que debamos conocer?" disabled={loading} />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-[0.15em] font-light mb-3" style={{ color: '#A8A6A2', fontFamily: "'Montserrat', sans-serif" }}>Sugerencia Musical</label>
+                <input type="text" value={formData.musicSuggestion} onChange={(e) => setFormData({ ...formData, musicSuggestion: e.target.value })} className="w-full py-3 bg-transparent focus:outline-none transition-colors text-sm font-light" style={{ color: '#5C5B57', borderBottom: '1px solid #D4CFC4', fontFamily: "'Montserrat', sans-serif" }} placeholder="¿Qué canción no puede faltar? (Ej: Perfect - Ed Sheeran)" disabled={loading} />
+              </div>
+              {/* Preguntas Personalizadas */}
+              {customQuestions.length > 0 && (
+                <div className="space-y-6 pt-4 border-t border-[#E8E4DB]">
+                  <p className="text-xs uppercase tracking-[0.2em] font-light" style={{ color: '#B8956A', fontFamily: "'Montserrat', sans-serif" }}>Preguntas Adicionales</p>
+                  {customQuestions.map((question, index) => (
+                    <div key={question.id}>
+                      <label className="block text-xs uppercase tracking-[0.15em] font-light mb-3" style={{ color: '#A8A6A2', fontFamily: "'Montserrat', sans-serif" }}>
+                        {question.question}
+                        {question.required && <span className="text-[#B8956A] ml-1">*</span>}
+                      </label>
+                      {question.type === 'text' ? (
+                        <input
+                          type="text"
+                          required={question.required}
+                          value={customAnswers[question.id] || ''}
+                          onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
+                          className="w-full py-3 bg-transparent focus:outline-none transition-colors text-sm font-light"
+                          style={{ color: '#5C5B57', borderBottom: '1px solid #D4CFC4', fontFamily: "'Montserrat', sans-serif" }}
+                          placeholder="Tu respuesta..."
+                          disabled={loading}
+                        />
+                      ) : question.type === 'select' ? (
+                        <select
+                          required={question.required}
+                          value={customAnswers[question.id] || ''}
+                          onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
+                          className="w-full py-3 bg-transparent focus:outline-none transition-colors text-sm font-light cursor-pointer"
+                          style={{ color: '#5C5B57', borderBottom: '1px solid #D4CFC4', fontFamily: "'Montserrat', sans-serif" }}
+                          disabled={loading}
+                        >
+                          <option value="" style={{ backgroundColor: '#FAF8F5' }}>Selecciona una opción</option>
+                          {question.options?.map((opt) => (
+                            <option key={opt} value={opt} style={{ backgroundColor: '#FAF8F5' }}>{opt}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <textarea
+                          required={question.required}
+                          value={customAnswers[question.id] || ''}
+                          onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
+                          className="w-full py-3 bg-transparent focus:outline-none transition-colors text-sm font-light resize-none"
+                          style={{ color: '#5C5B57', borderBottom: '1px solid #D4CFC4', fontFamily: "'Montserrat', sans-serif", minHeight: '80px' }}
+                          placeholder="Tu respuesta..."
+                          disabled={loading}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+          
           <motion.button type="submit" disabled={loading} whileHover={{ boxShadow: '0 0 30px rgba(184, 149, 106, 0.3)' }} className="w-full py-4 text-xs uppercase tracking-[0.2em] font-light transition-all duration-300 disabled:opacity-50" style={{ backgroundColor: '#5C5B57', color: '#FAF8F5', borderRadius: '2px', fontFamily: "'Montserrat', sans-serif" }}>
             {loading ? <span className="flex items-center justify-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />Enviando...</span> : 'Confirmar Asistencia'}
           </motion.button>
@@ -791,7 +1056,7 @@ function MusicSection({ features, content }: { features: InvitationSchema['featu
       >
         {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="font-serif text-2xl md:text-3xl tracking-wide mb-4" style={{ color: '#5C5B57', fontFamily: "'Playfair Display', serif" }}>La Bandeja Sonora</h2>
+          <h2 className="font-serif text-2xl md:text-3xl tracking-wide mb-4" style={{ color: '#5C5B57', fontFamily: "'Playfair Display', serif" }}>La Banda Sonora</h2>
           <div className="w-px h-8 mx-auto" style={{ backgroundColor: '#D4CFC4' }} />
         </div>
 
@@ -977,21 +1242,23 @@ function Footer({ content }: { content: InvitationSchema['content'] }) {
         <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.3 }} className="text-xs uppercase tracking-[0.3em] font-light" style={{ color: '#A8A6A2', fontFamily: "'Montserrat', sans-serif" }}>
           Con amor, {content.couple?.person1.name || 'Sakura'} & {content.couple?.person2.name || 'Kenji'}
         </motion.p>
-        <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.4 }} className="text-xs font-light mt-8" style={{ color: '#B8B5B0', fontFamily: "'Montserrat', sans-serif" }}>Invitame © 2026</motion.p>
+        <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.4 }} className="text-xs font-light mt-8" style={{ color: '#B8B5B0', fontFamily: "'Montserrat', sans-serif" }}>VOWS <span style={{ color: '#a27b5c' }}>.</span> © 2026</motion.p>
       </div>
     </footer>
   );
 }
 
 // Main Layout Component
-export function JapandiLayout({ invitation, preview }: JapandiLayoutProps) {
+export function JapandiLayout({ invitation, preview, previewMobile }: JapandiLayoutProps) {
   const { metadata, content, logistics, features } = invitation;
 
   return (
     <main className="min-h-screen overflow-x-hidden" style={{ backgroundColor: '#FAF8F5' }}>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
-        <HeroSection content={content} logistics={logistics} />
-      </motion.div>
+      <FeatureGate isVisible={features.show_hero} fallback={preview ? <EmptyStatePreview icon="👋" title="Hero Section" description="Sección principal con los nombres y fecha" /> : null}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
+          <HeroSection content={content} logistics={logistics} previewMobile={previewMobile} />
+        </motion.div>
+      </FeatureGate>
       <FeatureGate isVisible={features.show_countdown} data={features.countdown} fallback={preview ? <EmptyStatePreview icon="⏰" title="Cuenta Regresiva" description="Configura la fecha de tu evento para activar la cuenta regresiva" /> : null}>
         <CountdownSection logistics={logistics} />
       </FeatureGate>
@@ -1002,16 +1269,10 @@ export function JapandiLayout({ invitation, preview }: JapandiLayoutProps) {
         <TimelineSection logistics={logistics} />
       </FeatureGate>
       <FeatureGate isVisible={features.show_venue_map} data={logistics.venues} fallback={preview ? <EmptyStatePreview icon="📍" title="Ubicaciones" description="Indica dónde será la ceremonia y la celebración" /> : null}>
-        <VenuesSection logistics={logistics} content={content} />
+        <VenuesSection logistics={logistics} content={content} features={features} />
       </FeatureGate>
       <FeatureGate isVisible={features.show_dress_code} data={logistics.dress_code} fallback={preview ? <EmptyStatePreview icon="👔" title="Código de Vestimenta" description="Especifica el dress code para tu evento" /> : null}>
         <DressCodeSection logistics={logistics} />
-      </FeatureGate>
-      <FeatureGate isVisible={features.show_gallery} data={content.gallery_images} fallback={preview ? <EmptyStatePreview icon="🖼️" title="Galería de Fotos" description="Sube hasta 15 fotos para compartir momentos especiales" /> : null}>
-        <GallerySection content={content} />
-      </FeatureGate>
-      <FeatureGate isVisible={features.show_music} data={features.music} fallback={preview ? <EmptyStatePreview icon="🎵" title="Sugerir Canciones" description="Permite a tus invitados sugerir canciones para la playlist" /> : null}>
-        <MusicSection features={features} content={content} />
       </FeatureGate>
       <FeatureGate isVisible={features.show_gift_registry} data={features.gift_registry} fallback={preview ? <EmptyStatePreview icon="🎁" title="Mesa de Regalos" description="Comparte los datos bancarios o listas de regalos" /> : null}>
         <GiftRegistrySection features={features} />

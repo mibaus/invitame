@@ -45,15 +45,6 @@ export function Step2Wedding({ formData, updateFormData }: StepProps) {
         </svg>
       )
     },
-    { 
-      key: 'showMusic', 
-      label: 'Música', 
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-        </svg>
-      )
-    },
   ];
 
   const handleToggle = (key: string) => {
@@ -77,9 +68,11 @@ export function Step2Wedding({ formData, updateFormData }: StepProps) {
     setCheckingSlug(true);
     setSlugError(null);
 
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    // Llamar a la server action para verificar en la base de datos
+    const { checkSlugExists } = await import('@/app/actions/onboarding');
+    const exists = await checkSlugExists(slug);
     
-    if (slug === 'boda-real' || slug === 'test') {
+    if (exists) {
       setSlugError('Esta URL ya está en uso');
       updateFormData({ isSlugValid: false });
     } else {
@@ -98,8 +91,8 @@ export function Step2Wedding({ formData, updateFormData }: StepProps) {
       {/* URL PERSONALIZADA SECTION */}
       <section className="mb-10 p-6 bg-[#F8F9FA] rounded-3xl border border-gray-100 flex flex-col md:flex-row items-center gap-6">
         <div className="md:w-1/3">
-          <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#A27B5C] mb-1">Enlace de tu Invitación</h3>
-          <p className="text-[10px] text-gray-400 italic">Será la dirección web que compartirás.</p>
+          <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#A27B5C] mb-1">Enlace de tu Invitación <span className="text-red-500">*</span></h3>
+          <p className="text-[10px] text-gray-400 italic">Será la dirección web que compartirás. Obligatorio.</p>
         </div>
         <div className="md:w-2/3 w-full relative">
           <div className="flex items-center bg-white border border-gray-100 rounded-2xl overflow-hidden focus-within:border-[#A27B5C] focus-within:ring-1 focus-within:ring-[#A27B5C] transition-all duration-300">
@@ -107,6 +100,7 @@ export function Step2Wedding({ formData, updateFormData }: StepProps) {
             <input
               type="text"
               placeholder="tu-boda-aqui"
+              required
               className="flex-grow py-4 pr-10 text-sm font-semibold outline-none bg-transparent"
               value={formData.slug || ''}
               onChange={handleSlugChange}
@@ -136,8 +130,11 @@ export function Step2Wedding({ formData, updateFormData }: StepProps) {
 
       {/* FEATURE SELECTOR */}
       <section className="mb-14">
-        <label className="block text-[10px] uppercase tracking-[0.3em] font-bold text-[#A27B5C] mb-6 text-center">Configuración de Secciones</label>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <label className="block text-[10px] uppercase tracking-[0.3em] font-bold text-[#A27B5C] mb-2 text-center">Configuración de Secciones</label>
+        <p className="text-[11px] text-gray-400 text-center mb-6 max-w-md mx-auto">
+          Activá los módulos que necesites hoy. Siempre podrás sumar o quitar secciones después de publicar.
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
           {toggles.map((t) => (
             <button
               key={t.key}
@@ -171,7 +168,7 @@ export function Step2Wedding({ formData, updateFormData }: StepProps) {
           <h3 className="text-[10px] uppercase tracking-widest font-bold text-[#A27B5C] border-b border-gray-100 pb-2 mb-4">Información Base</h3>
           
           <div>
-            <label className="block text-[9px] uppercase tracking-widest font-semibold text-gray-400 mb-2">Título de la Invitación</label>
+            <label className="block text-[9px] uppercase tracking-widest font-semibold text-gray-400 mb-2">Título de la Invitación <span className="text-gray-300 font-normal normal-case">(opcional)</span></label>
             <input
               type="text"
               required
@@ -184,7 +181,7 @@ export function Step2Wedding({ formData, updateFormData }: StepProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[9px] uppercase tracking-widest font-semibold text-gray-400 mb-2">Fecha del Evento</label>
+              <label className="block text-[9px] uppercase tracking-widest font-semibold text-gray-400 mb-2">Fecha del Evento <span className="text-gray-300 font-normal normal-case">(opcional)</span></label>
               <input
                 type="date"
                 required
@@ -194,7 +191,7 @@ export function Step2Wedding({ formData, updateFormData }: StepProps) {
               />
             </div>
             <div>
-              <label className="block text-[9px] uppercase tracking-widest font-semibold text-gray-400 mb-2">Hora de Inicio</label>
+              <label className="block text-[9px] uppercase tracking-widest font-semibold text-gray-400 mb-2">Hora de Inicio <span className="text-gray-300 font-normal normal-case">(opcional)</span></label>
               <input
                 type="time"
                 required
@@ -207,7 +204,7 @@ export function Step2Wedding({ formData, updateFormData }: StepProps) {
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[9px] uppercase tracking-widest font-semibold text-gray-400 mb-2">Nombre Pareja 1</label>
+              <label className="block text-[9px] uppercase tracking-widest font-semibold text-gray-400 mb-2">Nombre Pareja 1 <span className="text-gray-300 font-normal normal-case">(opcional)</span></label>
               <input
                 type="text"
                 required
@@ -217,7 +214,7 @@ export function Step2Wedding({ formData, updateFormData }: StepProps) {
               />
             </div>
             <div>
-              <label className="block text-[9px] uppercase tracking-widest font-semibold text-gray-400 mb-2">Nombre Pareja 2</label>
+              <label className="block text-[9px] uppercase tracking-widest font-semibold text-gray-400 mb-2">Nombre Pareja 2 <span className="text-gray-300 font-normal normal-case">(opcional)</span></label>
               <input
                 type="text"
                 required
@@ -233,11 +230,11 @@ export function Step2Wedding({ formData, updateFormData }: StepProps) {
           <h3 className="text-[10px] uppercase tracking-widest font-bold text-[#A27B5C] border-b border-gray-100 pb-2 mb-4">Detalles Editoriales</h3>
           
           <div>
-            <label className="block text-[9px] uppercase tracking-widest font-semibold text-gray-400 mb-2">Mensaje de Bienvenida</label>
+            <label className="block text-[9px] uppercase tracking-widest font-semibold text-gray-400 mb-2">Mensaje de Bienvenida <span className="text-gray-300 font-normal normal-case">(opcional)</span></label>
             <textarea
               required
               rows={4}
-              placeholder="Escribe algo inspirador..."
+              placeholder="Escribí algo inspirador... (Podés dejarlo para después)."
               className="w-full px-4 py-3 bg-[#F8F9FA] border border-gray-100 rounded-2xl focus:bg-white transition-all resize-none text-sm leading-relaxed"
               value={formData.mainMessage || ''}
               onChange={(e) => updateFormData({ mainMessage: e.target.value })}

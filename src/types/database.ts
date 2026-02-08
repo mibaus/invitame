@@ -274,6 +274,17 @@ export interface InvitationContent {
       platform?: string;
       url?: string;
     };
+    section_visibility?: {
+      show_hero?: boolean;
+      show_countdown?: boolean;
+      show_agenda?: boolean;
+      show_dress_code?: boolean;
+      show_gift_registry?: boolean;
+      show_rsvp?: boolean;
+      show_gallery?: boolean;
+      show_guest_messages?: boolean;
+      show_music?: boolean;
+    };
   };
   skin_config?: {
     colors?: Record<string, string>;
