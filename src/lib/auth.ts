@@ -17,7 +17,7 @@ const config = {
     strategy: "jwt" as const,
     maxAge: 30 * 60, // 30 minutos - token de corta duración
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
   callbacks: {
     async jwt({ token, user }: any) {
       if (user) {
