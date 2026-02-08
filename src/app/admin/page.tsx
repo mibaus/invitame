@@ -43,15 +43,15 @@ export default async function AdminPage() {
             Panel de Administración
           </h1>
           <p className="text-[#2C3333]/60 mb-8">
-            Bienvenida, {session.user.name}!
+            Bienvenida, {session?.user?.name || 'Administradora'}!
           </p>
           
           <div className="p-6 bg-[#A27B5C]/10 rounded-2xl">
             <p className="text-sm text-[#2C3333]">
-              ✅ Login exitoso<br/>
-              ✅ Sesión válida<br/>
-              ✅ Email autorizado<br/>
-              ✅ Panel funcional
+              {"✅ Login exitoso\n"}
+              {"✅ Sesión válida\n"}
+              {"✅ Email autorizado\n"}
+              {"✅ Panel funcional"}
             </p>
           </div>
           
