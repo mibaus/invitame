@@ -50,7 +50,7 @@ export function PreviewClient() {
     
     // Si no hay datos válidos, usar default
     if (!initialData) {
-      initialData = createDefaultData(skinIdFromUrl || 'bolt-dark');
+      initialData = createDefaultData(skinIdFromUrl || 'avant-garde-editorial');
     }
     
     // Only set initial invitation if we don't need to wait for postMessage
