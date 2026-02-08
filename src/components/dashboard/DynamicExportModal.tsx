@@ -401,7 +401,7 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
         {/* Header */}
         <div className="px-6 py-4 border-b border-stone-100">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-serif text-stone-800">Exportar Selección</h2>
+            <h2 className="text-lg font-serif text-stone-800">Exportar Selección Filtrada</h2>
             <button
               onClick={onClose}
               className="text-stone-400 hover:text-stone-600 transition-colors"

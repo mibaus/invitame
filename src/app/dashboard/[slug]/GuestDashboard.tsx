@@ -7,9 +7,8 @@ import type { DashboardData, RSVPRecord } from '@/app/actions/dashboard';
 import { getRSVPs } from '@/app/actions/dashboard';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { InvitationEditForm } from './InvitationEditForm';
-import { ExportModal } from '@/components/dashboard/ExportModal';
-import { SmartFilterBar } from '@/components/dashboard/SmartFilterBar';
 import { DynamicExportModal } from '@/components/dashboard/DynamicExportModal';
+import { SmartFilterBar } from '@/components/dashboard/SmartFilterBar';
 import { WhatsAppShare } from '@/components/dashboard/WhatsAppShare';
 
 interface GuestDashboardProps {
@@ -607,10 +606,11 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
       </main>
 
       {/* Export Modal */}
-      <ExportModal
+      <DynamicExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
-        data={{ ...data, rsvps, stats }}
+        filteredRsvps={filteredRsvps}
+        totalCount={filteredRsvps.length}
       />
       
       {/* Dynamic Export Modal */}

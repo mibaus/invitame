@@ -1,8 +1,10 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getPendingInvitations } from '@/app/actions/admin';
 import { AdminDashboard } from './AdminDashboard';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { auth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +23,15 @@ async function InvitationsList() {
   return <AdminDashboard invitations={result.data || []} />;
 }
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  // Validar sesión en servidor
+  const session = await auth();
+  const ADMIN_EMAIL = "mi.baus.g@gmail.com";
+  
+  if (!session?.user?.email || session.user.email !== ADMIN_EMAIL) {
+    redirect('/login-admin');
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Header */}
