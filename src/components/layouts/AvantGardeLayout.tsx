@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
-import { X, Copy, Check, ExternalLink, MapPin, Calendar } from 'lucide-react';
+import { X, Copy, Check, ExternalLink, MapPin, Calendar, ArrowUpRight } from 'lucide-react';
 import { InvitationSchema } from '@/types';
 import { FeatureGate } from '@/components/shared/FeatureGate';
 import { DietaryRestrictionsDropdown } from '@/components/shared/DietaryRestrictionsDropdown';
@@ -1127,37 +1127,45 @@ function FooterCredits({ content }: { content: InvitationSchema['content'] }) {
     const person2Name = content.couple?.person2.name || 'MATEO';
 
     return (
-        <footer className="bg-white py-12 px-6 md:px-12 border-t border-black/10 text-black">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-                <div className="md:col-span-2">
-                    <h2 className="text-4xl font-black tracking-tighter mb-4 italic">{person1Name} & {person2Name}</h2>
-                    <p className="font-mono text-[10px] tracking-[0.2em] text-black/40 leading-relaxed uppercase">
-                        ESTE EVENTO ES UNA PRODUCCIÓN PRIVADA. TODOS LOS DERECHOS RESERVADOS PARA EL COMIENZO DE NUESTRA FAMILIA. <br/>
-                        COPYRIGHT © 2024 BUENOS AIRES, ARGENTINA.
-                    </p>
-                </div>
-                
-                <div className="flex flex-col gap-2">
-                    <div className="font-mono text-[10px] font-bold text-red-600 tracking-widest uppercase">CRÉDITOS</div>
-                    <div className="font-mono text-[10px] text-black uppercase">DIRECTOR: {person2Name}</div>
-                    <div className="font-mono text-[10px] text-black uppercase">DIR. CREATIVA: {person1Name}</div>
-                    <div className="font-mono text-[10px] text-black uppercase">PRODUCCIÓN: VOWS</div>
+        <footer className="bg-black pt-20 pb-10 px-6 md:px-12 text-white/60">
+            <div className="max-w-7xl mx-auto">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-12 pb-16 border-b border-white/5">
+                    <div className="space-y-6">
+                        <span className="text-2xl font-black font-bold tracking-tighter">VOWS<span className="text-red-600">.</span></span>
+                        <p className="text-xs uppercase tracking-[0.3em] font-light max-w-xs leading-relaxed font-mono">
+                            REDFINIENDO LA ESTÉTICA NUPIAL DIGITAL. <br/> HECHO CON CALMA EN ARGENTINA.
+                        </p>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-10 md:gap-16">
+                        <div className="space-y-4">
+                           <p className="text-[9px] uppercase tracking-[0.4em] text-red-600 font-bold font-mono">CONTACTO</p>
+                           <a href="mailto:hola@vows.ar" className="block text-sm hover:text-white transition-colors font-mono">hola@vows.ar</a>
+                           <a href="https://wa.me/5491100000000" className="block text-sm hover:text-white transition-colors font-mono">WHATSAPP CONCIERGE</a>
+                        </div>
+                        <div className="space-y-4">
+                           <p className="text-[9px] uppercase tracking-[0.4em] text-red-600 font-bold font-mono">SOCIAL</p>
+                           <a href="#" className="flex items-center gap-2 text-sm hover:text-white transition-colors group font-mono">
+                             INSTAGRAM <ArrowUpRight className="w-3 h-3 opacity-30 group-hover:opacity-100 transition-opacity" />
+                           </a>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="flex flex-col items-end justify-end">
-                    <div className="w-12 h-12 bg-black flex items-center justify-center mb-4">
-                        <div className="text-white font-mono text-[8px] font-bold rotate-90 tracking-widest uppercase">VOWS</div>
-                    </div>
-                    <div className="font-mono text-[8px] text-black/40 text-right uppercase">
-                        EDICIÓN ESPECIAL — VARIANTE: VANGUARDIA <br/>
-                        PLATAFORMA: REACT_LUXURY_EDITION
-                    </div>
+                <div className="mt-10 flex flex-col md:flex-row justify-between items-center gap-6">
+                   <p className="text-[10px] uppercase tracking-[0.2em] text-white/20 font-mono">
+                     © {new Date().getFullYear()} VOWS. TODOS LOS DERECHOS RESERVADOS.
+                   </p>
+                   <div className="flex gap-8">
+                      <a href="#" className="text-[10px] uppercase tracking-[0.2em] hover:text-white transition-colors font-mono">PRIVACIDAD</a>
+                      <a href="#" className="text-[10px] uppercase tracking-[0.2em] hover:text-white transition-colors font-mono">TÉRMINOS</a>
+                   </div>
                 </div>
-            </div>
-            
-            <div className="mt-12 pt-8 border-t border-black/5 flex justify-between items-center opacity-20 hover:opacity-100 transition-opacity">
-                <div className="font-mono text-[8px]">01010010 01001111 01000010 01001111 01010100 01010011</div>
-                <div className="font-mono text-[8px] uppercase">MANTENTE TRENDY. MANTENTE ENAMORADO.</div>
+                
+                <div className="mt-12 pt-8 border-t border-white/5 flex justify-between items-center opacity-20 hover:opacity-100 transition-opacity">
+                    <div className="font-mono text-[8px]">01010010 01001111 01000010 01001111 01010100 01010011</div>
+                    <div className="font-mono text-[8px] uppercase">MANTENTE TRENDY. MANTENTE ENAMORADO.</div>
+                </div>
             </div>
         </footer>
     );

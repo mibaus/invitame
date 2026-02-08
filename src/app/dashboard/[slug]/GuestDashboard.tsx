@@ -2,14 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Users, Download, ExternalLink, RefreshCw } from 'lucide-react';
+import { Users, Download, ExternalLink, RefreshCw, ArrowUpRight } from 'lucide-react';
 import type { DashboardData, RSVPRecord } from '@/app/actions/dashboard';
 import { getRSVPs } from '@/app/actions/dashboard';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { InvitationEditForm } from './InvitationEditForm';
 import { ExportModal } from '@/components/dashboard/ExportModal';
-import { CateringSummaryWidget } from '@/components/dashboard/CateringSummaryWidget';
-import { CateringExportModal } from '@/components/dashboard/CateringExportModal';
+import { SmartFilterBar } from '@/components/dashboard/SmartFilterBar';
+import { DynamicExportModal } from '@/components/dashboard/DynamicExportModal';
 import { WhatsAppShare } from '@/components/dashboard/WhatsAppShare';
 
 interface GuestDashboardProps {
@@ -23,7 +23,8 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [isCateringModalOpen, setIsCateringModalOpen] = useState(false);
+  const [isDynamicExportModalOpen, setIsDynamicExportModalOpen] = useState(false);
+  const [filteredRsvps, setFilteredRsvps] = useState(data.rsvps);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected'>('disconnected');
 
   // Función para actualizar stats basado en RSVPs
@@ -261,12 +262,16 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
   const declined = rsvps.filter(r => r.attendance === false).length;
   const totalGuests = rsvps.reduce((sum, r) => sum + (r.guests_count || 1), 0);
 
-  const handleOpenCateringExport = () => {
-    if (rsvps.length === 0) {
-      alert('No hay invitados para exportar');
+  const handleOpenDynamicExport = () => {
+    if (filteredRsvps.length === 0) {
+      alert('No hay invitados seleccionados para exportar');
       return;
     }
-    setIsCateringModalOpen(true);
+    setIsDynamicExportModalOpen(true);
+  };
+
+  const handleFilterChange = (newFilteredRsvps: typeof rsvps) => {
+    setFilteredRsvps(newFilteredRsvps);
   };
 
   const handleOpenExport = () => {
@@ -353,22 +358,24 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <button
             onClick={handleOpenExport}
             className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-stone-200 text-stone-600 rounded-xl text-[11px] font-medium hover:bg-stone-50 transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Exportar</span>
+            <span>Exportar Todo</span>
           </button>
           
-          <button
-            onClick={handleOpenCateringExport}
-            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-transparent border border-[#A27B5C] text-[#A27B5C] rounded-xl text-[11px] font-medium hover:bg-[#A27B5C] hover:text-white transition-all duration-300"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Catering</span>
-          </button>
+          {filteredRsvps.length < rsvps.length && (
+            <button
+              onClick={handleOpenDynamicExport}
+              className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-[#A27B5C] text-white rounded-xl text-[11px] font-medium hover:bg-[#8B6F47] transition-colors"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Exportar Selección</span>
+            </button>
+          )}
           
           {invitation.is_active && (
             <Link
@@ -388,30 +395,40 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
           />
         </div>
 
-        {/* Catering Summary Widget */}
-        <CateringSummaryWidget rsvps={rsvps} />
+        {/* Smart Filter Bar */}
+        <SmartFilterBar 
+          rsvps={rsvps}
+          onFilterChange={handleFilterChange}
+          filteredCount={filteredRsvps.length}
+        />
 
         {/* Guests List */}
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
           <div className="px-4 py-4 border-b border-stone-100">
             <p className="text-xs font-medium text-stone-500">
-              {rsvps.length === 0 ? 'Sin invitados aún' : `${rsvps.length} invitados`}
+              {filteredRsvps.length === rsvps.length 
+                ? `${rsvps.length} invitados totales` 
+                : `Mostrando ${filteredRsvps.length} de ${rsvps.length} invitados`}
             </p>
           </div>
 
-          {rsvps.length === 0 ? (
+          {filteredRsvps.length === 0 ? (
             <div className="px-4 py-12 text-center">
               <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-stone-300" />
               </div>
-              <p className="text-stone-600 font-medium">Aún no hay respuestas</p>
+              <p className="text-stone-600 font-medium">
+                {rsvps.length === 0 ? 'Aún no hay respuestas' : 'No hay invitados que coincidan con los filtros'}
+              </p>
               <p className="text-xs text-stone-400 mt-1">
-                Los invitados aparecerán aquí cuando confirmen
+                {rsvps.length === 0 
+                  ? 'Los invitados aparecerán aquí cuando confirmen' 
+                  : 'Intenta ajustar los filtros para ver más resultados'}
               </p>
             </div>
           ) : (
             <div className="divide-y divide-stone-100">
-              {rsvps.map((rsvp) => (
+              {filteredRsvps.map((rsvp) => (
                 <div key={rsvp.id} className="px-4 py-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
@@ -550,10 +567,43 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
           )}
         </div>
 
-        {/* Footer Note */}
-        <p className="text-center text-xs text-stone-400 py-4">
-          Panel privado · No compartir este enlace
-        </p>
+        {/* Footer */}
+        <footer className="bg-charcoal pt-20 pb-10 px-6 md:px-12 text-cloud/60">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-12 pb-16 border-b border-white/5">
+              <div className="space-y-6">
+                <span className="text-2xl font-serif font-bold text-cloud tracking-tighter">VOWS<span className="text-bronze">.</span></span>
+                <p className="text-xs uppercase tracking-[0.3em] font-light max-w-xs leading-relaxed">
+                  Panel de gestión de eventos. <br/> Hecho con calma en Argentina.
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap gap-10 md:gap-16">
+                <div className="space-y-4">
+                   <p className="text-[9px] uppercase tracking-[0.4em] text-bronze font-bold">Soporte</p>
+                   <a href="mailto:hola@vows.ar" className="block text-sm hover:text-cloud transition-colors">hola@vows.ar</a>
+                   <a href="https://wa.me/5491100000000" className="block text-sm hover:text-cloud transition-colors">WhatsApp Concierge</a>
+                </div>
+                <div className="space-y-4">
+                   <p className="text-[9px] uppercase tracking-[0.4em] text-bronze font-bold">Social</p>
+                   <a href="#" className="flex items-center gap-2 text-sm hover:text-cloud transition-colors group">
+                     Instagram <ArrowUpRight className="w-3 h-3 opacity-30 group-hover:opacity-100 transition-opacity" />
+                   </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 flex flex-col md:flex-row justify-between items-center gap-6">
+               <p className="text-[10px] uppercase tracking-[0.2em] text-white/20">
+                 © {new Date().getFullYear()} VOWS. Todos los derechos reservados.
+               </p>
+               <div className="flex gap-8">
+                  <a href="#" className="text-[10px] uppercase tracking-[0.2em] hover:text-cloud transition-colors">Privacidad</a>
+                  <a href="#" className="text-[10px] uppercase tracking-[0.2em] hover:text-cloud transition-colors">Términos</a>
+               </div>
+            </div>
+          </div>
+        </footer>
       </main>
 
       {/* Export Modal */}
@@ -563,11 +613,12 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
         data={{ ...data, rsvps, stats }}
       />
       
-      {/* Catering Export Modal */}
-      <CateringExportModal
-        isOpen={isCateringModalOpen}
-        onClose={() => setIsCateringModalOpen(false)}
-        rsvps={rsvps}
+      {/* Dynamic Export Modal */}
+      <DynamicExportModal
+        isOpen={isDynamicExportModalOpen}
+        onClose={() => setIsDynamicExportModalOpen(false)}
+        filteredRsvps={filteredRsvps}
+        totalCount={filteredRsvps.length}
       />
     </div>
   );

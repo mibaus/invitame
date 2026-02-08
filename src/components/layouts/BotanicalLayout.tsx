@@ -19,7 +19,8 @@ import {
   TreeDeciduous,
   Binoculars,
   Shovel,
-  Send
+  Send,
+  ArrowUpRight
 } from 'lucide-react';
 import { InvitationSchema } from '@/types';
 import { FeatureGate } from '@/components/shared/FeatureGate';
@@ -1228,14 +1229,40 @@ function Footer({ content }: { content: InvitationSchema['content'] }) {
   const initials = content.couple ? `${content.couple.person1.name.charAt(0)}${content.couple.person2.name.charAt(0)}` : 'F&F';
 
   return (
-    <footer className="py-16 px-4" style={{ backgroundColor: COLORS.paper }}>
-      <div className="max-w-4xl mx-auto text-center">
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="mb-8">
-          <span className="font-serif text-4xl md:text-5xl tracking-widest" style={{ color: COLORS.ink, fontFamily: "'Playfair Display', serif" }}>{initials}</span>
-        </motion.div>
-        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2 }} className="w-px h-12 mx-auto mb-8" style={{ backgroundColor: COLORS.moss, opacity: 0.3 }} />
-        <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.3 }} className="text-xs uppercase tracking-[0.3em]" style={{ color: COLORS.slate, fontFamily: "'Crimson Text', serif" }}>Con amor, {content.couple?.person1.name || 'Flora'} & {content.couple?.person2.name || 'Fauna'}</motion.p>
-        <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.4 }} className="text-xs mt-8" style={{ color: COLORS.sepia, fontFamily: "'Crimson Text', serif" }}>VOWS <span style={{ color: '#a27b5c' }}>.</span> © 2026</motion.p>
+    <footer className="pt-20 pb-10 px-6 md:px-12" style={{ backgroundColor: COLORS.mossDark }}>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-12 pb-16 border-b border-white/5">
+          <div className="space-y-6">
+            <span className="text-2xl font-serif font-bold tracking-tighter" style={{ color: COLORS.paper, fontFamily: "'Playfair Display', serif" }}>VOWS<span style={{ color: '#a27b5c' }}>.</span></span>
+            <p className="text-xs uppercase tracking-[0.3em] font-light max-w-xs leading-relaxed" style={{ color: COLORS.paper, fontFamily: "'Crimson Text', serif" }}>
+              Redefiniendo la estética nupcial digital. <br/> Hecho con calma en Argentina.
+            </p>
+          </div>
+          
+          <div className="flex flex-wrap gap-10 md:gap-16">
+            <div className="space-y-4">
+               <p className="text-[9px] uppercase tracking-[0.4em] font-bold" style={{ color: '#a27b5c', fontFamily: "'Crimson Text', serif" }}>Contacto</p>
+               <a href="mailto:hola@vows.ar" className="block text-sm hover:text-white transition-colors" style={{ color: COLORS.paper }}>hola@vows.ar</a>
+               <a href="https://wa.me/5491100000000" className="block text-sm hover:text-white transition-colors" style={{ color: COLORS.paper }}>WhatsApp Concierge</a>
+            </div>
+            <div className="space-y-4">
+               <p className="text-[9px] uppercase tracking-[0.4em] font-bold" style={{ color: '#a27b5c', fontFamily: "'Crimson Text', serif" }}>Social</p>
+               <a href="#" className="flex items-center gap-2 text-sm hover:text-white transition-colors group" style={{ color: COLORS.paper }}>
+                 Instagram <ArrowUpRight className="w-3 h-3 opacity-30 group-hover:opacity-100 transition-opacity" />
+               </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 flex flex-col md:flex-row justify-between items-center gap-6">
+           <p className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'rgba(237, 232, 208, 0.2)' }}>
+             © {new Date().getFullYear()} VOWS. Todos los derechos reservados.
+           </p>
+           <div className="flex gap-8">
+              <a href="#" className="text-[10px] uppercase tracking-[0.2em] hover:text-white transition-colors" style={{ color: COLORS.paper }}>Privacidad</a>
+              <a href="#" className="text-[10px] uppercase tracking-[0.2em] hover:text-white transition-colors" style={{ color: COLORS.paper }}>Términos</a>
+           </div>
+        </div>
       </div>
     </footer>
   );

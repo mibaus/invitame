@@ -1,5 +1,6 @@
-import { NextResponse, NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
+import type { NextRequest } from 'next/server'
 
 const ADMIN_EMAIL = "mi.baus.g@gmail.com" // Email de administradora
 

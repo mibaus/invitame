@@ -3,8 +3,9 @@
 import { signIn } from "next-auth/react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
+import { Suspense } from "react"
 
-export default function LoginAdminPage() {
+function LoginContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
 
@@ -44,5 +45,22 @@ export default function LoginAdminPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function LoginAdminPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
+        <div className="mb-12">
+          <Link href="/" className="font-serif text-4xl text-[#2C3333] tracking-tight">
+            VOWS<span className="text-[#A27B5C]">.</span>
+          </Link>
+        </div>
+        <div className="w-10 h-10 border-2 border-[#A27B5C]/30 border-t-[#A27B5C] rounded-full animate-spin"></div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   )
 }
