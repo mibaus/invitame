@@ -32,9 +32,9 @@ export function PreviewClient() {
         // Check if data contains placeholder images or logistics that need full data via postMessage
         const hasPlaceholderData = 
           initialData.content?.cover_image === '__POSTMESSAGE_DATA__' ||
-          initialData.content?.gallery_images?.some((img: string) => img === '__POSTMESSAGE_DATA__') ||
-          initialData.logistics?.agenda?.some((item: any) => item === '__POSTMESSAGE_DATA__') ||
-          initialData.logistics?.venues?.some((item: any) => item === '__POSTMESSAGE_DATA__');
+          (Array.isArray(initialData.content?.gallery_images) && initialData.content.gallery_images.some((img: string) => img === '__POSTMESSAGE_DATA__')) ||
+          (Array.isArray(initialData.logistics?.agenda) && initialData.logistics.agenda.some((item: any) => item === '__POSTMESSAGE_DATA__')) ||
+          (Array.isArray(initialData.logistics?.venues) && initialData.logistics.venues.some((item: any) => item === '__POSTMESSAGE_DATA__'));
         
         if (hasPlaceholderData) {
           console.log('[PreviewClient] Datos tienen placeholders, esperando postMessage...');
