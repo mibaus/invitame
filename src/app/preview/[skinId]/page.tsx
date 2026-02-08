@@ -80,6 +80,10 @@ async function getMockInvitationFromDB(skinId: SkinId): Promise<InvitationSchema
 
   try {
     const supabase = createServerComponentClient();
+    if (!supabase) {
+      return createServerMockData(skinId);
+    }
+    
     // Buscar invitación de demo/prueba para este skin
     const { data: rawData, error } = await supabase
       .from('invitations')
@@ -125,9 +129,7 @@ function createServerMockData(skinId: SkinId): InvitationSchema {
         hashtag: '#MariaYCarlos',
       },
       hosts: [],
-      cover_image: skinId === 'bolt-dark'
-        ? 'https://images.pexels.com/photos/1573007/pexels-photo-1573007.jpeg?auto=compress&cs=tinysrgb&w=1920'
-        : 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1000&auto=format&fit=crop',
+      cover_image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1000&auto=format&fit=crop',
       gallery_images: [
         'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1519225495810-7517c33000e1?q=80&w=800&auto=format&fit=crop',
@@ -227,6 +229,10 @@ async function getInvitationById(id: string): Promise<InvitationSchema | null> {
 
   try {
     const supabase = createServerComponentClient();
+    if (!supabase) {
+      return null;
+    }
+    
     const { data: rawData, error } = await supabase
       .from('invitations')
       .select('*')

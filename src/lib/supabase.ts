@@ -37,9 +37,10 @@ export const supabase = null; // Deprecated: usar getSupabase()
  * Cliente para Client Components (browser)
  * Usar en componentes con 'use client'
  */
-export function createClientComponentClient() {
+export function createClientComponentClient(): SupabaseClient<Database> | null {
   if (!isSupabaseConfigured()) {
-    throw new Error('Supabase no está configurado. Verifica las variables de entorno.');
+    console.warn('Supabase no está configurado. Retornando cliente nulo.');
+    return null;
   }
   return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
 }
@@ -48,9 +49,10 @@ export function createClientComponentClient() {
  * Cliente para Server Components
  * Usar en componentes de servidor y Server Actions
  */
-export function createServerComponentClient() {
+export function createServerComponentClient(): SupabaseClient<Database> | null {
   if (!isSupabaseConfigured()) {
-    throw new Error('Supabase no está configurado. Verifica las variables de entorno.');
+    console.warn('Supabase no está configurado. Retornando cliente nulo.');
+    return null;
   }
   return createClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
