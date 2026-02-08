@@ -6,8 +6,8 @@ const ADMIN_EMAIL = "mi.baus.g@gmail.com" // Email de administradora
 const handler = NextAuth({
   providers: [
     Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     })
   ],
   pages: {
@@ -17,6 +17,7 @@ const handler = NextAuth({
     strategy: "jwt" as const,
     maxAge: 30 * 60, // 30 minutos - token de corta duración
   },
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user }: any) {
       if (user) {

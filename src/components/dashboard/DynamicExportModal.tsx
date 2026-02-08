@@ -263,11 +263,23 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
     </div>
     
     <div class="summary">
-        <h2>Resumen de Restricciones Alimentarias</h2>
+        <h2>Resumen General</h2>
         <div class="summary-grid">
             <div class="summary-item">
-                <div class="summary-number">${guestData.reduce((sum, g) => sum + g.guests, 0)}</div>
-                <div class="summary-label">Total Invitados</div>
+                <div class="summary-number">${guestData.length}</div>
+                <div class="summary-label">Invitados</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number">${totalGuests}</div>
+                <div class="summary-label">Personas</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number">${confirmedGuests.length}</div>
+                <div class="summary-label">Confirmados</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number">${guestsWithRestrictions}</div>
+                <div class="summary-label">Restricciones</div>
             </div>
             <div class="summary-item">
                 <div class="summary-number">${restrictionCounts.celiac}</div>
@@ -285,10 +297,6 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
                 <div class="summary-number">${restrictionCounts.allergic}</div>
                 <div class="summary-label">Alérgicos</div>
             </div>
-            <div class="summary-item">
-                <div class="summary-number">${restrictionCounts.other}</div>
-                <div class="summary-label">Otras</div>
-            </div>
         </div>
     </div>
     
@@ -299,7 +307,9 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
                 <th>Invitados</th>
                 <th>Niños</th>
                 <th>Mesa</th>
+                <th>Estado</th>
                 <th>Restricciones</th>
+                <th>Contacto</th>
                 <th>Notas</th>
             </tr>
         </thead>
@@ -310,8 +320,14 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
                     <td>${guest.guests}</td>
                     <td>${guest.children}</td>
                     <td>${guest.table || '-'}</td>
+                    <td>${guest.status}</td>
                     <td>
                         ${guest.hasAllergies ? `<div class="allergy-warning">⚠ ${guest.restrictions}</div>` : guest.restrictions}
+                        ${guest.music ? `<div class="music-note">♪ ${guest.music}</div>` : ''}
+                    </td>
+                    <td>
+                        ${guest.email ? guest.email : ''}
+                        ${guest.phone ? `<br>${guest.phone}` : ''}
                     </td>
                     <td>${guest.notes || '-'}</td>
                 </tr>
