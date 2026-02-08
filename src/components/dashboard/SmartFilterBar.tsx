@@ -13,10 +13,11 @@ interface FilterState {
 interface SmartFilterBarProps {
   rsvps: RSVPRecord[];
   onFilterChange: (filteredRsvps: RSVPRecord[]) => void;
+  onFiltersChange: (filters: FilterState) => void;
   filteredCount: number;
 }
 
-export function SmartFilterBar({ rsvps, onFilterChange, filteredCount }: SmartFilterBarProps) {
+export function SmartFilterBar({ rsvps, onFilterChange, onFiltersChange, filteredCount }: SmartFilterBarProps) {
   const [filters, setFilters] = useState<FilterState>({
     status: [],
     catering: [],
@@ -83,10 +84,11 @@ export function SmartFilterBar({ rsvps, onFilterChange, filteredCount }: SmartFi
       });
 
       onFilterChange(filtered);
+      onFiltersChange(filters);
     }, 300); // 300ms debounce
 
     return () => clearTimeout(timer);
-  }, [filters, rsvps, onFilterChange]);
+  }, [filters, rsvps, onFilterChange, onFiltersChange]);
 
   const toggleFilter = (category: keyof FilterState, value: string) => {
     setFilters(prev => {

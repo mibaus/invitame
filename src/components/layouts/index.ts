@@ -3,3 +3,7 @@ export * from './BoltDarkLayout';
 export * from './SoftSeraphicLayout';
 export * from './CyberpunkLayout';
 export * from './BotanicalLayout';
+export * from './MonogramLayout';
+export * from './AvantGardeLayout';
+export * from './JapandiLayout';
+export * from './LegacyEdit';

@@ -59,6 +59,28 @@ export const SKIN_THEMES: Record<string, SkinTheme> = {
     borderRadius: 'md',
     spacing: 'spacious',
   },
+  'the-monogram-edit': {
+    primary: '#1A1A1A', // grafito profundo
+    secondary: '#FFFFFF', // blanco puro
+    accent: '#4A4A4A', // gris medio
+    background: '#FFFFFF', // blanco puro
+    surface: '#FAFAFA', // blanco roto
+    fontDisplay: "'Cormorant Garamond', serif",
+    fontBody: "'Inter', sans-serif",
+    borderRadius: 'none',
+    spacing: 'spacious',
+  },
+  'legacy-editorial': {
+    primary: '#2C3333', // charcoal oscuro
+    secondary: '#F8F9FA', // blanco roto
+    accent: '#A27B5C', // bronce
+    background: '#F8F9FA', // blanco roto
+    surface: '#E7D2CC', // dusty rose
+    fontDisplay: "'Butler', 'Playfair Display', serif",
+    fontBody: "'Montserrat', sans-serif",
+    borderRadius: 'none',
+    spacing: 'spacious',
+  },
 };
 
 export function getThemeClasses(skinId: string) {

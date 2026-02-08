@@ -5,9 +5,9 @@
 
 // ----- ENUMS & TIPOS BASE -----
 
-export const VALID_SKINS: SkinId[] = ['avant-garde-editorial', 'japandi-zen', 'botanical-greenhouse'];
+export const VALID_SKINS: SkinId[] = ['avant-garde-editorial', 'the-monogram-edit', 'botanical-greenhouse', 'legacy-editorial'];
 
-export type SkinId = 'avant-garde-editorial' | 'japandi-zen' | 'botanical-greenhouse';
+export type SkinId = 'avant-garde-editorial' | 'the-monogram-edit' | 'botanical-greenhouse' | 'legacy-editorial';
 
 export type EventType =
   | 'wedding'

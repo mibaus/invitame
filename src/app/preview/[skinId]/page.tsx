@@ -6,7 +6,7 @@ import { createServerComponentClient } from '@/lib/supabase';
 import { Suspense } from 'react';
 import { PreviewClient } from './PreviewClient';
 
-const VALID_SKINS: SkinId[] = ['avant-garde-editorial', 'japandi-zen', 'botanical-greenhouse'];
+const VALID_SKINS: SkinId[] = ['avant-garde-editorial', 'the-monogram-edit', 'botanical-greenhouse', 'legacy-editorial'];
 
 interface PageProps {
   params: Promise<{ skinId: string }>;

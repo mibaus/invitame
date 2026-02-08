@@ -24,7 +24,15 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isDynamicExportModalOpen, setIsDynamicExportModalOpen] = useState(false);
   const [filteredRsvps, setFilteredRsvps] = useState(data.rsvps);
+  const [activeFilters, setActiveFilters] = useState({
+    status: [] as string[],
+    catering: [] as string[],
+    other: [] as string[]
+  });
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected'>('disconnected');
+
+  // Debug initial state
+  console.log('Initial state - rsvps.length:', data.rsvps.length, 'filteredRsvps.length:', filteredRsvps.length);
 
   // Función para actualizar stats basado en RSVPs
   const updateStats = useCallback((rsvpList: RSVPRecord[]) => {
@@ -261,7 +269,17 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
   const declined = rsvps.filter(r => r.attendance === false).length;
   const totalGuests = rsvps.reduce((sum, r) => sum + (r.guests_count || 1), 0);
 
+  const handleOpenExport = () => {
+    console.log('handleOpenExport called - opening ExportModal (complete export)');
+    if (rsvps.length === 0) {
+      alert('No hay invitados para exportar');
+      return;
+    }
+    setIsExportModalOpen(true);
+  };
+
   const handleOpenDynamicExport = () => {
+    console.log('handleOpenDynamicExport called - opening DynamicExportModal (filtered export)');
     if (filteredRsvps.length === 0) {
       alert('No hay invitados seleccionados para exportar');
       return;
@@ -273,12 +291,8 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
     setFilteredRsvps(newFilteredRsvps);
   };
 
-  const handleOpenExport = () => {
-    if (rsvps.length === 0) {
-      alert('No hay invitados para exportar');
-      return;
-    }
-    setIsExportModalOpen(true);
+  const handleFiltersChange = (filters: typeof activeFilters) => {
+    setActiveFilters(filters);
   };
 
   return (
@@ -376,6 +390,11 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
             </button>
           )}
           
+          {/* Debug info */}
+          <div className="text-xs text-stone-400">
+            Debug: {filteredRsvps.length}/{rsvps.length}
+          </div>
+          
           {invitation.is_active && (
             <Link
               href={`/${invitation.slug}`}
@@ -398,6 +417,7 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
         <SmartFilterBar 
           rsvps={rsvps}
           onFilterChange={handleFilterChange}
+          onFiltersChange={handleFiltersChange}
           filteredCount={filteredRsvps.length}
         />
 
@@ -618,6 +638,7 @@ export function GuestDashboard({ data }: GuestDashboardProps) {
         isOpen={isDynamicExportModalOpen}
         onClose={() => setIsDynamicExportModalOpen(false)}
         filteredRsvps={filteredRsvps}
+        activeFilters={activeFilters}
         totalCount={filteredRsvps.length}
       />
     </div>

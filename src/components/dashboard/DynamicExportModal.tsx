@@ -8,10 +8,15 @@ interface DynamicExportModalProps {
   isOpen: boolean;
   onClose: () => void;
   filteredRsvps: RSVPRecord[];
+  activeFilters: {
+    status: string[];
+    catering: string[];
+    other: string[];
+  };
   totalCount: number;
 }
 
-export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount }: DynamicExportModalProps) {
+export function DynamicExportModal({ isOpen, onClose, filteredRsvps, activeFilters, totalCount }: DynamicExportModalProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [exportFormat, setExportFormat] = useState<'pdf' | 'csv'>('pdf');
 
@@ -103,6 +108,51 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
     return csvWithBOM;
   };
 
+  // Function to generate table columns based on active filters
+  const generateTableColumns = () => {
+    const columns = [
+      { key: 'name', label: 'Nombre' },
+      { key: 'guests', label: 'Invitados' },
+      { key: 'children', label: 'Niños' },
+      { key: 'table', label: 'Mesa' },
+      { key: 'status', label: 'Estado' },
+      { key: 'restrictions', label: 'Restricciones' },
+      { key: 'music', label: 'Música' },
+      { key: 'contact', label: 'Contacto' },
+      { key: 'notes', label: 'Notas' }
+    ];
+
+    // If no filters are active, show all columns
+    if (activeFilters.status.length === 0 && activeFilters.catering.length === 0 && activeFilters.other.length === 0) {
+      return columns;
+    }
+
+    // Filter columns based on active filters
+    const filteredColumns = columns.filter(column => {
+      // Always show basic info
+      if (['name', 'guests', 'children', 'status'].includes(column.key)) return true;
+      
+      // Show restrictions if catering filters are active
+      if (column.key === 'restrictions' && activeFilters.catering.length > 0) return true;
+      
+      // Show music if music filter is active
+      if (column.key === 'music' && activeFilters.other.includes('hasMusicSuggestion')) return true;
+      
+      // Show table if any filter is active (for general use)
+      if (column.key === 'table' && (activeFilters.status.length > 0 || activeFilters.catering.length > 0 || activeFilters.other.length > 0)) return true;
+      
+      // Show contact if any filter is active (for coordination)
+      if (column.key === 'contact' && (activeFilters.status.length > 0 || activeFilters.catering.length > 0 || activeFilters.other.length > 0)) return true;
+      
+      // Show notes if any filter is active (for additional context)
+      if (column.key === 'notes' && (activeFilters.status.length > 0 || activeFilters.catering.length > 0 || activeFilters.other.length > 0)) return true;
+      
+      return false;
+    });
+
+    return filteredColumns;
+  };
+
   const generatePDFContent = () => {
     const guestData = processGuestData();
     const timestamp = new Date().toLocaleDateString('es-AR', {
@@ -110,6 +160,9 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
       month: 'long',
       year: 'numeric'
     });
+
+    // Get dynamic columns based on active filters
+    const tableColumns = generateTableColumns();
 
     // Count statistics
     const confirmedGuests = guestData.filter(g => g.status === 'Confirmado');
@@ -286,7 +339,7 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
                 <div class="summary-label">Invitados</div>
             </div>
             <div class="summary-item">
-                <div class="summary-number">${totalGuests}</div>
+                <div class="summary-number">${totalConfirmed}</div>
                 <div class="summary-label">Personas</div>
             </div>
             <div class="summary-item">
@@ -294,7 +347,7 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
                 <div class="summary-label">Confirmados</div>
             </div>
             <div class="summary-item">
-                <div class="summary-number">${guestsWithRestrictions}</div>
+                <div class="summary-number">${guestData.filter(g => g.restrictions !== 'Ninguna').length}</div>
                 <div class="summary-label">Restricciones</div>
             </div>
             <div class="summary-item">
@@ -319,36 +372,26 @@ export function DynamicExportModal({ isOpen, onClose, filteredRsvps, totalCount 
     <table class="guests-table">
         <thead>
             <tr>
-                <th>Nombre</th>
-                <th>Invitados</th>
-                <th>Niños</th>
-                <th>Mesa</th>
-                <th>Estado</th>
-                <th>Restricciones</th>
-                <th>Música</th>
-                <th>Contacto</th>
-                <th>Notas</th>
+                ${tableColumns.map(col => `<th>${col.label}</th>`).join('')}
             </tr>
         </thead>
         <tbody>
             ${guestData.map(guest => `
                 <tr>
-                    <td>${guest.name}</td>
-                    <td>${guest.guests}</td>
-                    <td>${guest.children}</td>
-                    <td>${guest.table || '-'}</td>
-                    <td>${guest.status}</td>
-                    <td>
-                        ${guest.hasAllergies ? `<div class="allergy-warning">⚠ ${guest.restrictions}</div>` : guest.restrictions}
-                    </td>
-                    <td>
-                        ${guest.music ? `<div class="music-note">♪ ${guest.music}</div>` : '-'}
-                    </td>
-                    <td>
-                        ${guest.email ? guest.email : ''}
-                        ${guest.phone ? `<br>${guest.phone}` : ''}
-                    </td>
-                    <td>${guest.notes || '-'}</td>
+                    ${tableColumns.map(col => {
+                      switch(col.key) {
+                        case 'name': return `<td>${guest.name}</td>`;
+                        case 'guests': return `<td>${guest.guests}</td>`;
+                        case 'children': return `<td>${guest.children}</td>`;
+                        case 'table': return `<td>${guest.table || '-'}</td>`;
+                        case 'status': return `<td>${guest.status}</td>`;
+                        case 'restrictions': return `<td>${guest.hasAllergies ? `<div class="allergy-warning">⚠ ${guest.restrictions}</div>` : guest.restrictions}</td>`;
+                        case 'music': return `<td>${guest.music ? `<div class="music-note">♪ ${guest.music}</div>` : '-'}</td>`;
+                        case 'contact': return `<td>${guest.email ? guest.email : ''}${guest.phone ? `<br>${guest.phone}` : ''}</td>`;
+                        case 'notes': return `<td>${guest.notes || '-'}</td>`;
+                        default: return `<td>-</td>`;
+                      }
+                    }).join('')}
                 </tr>
             `).join('')}
         </tbody>
