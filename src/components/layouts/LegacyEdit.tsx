@@ -595,11 +595,11 @@ function GallerySection({ content }: { content: InvitationSchema['content'] }) {
     ? content.gallery_images
     : [
         'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800&h=600&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1519225495810-7512312635db?q=80&w=600&h=800&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=600&h=800&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=800&h=600&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1522673607200-1648832cee98?q=80&w=600&h=800&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=1000&h=500&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1465495910483-db4452178c1f?q=80&w=600&h=800&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?q=80&w=600&h=800&auto=format&fit=crop',
       ];
 
   return (

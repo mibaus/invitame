@@ -340,6 +340,13 @@ function VenuesSection({ logistics, content }: { logistics: InvitationSchema['lo
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${eventTitle}&dates=${formatDate(baseDate)}/${formatDate(endDate)}&location=${location}`;
   };
 
+  // Parsear la fecha del evento para mostrarla
+  const eventDate = parseDateLocal(logistics.event_date);
+  const day = eventDate.getDate().toString().padStart(2, '0');
+  const month = eventDate.toLocaleDateString('es-ES', { month: 'long' }).toUpperCase();
+  const year = eventDate.getFullYear();
+  const formattedDate = `${day} DE ${month} DE ${year}`;
+
   const venues = logistics.venues.length > 0
     ? logistics.venues.slice(0, 2).map((venue, idx) => ({
         title: venue.type === 'ceremony' ? 'LA CEREMONIA' : 'LA CELEBRACIÓN',
@@ -374,6 +381,19 @@ function VenuesSection({ logistics, content }: { logistics: InvitationSchema['lo
           <div className="w-24 h-px mt-8" style={{ backgroundColor: COLORS.graphite }} />
         </div>
 
+        {/* Fecha del evento destacada */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="text-center mb-16"
+        >
+          <p className="text-2xl md:text-3xl tracking-[0.2em] uppercase" style={{ color: COLORS.graphite, fontFamily: FONTS.display, fontWeight: 300 }}>
+            {formattedDate}
+          </p>
+        </motion.div>
+
         {/* Venues en dos columnas - misma altura siempre */}
         <div className="grid md:grid-cols-2 gap-16 md:gap-24 items-stretch">
           {venues.map((venue, index) => (
@@ -382,7 +402,7 @@ function VenuesSection({ logistics, content }: { logistics: InvitationSchema['lo
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.2 }}
+              transition={{ duration: 0.6, delay: index * 0.2 + 0.4 }}
               className="flex flex-col h-full"
             >
               {/* Label */}
@@ -571,11 +591,11 @@ function GallerySection({ content }: { content: InvitationSchema['content'] }) {
     ? content.gallery_images
     : [
         'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600&h=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1519225495810-7512312635db?q=80&w=800&h=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=800&h=1200&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1200&h=800&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1522673607200-1648832cee98?q=80&w=800&h=1200&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=1600&h=700&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1465495910483-db4452178c1f?q=80&w=800&h=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?q=80&w=800&h=1200&auto=format&fit=crop',
       ];
 
   const [currentSlide, setCurrentSlide] = useState(0);

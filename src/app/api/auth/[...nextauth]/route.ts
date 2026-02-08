@@ -3,12 +3,17 @@ import Google from "next-auth/providers/google"
 
 const ADMIN_EMAIL = "mi.baus.g@gmail.com" // Email de administradora
 
-console.log("NextAuth env check:", {
-  clientId: process.env.GOOGLE_CLIENT_ID ? "exists" : "missing",
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET ? "exists" : "missing",
-  secret: process.env.NEXTAUTH_SECRET ? "exists" : "missing",
-  url: process.env.NEXTAUTH_URL || "missing"
+console.log("=== NEXTAUTH DEBUG ===")
+console.log("Environment check:", {
+  hasClientId: !!process.env.GOOGLE_CLIENT_ID,
+  hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+  hasSecret: !!process.env.NEXTAUTH_SECRET,
+  hasUrl: !!process.env.NEXTAUTH_URL,
+  clientIdLength: process.env.GOOGLE_CLIENT_ID?.length || 0,
+  secretLength: process.env.NEXTAUTH_SECRET?.length || 0,
+  nodeEnv: process.env.NODE_ENV
 })
+console.log("===================")
 
 const handler = NextAuth({
   providers: [
@@ -40,12 +45,16 @@ const handler = NextAuth({
       return session
     },
     async signIn({ user }: any) {
-      console.log("SignIn callback:", { email: user?.email, adminEmail: ADMIN_EMAIL })
+      console.log("SignIn attempt:", { 
+        email: user?.email, 
+        isAdmin: user?.email === ADMIN_EMAIL,
+        adminEmail: ADMIN_EMAIL 
+      })
       // Whitelist estricta: solo permitir el email de administradora
       return user.email === ADMIN_EMAIL
     },
     async redirect({ url, baseUrl }: any) {
-      console.log("Redirect callback:", { url, baseUrl })
+      console.log("Redirect:", { url, baseUrl })
       // Si viene de Google, redirigir a admin
       if (url.includes("google")) {
         return `${baseUrl}/admin`
@@ -58,7 +67,15 @@ const handler = NextAuth({
       return `${baseUrl}/admin`
     }
   },
-  debug: process.env.NODE_ENV === "development",
+  debug: true, // Activar debug en producción
+  events: {
+    signIn: ({ user, account, profile }: any) => {
+      console.log("SignIn event:", { user: user?.email, provider: account?.provider })
+    },
+    error: ({ error }: any) => {
+      console.error("NextAuth error:", error)
+    }
+  }
 })
 
 export { handler as GET, handler as POST }
