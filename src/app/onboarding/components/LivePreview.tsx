@@ -12,13 +12,13 @@ interface LivePreviewProps {
 
 function createInvitationFromFormData(formData: Partial<OnboardingData>): InvitationSchema {
   const fantasyData = generateFantasyData(formData);
-  
+
   const p1Name = formData.person1Name || fantasyData.person1Name;
   const p2Name = formData.person2Name || fantasyData.person2Name;
   const headline = formData.headline || fantasyData.headline;
   const mainMsg = formData.mainMessage || fantasyData.mainMessage;
   const eventDate = formData.eventDate || fantasyData.eventDate;
-  
+
   const showAgenda = formData.showAgenda !== false;
   const showVenue = formData.showVenueMap !== false;
   const showGifts = formData.showGiftRegistry !== false;
@@ -27,9 +27,9 @@ function createInvitationFromFormData(formData: Partial<OnboardingData>): Invita
   const showMusic = formData.showMusic !== false;
   const showDressCode = formData.showDressCode !== false;
   const showCountdown = formData.showCountdown !== false;
-  
+
   const skinId = (formData.skinId as SkinId) || 'avant-garde-editorial';
-  
+
   const agendaItems: SchemaAgendaItem[] = (formData.agendaItems || []).map((item, idx) => ({
     id: item.id || `item-${idx}`,
     time: item.time,
@@ -37,7 +37,7 @@ function createInvitationFromFormData(formData: Partial<OnboardingData>): Invita
     description: '',
     icon: (item.icon as any) || 'sparkles',
   }));
-  
+
   const venues: VenueLocation[] = [];
   if (showVenue && (formData.ceremonyName || fantasyData.ceremonyName)) {
     venues.push({
@@ -63,7 +63,7 @@ function createInvitationFromFormData(formData: Partial<OnboardingData>): Invita
       google_maps_url: formData.receptionMapsUrl || 'https://maps.google.com',
     });
   }
-  
+
   const invitation: InvitationSchema = {
     metadata: {
       id: 'preview-001',
@@ -149,7 +149,7 @@ function createInvitationFromFormData(formData: Partial<OnboardingData>): Invita
       } : undefined,
     },
   };
-  
+
   return invitation;
 }
 
@@ -160,10 +160,10 @@ export function LivePreview({ formData, className = '' }: LivePreviewProps) {
   const lastDataRef = useRef<string>('');
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const iframeDataRef = useRef<InvitationSchema | null>(null);
-  
+
   // Extraer skinId directamente de formData
   const skinId = formData.skinId || 'avant-garde-editorial';
-  
+
   // Crear invitation directamente
   const invitation = useMemo(() => createInvitationFromFormData(formData), [
     formData.skinId,
@@ -192,52 +192,48 @@ export function LivePreview({ formData, className = '' }: LivePreviewProps) {
     formData.showRSVP,
     formData.showGuestMessages,
   ]);
-  
+
   // Inicialización inmediata al montar (sin debounce)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
+
     const invitationJson = JSON.stringify(invitation);
     lastDataRef.current = invitationJson;
-    
+
     const baseUrl = `/preview/${skinId}`;
     const dataParam = encodeURIComponent(invitationJson);
     const newUrl = `${baseUrl}?data=${dataParam}`;
-    
+
     console.log('[LivePreview] Inicialización inmediata con skin:', skinId);
     setIframeUrl(newUrl);
   }, []); // Solo al montar
-  
+
   // Generar URL con debounce para actualizaciones posteriores
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
+
     const invitationJson = JSON.stringify(invitation);
-    
+
     // Solo actualizar si los datos realmente cambiaron
     if (lastDataRef.current === invitationJson) return;
-    
+
     // Cancelar timeout anterior
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    
+
     // Debounce para evitar recargas constantes - 500ms para imágenes
     timeoutRef.current = setTimeout(() => {
       lastDataRef.current = invitationJson;
       const baseUrl = `/preview/${skinId}`;
-      
+
       // Check if data is too large for URL (limit ~8KB)
       let dataParam: string;
       const MAX_URL_SIZE = 8000;
-      
-      // Always use postMessage for images or large data to ensure they work
-      const usePostMessage = invitationJson.length > MAX_URL_SIZE || 
-                            invitation.content?.cover_image?.includes('supabase.co') ||
-                            invitation.content?.gallery_images?.some((img: string) => img?.includes('supabase.co')) ||
-                            (invitation.logistics?.agenda && invitation.logistics.agenda.length > 0) ||
-                            (invitation.logistics?.venues && invitation.logistics.venues.length > 0);
-      
+
+      // Only use postMessage if the URL size is getting too large (limit ~8KB)
+      const usePostMessage = invitationJson.length > MAX_URL_SIZE;
+
       if (usePostMessage) {
         // For large data or Supabase images, use postMessage
         // Pass minimal data in URL and send full data via postMessage
@@ -247,7 +243,7 @@ export function LivePreview({ formData, className = '' }: LivePreviewProps) {
             ...invitation.content,
             // Mark images as needing full data via postMessage
             cover_image: invitation.content?.cover_image ? '__POSTMESSAGE_DATA__' : '',
-            gallery_images: invitation.content?.gallery_images?.length 
+            gallery_images: invitation.content?.gallery_images?.length
               ? Array(invitation.content.gallery_images.length).fill('__POSTMESSAGE_DATA__')
               : [],
           },
@@ -259,32 +255,32 @@ export function LivePreview({ formData, className = '' }: LivePreviewProps) {
           }
         };
         dataParam = encodeURIComponent(JSON.stringify(minimalData));
-        
+
         // Store full data in a ref for postMessage
         iframeDataRef.current = invitation;
       } else {
         dataParam = encodeURIComponent(invitationJson);
         iframeDataRef.current = null;
       }
-      
+
       const newUrl = `${baseUrl}?data=${dataParam}`;
-      
+
       console.log('[LivePreview] Actualizando iframe URL:', newUrl.substring(0, 100) + '...');
       setIframeUrl(newUrl);
       setIsLoading(true);
     }, 500);
-    
+
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
     };
   }, [invitation, skinId]);
-  
+
   // Listen for messages from iframe (e.g., PREVIEW_READY)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
+
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'PREVIEW_READY') {
         console.log('[LivePreview] Iframe ready, sending data if available');
@@ -298,20 +294,20 @@ export function LivePreview({ formData, className = '' }: LivePreviewProps) {
         }
       }
     };
-    
+
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, []);
   const p1Name = formData.person1Name || 'Novia';
   const p2Name = formData.person2Name || 'Novio';
-  
+
   return (
     <div className={`relative ${className}`}>
       {/* Phone Frame - Mobile View via iframe */}
       <div className="relative mx-auto w-[320px] bg-black rounded-[2.5rem] border-[6px] border-black shadow-2xl overflow-hidden">
         {/* Notch */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-black rounded-b-xl z-50"></div>
-        
+
         {/* Loading Overlay */}
         {isLoading && (
           <div className="absolute inset-0 z-40 bg-white flex flex-col items-center justify-center">
@@ -319,7 +315,7 @@ export function LivePreview({ formData, className = '' }: LivePreviewProps) {
             <span className="text-[10px] uppercase tracking-widest text-gray-500 font-medium">Cargando...</span>
           </div>
         )}
-        
+
         {/* Screen - iframe */}
         <div className="w-full h-[600px] bg-white">
           {iframeUrl && (
@@ -345,7 +341,7 @@ export function LivePreview({ formData, className = '' }: LivePreviewProps) {
           )}
         </div>
       </div>
-      
+
       {/* Label */}
       <div className="mt-3 text-center">
         <span className="text-[10px] uppercase tracking-widest text-gray-400 font-medium">

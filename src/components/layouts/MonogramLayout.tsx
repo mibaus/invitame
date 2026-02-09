@@ -107,7 +107,7 @@ function HeroSection({ content, logistics, previewMobile }: { content: Invitatio
                     />
                   </div>
                 </div>
-                
+
                 {/* Corner marks estilo técnico */}
                 <div className="absolute -top-1 -left-1 w-3 h-3 border-t border-l" style={{ borderColor: COLORS.graphite }} />
                 <div className="absolute -top-1 -right-1 w-3 h-3 border-t border-r" style={{ borderColor: COLORS.graphite }} />
@@ -126,17 +126,17 @@ function HeroSection({ content, logistics, previewMobile }: { content: Invitatio
                 <p className="text-[10px] tracking-[0.4em] uppercase mb-8" style={{ color: COLORS.graphiteMuted, fontFamily: FONTS.body }}>
                   {content.headline || 'NUESTRA BODA'}
                 </p>
-                
+
                 <h1 className="text-6xl xl:text-7xl leading-none mb-2" style={{ color: COLORS.graphite, fontFamily: FONTS.display, fontWeight: 300, letterSpacing: '-0.03em' }}>
                   {person1Name}
                 </h1>
-                
+
                 <div className="flex items-center gap-4 my-6">
                   <div className="w-12 h-px" style={{ backgroundColor: COLORS.graphite }} />
                   <span className="text-xl italic" style={{ color: COLORS.graphiteLight, fontFamily: FONTS.display }}>&</span>
                   <div className="w-12 h-px" style={{ backgroundColor: COLORS.graphite }} />
                 </div>
-                
+
                 <h1 className="text-6xl xl:text-7xl leading-none" style={{ color: COLORS.graphite, fontFamily: FONTS.display, fontWeight: 300, letterSpacing: '-0.03em' }}>
                   {person2Name}
                 </h1>
@@ -237,7 +237,7 @@ function CountdownSection({ logistics }: { logistics: InvitationSchema['logistic
   );
 
   return (
-    <section className="py-32 md:py-40 px-6" style={{ backgroundColor: COLORS.white }}>
+    <section className="py-12 md:py-40 px-6" style={{ backgroundColor: COLORS.white }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -256,13 +256,13 @@ function CountdownSection({ logistics }: { logistics: InvitationSchema['logistic
         <div className="grid grid-cols-2 md:flex md:justify-center md:items-start gap-8 md:gap-0">
           <TimeUnit value={timeLeft.days} label="Días" />
           <div className="hidden md:block w-px h-20 self-center" style={{ backgroundColor: COLORS.borderDark }} />
-          
+
           <TimeUnit value={timeLeft.hours} label="Horas" />
           <div className="hidden md:block w-px h-20 self-center" style={{ backgroundColor: COLORS.borderDark }} />
-          
+
           <TimeUnit value={timeLeft.minutes} label="Minutos" />
           <div className="hidden md:block w-px h-20 self-center" style={{ backgroundColor: COLORS.borderDark }} />
-          
+
           <TimeUnit value={timeLeft.seconds} label="Segundos" />
         </div>
       </motion.div>
@@ -277,7 +277,7 @@ function QuoteSection({ content }: { content: InvitationSchema['content'] }) {
   const quoteText = content.quote?.text || content.couple?.love_story || 'En el silencio de este momento, encontramos la eternidad de nuestro amor. Como dos almas que se reconocen más allá del tiempo.';
 
   return (
-    <section className="py-32 md:py-40 px-6" style={{ backgroundColor: COLORS.offWhite }}>
+    <section className="py-12 md:py-40 px-6" style={{ backgroundColor: COLORS.offWhite }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -287,22 +287,23 @@ function QuoteSection({ content }: { content: InvitationSchema['content'] }) {
       >
         <div className="text-center">
           {/* Quote con drop cap que ocupa 3 líneas exactas */}
-          <p 
+          <p
             className="text-xl md:text-2xl lg:text-3xl"
-            style={{ 
-              color: COLORS.graphite, 
-              fontFamily: FONTS.display, 
-              fontWeight: 300, 
-              lineHeight: 1.6 
+            style={{
+              color: COLORS.graphite,
+              fontFamily: FONTS.display,
+              fontWeight: 300,
+              lineHeight: 1.6
             }}
           >
-            <span 
+            <span
               style={{
                 float: 'left',
                 fontSize: '4.5em',
-                lineHeight: '0.85',
+                lineHeight: '0.8',
                 paddingTop: '0.05em',
-                paddingRight: '0.15em',
+                paddingRight: '0',
+                marginRight: '0.08em',
                 paddingLeft: '0',
                 fontWeight: 400,
               }}
@@ -349,20 +350,20 @@ function VenuesSection({ logistics, content }: { logistics: InvitationSchema['lo
 
   const venues = logistics.venues.length > 0
     ? logistics.venues.slice(0, 2).map((venue, idx) => ({
-        title: venue.type === 'ceremony' ? 'LA CEREMONIA' : 'LA CELEBRACIÓN',
-        name: venue.name.toUpperCase(),
-        address: `${venue.address}, ${venue.city}`.toUpperCase(),
-        time: logistics.agenda?.[idx]?.time || '18:00',
-        mapsLink: venue.google_maps_url || `https://maps.google.com/?q=${encodeURIComponent(venue.address + ', ' + venue.city)}`,
-        calendarLink: generateCalendarLink({ title: venue.type === 'ceremony' ? 'La Ceremonia' : 'La Celebración', name: venue.name, address: `${venue.address}, ${venue.city}`, time: logistics.agenda?.[idx]?.time || '18:00' }, logistics.event_date)
-      }))
+      title: venue.type === 'ceremony' ? 'LA CEREMONIA' : 'LA CELEBRACIÓN',
+      name: venue.name.toUpperCase(),
+      address: `${venue.address}, ${venue.city}`.toUpperCase(),
+      time: logistics.agenda?.[idx]?.time || '18:00',
+      mapsLink: venue.google_maps_url || `https://maps.google.com/?q=${encodeURIComponent(venue.address + ', ' + venue.city)}`,
+      calendarLink: generateCalendarLink({ title: venue.type === 'ceremony' ? 'La Ceremonia' : 'La Celebración', name: venue.name, address: `${venue.address}, ${venue.city}`, time: logistics.agenda?.[idx]?.time || '18:00' }, logistics.event_date)
+    }))
     : [
-        { title: 'LA CEREMONIA', name: 'CATEDRAL DE SANTA MARÍA', address: 'CALLE PRINCIPAL 123, CIUDAD', time: '17:00', mapsLink: '#', calendarLink: '#' },
-        { title: 'LA CELEBRACIÓN', name: 'PALACIO DE CRISTAL', address: 'AVENIDA CENTRAL 456, CIUDAD', time: '19:30', mapsLink: '#', calendarLink: '#' }
-      ];
+      { title: 'LA CEREMONIA', name: 'CATEDRAL DE SANTA MARÍA', address: 'CALLE PRINCIPAL 123, CIUDAD', time: '17:00', mapsLink: '#', calendarLink: '#' },
+      { title: 'LA CELEBRACIÓN', name: 'PALACIO DE CRISTAL', address: 'AVENIDA CENTRAL 456, CIUDAD', time: '19:30', mapsLink: '#', calendarLink: '#' }
+    ];
 
   return (
-    <section className="py-32 md:py-40 px-6" style={{ backgroundColor: COLORS.white }}>
+    <section className="py-12 md:py-40 px-6" style={{ backgroundColor: COLORS.white }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -409,17 +410,17 @@ function VenuesSection({ logistics, content }: { logistics: InvitationSchema['lo
               <span className="text-[10px] tracking-[0.3em] uppercase block mb-4" style={{ color: COLORS.graphiteMuted, fontFamily: FONTS.body }}>
                 {venue.title}
               </span>
-              
+
               {/* Nombre del lugar */}
               <h3 className="text-lg md:text-xl tracking-tight mb-3" style={{ color: COLORS.graphite, fontFamily: FONTS.display, fontWeight: 400, letterSpacing: '0.02em' }}>
                 {venue.name}
               </h3>
-              
+
               {/* Dirección */}
               <p className="text-xs leading-relaxed mb-2 flex-grow" style={{ color: COLORS.graphiteLight, fontFamily: FONTS.body, fontWeight: 300 }}>
                 {venue.address}
               </p>
-              
+
               {/* Horario */}
               <p className="text-[10px] tracking-[0.2em] uppercase mb-8" style={{ color: COLORS.graphiteMuted, fontFamily: FONTS.body }}>
                 {venue.time} HS
@@ -461,14 +462,14 @@ function TimelineSection({ logistics }: { logistics: InvitationSchema['logistics
   const events = logistics.agenda?.length > 0
     ? logistics.agenda.map((item) => ({ time: item.time, title: item.title.toUpperCase(), description: (item.description || '').toUpperCase() }))
     : [
-        { time: '16:30', title: 'RECEPCIÓN DE INVITADOS', description: 'CÓCTEL DE BIENVENIDA' },
-        { time: '17:30', title: 'LA CEREMONIA', description: 'INTERCAMBIO DE VOTOS' },
-        { time: '19:00', title: 'EL BANQUETE', description: 'CENA BAJO LAS ESTRELLAS' },
-        { time: '22:00', title: 'EL BAILE', description: 'CELEBRACIÓN HASTA LA MADRUGADA' }
-      ];
+      { time: '16:30', title: 'RECEPCIÓN DE INVITADOS', description: 'CÓCTEL DE BIENVENIDA' },
+      { time: '17:30', title: 'LA CEREMONIA', description: 'INTERCAMBIO DE VOTOS' },
+      { time: '19:00', title: 'EL BANQUETE', description: 'CENA BAJO LAS ESTRELLAS' },
+      { time: '22:00', title: 'EL BAILE', description: 'CELEBRACIÓN HASTA LA MADRUGADA' }
+    ];
 
   return (
-    <section className="py-32 md:py-40 px-6" style={{ backgroundColor: COLORS.white }}>
+    <section className="py-12 md:py-40 px-6" style={{ backgroundColor: COLORS.white }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -508,12 +509,12 @@ function TimelineSection({ logistics }: { logistics: InvitationSchema['logistics
                   <span className="text-[10px] tracking-[0.3em] uppercase block mb-2" style={{ color: COLORS.graphiteMuted, fontFamily: FONTS.body }}>
                     {event.time}
                   </span>
-                  
+
                   {/* Título en mayúsculas */}
                   <h3 className="text-sm md:text-base tracking-[0.15em] uppercase mb-2" style={{ color: COLORS.graphite, fontFamily: FONTS.body, fontWeight: 400 }}>
                     {event.title}
                   </h3>
-                  
+
                   {/* Descripción */}
                   <p className="text-[10px] tracking-[0.1em] uppercase" style={{ color: COLORS.graphiteLight, fontFamily: FONTS.body }}>
                     {event.description}
@@ -537,14 +538,14 @@ function TimelineSection({ logistics }: { logistics: InvitationSchema['logistics
 function DressCodeSection({ logistics }: { logistics: InvitationSchema['logistics'] }) {
   const dressCodeText = logistics.dress_code?.code === 'formal' ? 'FORMAL ELEGANTE' :
     logistics.dress_code?.code === 'black-tie' ? 'BLACK TIE' :
-    logistics.dress_code?.code === 'cocktail' ? 'COCKTAIL' :
-    logistics.dress_code?.code === 'semi-formal' ? 'SEMI FORMAL' :
-    logistics.dress_code?.code === 'casual-elegante' ? 'CASUAL ELEGANTE' :
-    logistics.dress_code?.code === 'themed' ? 'TEMÁTICA ESPECIAL' :
-    logistics.dress_code?.description?.toUpperCase() || 'FORMAL ELEGANTE';
+      logistics.dress_code?.code === 'cocktail' ? 'COCKTAIL' :
+        logistics.dress_code?.code === 'semi-formal' ? 'SEMI FORMAL' :
+          logistics.dress_code?.code === 'casual-elegante' ? 'CASUAL ELEGANTE' :
+            logistics.dress_code?.code === 'themed' ? 'TEMÁTICA ESPECIAL' :
+              logistics.dress_code?.description?.toUpperCase() || 'FORMAL ELEGANTE';
 
   return (
-    <section className="py-32 md:py-40 px-6" style={{ backgroundColor: COLORS.offWhite }}>
+    <section className="py-12 md:py-40 px-6" style={{ backgroundColor: COLORS.offWhite }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -556,7 +557,7 @@ function DressCodeSection({ logistics }: { logistics: InvitationSchema['logistic
         <span className="text-[10px] tracking-[0.4em] uppercase block mb-8" style={{ color: COLORS.graphiteMuted, fontFamily: FONTS.body }}>
           03
         </span>
-        
+
         <h2 className="text-3xl md:text-4xl tracking-tight mb-12" style={{ color: COLORS.graphite, fontFamily: FONTS.display, fontWeight: 300, letterSpacing: '-0.02em' }}>
           CÓDIGO DE VESTIMENTA
         </h2>
@@ -590,13 +591,13 @@ function GallerySection({ content }: { content: InvitationSchema['content'] }) {
   const photos = content.gallery_images?.length
     ? content.gallery_images
     : [
-        'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600&h=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=800&h=1200&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1200&h=800&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1522673607200-1648832cee98?q=80&w=800&h=1200&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=1600&h=700&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?q=80&w=800&h=1200&auto=format&fit=crop',
-      ];
+      'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600&h=900&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=800&h=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1200&h=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1522673607200-1648832cee98?q=80&w=800&h=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=1600&h=700&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?q=80&w=800&h=1200&auto=format&fit=crop',
+    ];
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -613,7 +614,7 @@ function GallerySection({ content }: { content: InvitationSchema['content'] }) {
   };
 
   return (
-    <section className="py-32 md:py-40 px-6" style={{ backgroundColor: COLORS.white }}>
+    <section className="py-12 md:py-40 px-6" style={{ backgroundColor: COLORS.white }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -635,7 +636,7 @@ function GallerySection({ content }: { content: InvitationSchema['content'] }) {
         {/* Mobile: Slider con autoplay */}
         <div className="md:hidden">
           <div className="relative overflow-hidden">
-            <div 
+            <div
               className="flex transition-transform duration-500 ease-out"
               style={{ transform: `translateX(-${currentSlide * 100}%)` }}
             >
@@ -653,7 +654,7 @@ function GallerySection({ content }: { content: InvitationSchema['content'] }) {
               ))}
             </div>
           </div>
-          
+
           {/* Indicadores de slide */}
           <div className="flex justify-center gap-2 mt-6">
             {photos.map((_, index) => (
@@ -661,7 +662,7 @@ function GallerySection({ content }: { content: InvitationSchema['content'] }) {
                 key={index}
                 onClick={() => goToSlide(index)}
                 className="w-2 h-2 transition-all"
-                style={{ 
+                style={{
                   backgroundColor: currentSlide === index ? COLORS.graphite : COLORS.borderDark,
                   borderRadius: '50%'
                 }}
@@ -787,7 +788,7 @@ function GiftSection({ features }: { features: InvitationSchema['features'] }) {
   };
 
   return (
-    <section className="py-32 md:py-40 px-6" style={{ backgroundColor: COLORS.offWhite }}>
+    <section className="py-12 md:py-40 px-6" style={{ backgroundColor: COLORS.offWhite }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -924,10 +925,10 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
 
   if (success) {
     return (
-      <section className="py-32 md:py-40 px-6" style={{ backgroundColor: COLORS.white }}>
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }} 
-          animate={{ opacity: 1, scale: 1 }} 
+      <section className="py-12 md:py-40 px-6" style={{ backgroundColor: COLORS.white }}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
           className="max-w-md mx-auto text-center"
         >
           <div className="p-12 border" style={{ borderColor: COLORS.border }}>
@@ -944,7 +945,7 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
   }
 
   return (
-    <section id="rsvp-section" className="py-32 md:py-40 px-6" style={{ backgroundColor: COLORS.white }}>
+    <section id="rsvp-section" className="py-12 md:py-40 px-6" style={{ backgroundColor: COLORS.white }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -982,9 +983,9 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full py-3 bg-transparent focus:outline-none text-base"
-              style={{ 
-                color: COLORS.graphite, 
-                fontFamily: FONTS.display, 
+              style={{
+                color: COLORS.graphite,
+                fontFamily: FONTS.display,
                 borderBottom: `1px solid ${COLORS.graphite}`,
                 borderRadius: 0
               }}
@@ -1004,9 +1005,9 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className="w-full py-3 bg-transparent focus:outline-none text-base"
-              style={{ 
-                color: COLORS.graphite, 
-                fontFamily: FONTS.display, 
+              style={{
+                color: COLORS.graphite,
+                fontFamily: FONTS.display,
                 borderBottom: `1px solid ${COLORS.graphite}`,
                 borderRadius: 0
               }}
@@ -1062,9 +1063,9 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
                   value={formData.guests}
                   onChange={(e) => setFormData({ ...formData, guests: parseInt(e.target.value) })}
                   className="w-full py-3 bg-transparent focus:outline-none text-base cursor-pointer"
-                  style={{ 
-                    color: COLORS.graphite, 
-                    fontFamily: FONTS.display, 
+                  style={{
+                    color: COLORS.graphite,
+                    fontFamily: FONTS.display,
                     borderBottom: `1px solid ${COLORS.graphite}`,
                     borderRadius: 0
                   }}
@@ -1135,9 +1136,9 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
                   value={formData.musicSuggestion}
                   onChange={(e) => setFormData({ ...formData, musicSuggestion: e.target.value })}
                   className="w-full py-3 bg-transparent focus:outline-none text-base"
-                  style={{ 
-                    color: COLORS.graphite, 
-                    fontFamily: FONTS.display, 
+                  style={{
+                    color: COLORS.graphite,
+                    fontFamily: FONTS.display,
                     borderBottom: `1px solid ${COLORS.graphite}`,
                     borderRadius: 0
                   }}
@@ -1165,9 +1166,9 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
                           value={customAnswers[question.id] || ''}
                           onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
                           className="w-full py-3 bg-transparent focus:outline-none text-base"
-                          style={{ 
-                            color: COLORS.graphite, 
-                            fontFamily: FONTS.display, 
+                          style={{
+                            color: COLORS.graphite,
+                            fontFamily: FONTS.display,
                             borderBottom: `1px solid ${COLORS.graphite}`,
                             borderRadius: 0
                           }}
@@ -1180,9 +1181,9 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
                           value={customAnswers[question.id] || ''}
                           onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
                           className="w-full py-3 bg-transparent focus:outline-none text-base cursor-pointer"
-                          style={{ 
-                            color: COLORS.graphite, 
-                            fontFamily: FONTS.display, 
+                          style={{
+                            color: COLORS.graphite,
+                            fontFamily: FONTS.display,
                             borderBottom: `1px solid ${COLORS.graphite}`,
                             borderRadius: 0
                           }}
@@ -1199,9 +1200,9 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
                           value={customAnswers[question.id] || ''}
                           onChange={(e) => handleCustomAnswerChange(question.id, e.target.value)}
                           className="w-full py-3 bg-transparent focus:outline-none text-base resize-none"
-                          style={{ 
-                            color: COLORS.graphite, 
-                            fontFamily: FONTS.display, 
+                          style={{
+                            color: COLORS.graphite,
+                            fontFamily: FONTS.display,
                             borderBottom: `1px solid ${COLORS.graphite}`,
                             borderRadius: 0,
                             minHeight: '100px'
@@ -1224,9 +1225,9 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
             className="w-full py-4 text-[11px] tracking-[0.3em] uppercase transition-colors disabled:opacity-50"
-            style={{ 
-              backgroundColor: COLORS.graphite, 
-              color: COLORS.white, 
+            style={{
+              backgroundColor: COLORS.graphite,
+              color: COLORS.white,
               fontFamily: FONTS.body,
               borderRadius: 0
             }}
@@ -1249,12 +1250,12 @@ function RSVPSection({ features, content, metadata }: { features: InvitationSche
 // SECCIÓN 10: FOOTER - Monograma minimalista
 // ============================================
 function Footer({ content }: { content: InvitationSchema['content'] }) {
-  const initials = content.couple ? 
-    `${content.couple.person1.name.charAt(0)}${content.couple.person2.name.charAt(0)}` : 
+  const initials = content.couple ?
+    `${content.couple.person1.name.charAt(0)}${content.couple.person2.name.charAt(0)}` :
     'M&E';
 
   return (
-    <footer className="py-20 md:py-28 px-6" style={{ backgroundColor: COLORS.white, borderTop: `1px solid ${COLORS.border}` }}>
+    <footer className="py-12 md:py-28 px-6" style={{ backgroundColor: COLORS.white, borderTop: `1px solid ${COLORS.border}` }}>
       <div className="max-w-4xl mx-auto">
         <div className="flex flex-col items-center text-center">
           {/* Monograma */}
@@ -1284,7 +1285,7 @@ function Footer({ content }: { content: InvitationSchema['content'] }) {
 // ============================================
 function VowsFooter() {
   return (
-    <footer className="py-16 md:py-20 px-6" style={{ backgroundColor: COLORS.graphite }}>
+    <footer className="py-12 md:py-20 px-6" style={{ backgroundColor: COLORS.graphite }}>
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-12 pb-16" style={{ borderBottom: `1px solid ${COLORS.graphiteMedium}` }}>
           <div className="space-y-6">
@@ -1292,32 +1293,32 @@ function VowsFooter() {
               VOWS<span style={{ color: COLORS.graphiteMuted }}>.</span>
             </span>
             <p className="text-xs uppercase tracking-[0.3em] font-light max-w-xs leading-relaxed" style={{ color: COLORS.graphiteMuted, fontFamily: FONTS.body }}>
-              Redefiniendo la estética nupcial digital. <br/> Hecho con calma en Argentina.
+              Redefiniendo la estética nupcial digital. <br /> Hecho con calma en Argentina.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-10 md:gap-16">
             <div className="space-y-4">
-               <p className="text-[9px] uppercase tracking-[0.4em] font-bold" style={{ color: COLORS.graphiteLight, fontFamily: FONTS.body }}>Contacto</p>
-               <a href="mailto:hola@vows.ar" className="block text-sm transition-opacity hover:opacity-50" style={{ color: COLORS.white, fontFamily: FONTS.body }}>hola@vows.ar</a>
-               <a href="https://wa.me/5491100000000" className="block text-sm transition-opacity hover:opacity-50" style={{ color: COLORS.white, fontFamily: FONTS.body }}>WhatsApp Concierge</a>
+              <p className="text-[9px] uppercase tracking-[0.4em] font-bold" style={{ color: COLORS.graphiteLight, fontFamily: FONTS.body }}>Contacto</p>
+              <a href="mailto:hola@vows.ar" className="block text-sm transition-opacity hover:opacity-50" style={{ color: COLORS.white, fontFamily: FONTS.body }}>hola@vows.ar</a>
+              <a href="https://wa.me/5491100000000" className="block text-sm transition-opacity hover:opacity-50" style={{ color: COLORS.white, fontFamily: FONTS.body }}>WhatsApp Concierge</a>
             </div>
             <div className="space-y-4">
-               <p className="text-[9px] uppercase tracking-[0.4em] font-bold" style={{ color: COLORS.graphiteLight, fontFamily: FONTS.body }}>Legales</p>
-               <a href="#" className="block text-sm transition-opacity hover:opacity-50" style={{ color: COLORS.white, fontFamily: FONTS.body }}>Términos de uso</a>
-               <a href="#" className="block text-sm transition-opacity hover:opacity-50" style={{ color: COLORS.white, fontFamily: FONTS.body }}>Privacidad</a>
+              <p className="text-[9px] uppercase tracking-[0.4em] font-bold" style={{ color: COLORS.graphiteLight, fontFamily: FONTS.body }}>Legales</p>
+              <a href="#" className="block text-sm transition-opacity hover:opacity-50" style={{ color: COLORS.white, fontFamily: FONTS.body }}>Términos de uso</a>
+              <a href="#" className="block text-sm transition-opacity hover:opacity-50" style={{ color: COLORS.white, fontFamily: FONTS.body }}>Privacidad</a>
             </div>
           </div>
         </div>
 
         <div className="mt-10 flex flex-col md:flex-row justify-between items-center gap-6">
-           <p className="text-[10px] uppercase tracking-[0.2em]" style={{ color: COLORS.graphiteMuted, fontFamily: FONTS.body }}>
-             © {new Date().getFullYear()} VOWS. Todos los derechos reservados.
-           </p>
-           <div className="flex gap-8">
-              <a href="#" className="text-[10px] uppercase tracking-[0.2em] transition-opacity hover:opacity-50" style={{ color: COLORS.white, fontFamily: FONTS.body }}>Instagram</a>
-              <a href="#" className="text-[10px] uppercase tracking-[0.2em] transition-opacity hover:opacity-50" style={{ color: COLORS.white, fontFamily: FONTS.body }}>Pinterest</a>
-           </div>
+          <p className="text-[10px] uppercase tracking-[0.2em]" style={{ color: COLORS.graphiteMuted, fontFamily: FONTS.body }}>
+            © {new Date().getFullYear()} VOWS. Todos los derechos reservados.
+          </p>
+          <div className="flex gap-8">
+            <a href="#" className="text-[10px] uppercase tracking-[0.2em] transition-opacity hover:opacity-50" style={{ color: COLORS.white, fontFamily: FONTS.body }}>Instagram</a>
+            <a href="#" className="text-[10px] uppercase tracking-[0.2em] transition-opacity hover:opacity-50" style={{ color: COLORS.white, fontFamily: FONTS.body }}>Pinterest</a>
+          </div>
         </div>
       </div>
     </footer>
@@ -1332,72 +1333,72 @@ export function MonogramLayout({ invitation, preview, previewMobile }: MonogramL
 
   return (
     <main className="min-h-screen overflow-x-hidden" style={{ backgroundColor: COLORS.white }}>
-      <FeatureGate 
-        isVisible={features.show_hero} 
+      <FeatureGate
+        isVisible={features.show_hero}
         fallback={preview ? <EmptyStatePreview icon="◈" title="Hero Section" description="Sección principal con los nombres y fecha" /> : null}
       >
         <HeroSection content={content} logistics={logistics} previewMobile={previewMobile} />
       </FeatureGate>
 
-      <FeatureGate 
-        isVisible={features.show_countdown} 
-        data={features.countdown} 
+      <FeatureGate
+        isVisible={features.show_countdown}
+        data={features.countdown}
         fallback={preview ? <EmptyStatePreview icon="◷" title="Cuenta Regresiva" description="Configura la fecha de tu evento" /> : null}
       >
         <CountdownSection logistics={logistics} />
       </FeatureGate>
 
-      <FeatureGate 
-        isVisible={!!content.quote || !!content.couple?.love_story} 
-        data={content.quote} 
+      <FeatureGate
+        isVisible={!!content.quote || !!content.couple?.love_story}
+        data={content.quote}
         fallback={preview ? <EmptyStatePreview icon="❝" title="Frase Especial" description="Agrega una frase o historia de amor" /> : null}
       >
         <QuoteSection content={content} />
       </FeatureGate>
 
-      <FeatureGate 
-        isVisible={features.show_venue_map} 
-        data={logistics.venues} 
+      <FeatureGate
+        isVisible={features.show_venue_map}
+        data={logistics.venues}
         fallback={preview ? <EmptyStatePreview icon="⌖" title="Ubicaciones" description="Indica dónde será el evento" /> : null}
       >
         <VenuesSection logistics={logistics} content={content} />
       </FeatureGate>
 
-      <FeatureGate 
-        isVisible={features.show_agenda} 
-        data={logistics.agenda} 
+      <FeatureGate
+        isVisible={features.show_agenda}
+        data={logistics.agenda}
         fallback={preview ? <EmptyStatePreview icon="▣" title="Agenda" description="Agrega los momentos clave de tu evento" /> : null}
       >
         <TimelineSection logistics={logistics} />
       </FeatureGate>
 
-      <FeatureGate 
-        isVisible={features.show_dress_code} 
-        data={logistics.dress_code} 
+      <FeatureGate
+        isVisible={features.show_dress_code}
+        data={logistics.dress_code}
         fallback={preview ? <EmptyStatePreview icon="◈" title="Dress Code" description="Especifica el código de vestimenta" /> : null}
       >
         <DressCodeSection logistics={logistics} />
       </FeatureGate>
 
-      <FeatureGate 
-        isVisible={features.show_gallery} 
-        data={content.gallery_images} 
+      <FeatureGate
+        isVisible={features.show_gallery}
+        data={content.gallery_images}
         fallback={preview ? <EmptyStatePreview icon="▣" title="Galería" description="Comparte tus mejores momentos" /> : null}
       >
         <GallerySection content={content} />
       </FeatureGate>
 
-      <FeatureGate 
-        isVisible={features.show_gift_registry} 
-        data={features.gift_registry} 
+      <FeatureGate
+        isVisible={features.show_gift_registry}
+        data={features.gift_registry}
         fallback={preview ? <EmptyStatePreview icon="◉" title="Mesa de Regalos" description="Comparte los datos bancarios" /> : null}
       >
         <GiftSection features={features} />
       </FeatureGate>
 
-      <FeatureGate 
-        isVisible={features.show_rsvp} 
-        data={features.rsvp} 
+      <FeatureGate
+        isVisible={features.show_rsvp}
+        data={features.rsvp}
         fallback={preview ? <EmptyStatePreview icon="✉" title="Confirmar Asistencia" description="Activa el formulario RSVP" /> : null}
       >
         <RSVPSection features={features} content={content} metadata={metadata} />
@@ -1406,35 +1407,33 @@ export function MonogramLayout({ invitation, preview, previewMobile }: MonogramL
       <Footer content={content} />
       <VowsFooter />
 
-      {/* Botón flotante para Confirmar - solo visible cuando NO está en preview */}
-      {!preview && (
-        <FeatureGate 
-          isVisible={features.show_rsvp} 
-          data={features.rsvp}
+      {/* Botón flotante para Confirmar */}
+      <FeatureGate
+        isVisible={features.show_rsvp}
+        data={features.rsvp}
+      >
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.5 }}
+          onClick={() => {
+            const rsvpSection = document.getElementById('rsvp-section');
+            if (rsvpSection) {
+              rsvpSection.scrollIntoView({ behavior: 'smooth' });
+            }
+          }}
+          className="fixed bottom-6 right-6 z-50 px-6 py-3 text-[11px] tracking-[0.15em] uppercase transition-all hover:opacity-90 shadow-lg"
+          style={{
+            backgroundColor: COLORS.graphite,
+            color: COLORS.white,
+            fontFamily: FONTS.body,
+            fontWeight: 300,
+            borderRadius: 0
+          }}
         >
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.5 }}
-            onClick={() => {
-              const rsvpSection = document.getElementById('rsvp-section');
-              if (rsvpSection) {
-                rsvpSection.scrollIntoView({ behavior: 'smooth' });
-              }
-            }}
-            className="fixed bottom-6 right-6 z-50 px-6 py-3 text-[11px] tracking-[0.15em] uppercase transition-all hover:opacity-90 shadow-lg"
-            style={{ 
-              backgroundColor: COLORS.graphite, 
-              color: COLORS.white, 
-              fontFamily: FONTS.body,
-              fontWeight: 300,
-              borderRadius: 0
-            }}
-          >
-            Confirmar
-          </motion.button>
-        </FeatureGate>
-      )}
+          Confirmar
+        </motion.button>
+      </FeatureGate>
     </main>
   );
 }
