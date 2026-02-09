@@ -113,14 +113,39 @@ export function OnboardingWizard() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setError(null);
-    
+
     try {
       console.log('[Onboarding] Submitting data:', formData);
       const response = await submitOnboarding(formData as OnboardingData);
-      
+
       if (response.success) {
         setResult({ temporarySlug: response.temporarySlug });
         setIsSuccess(true);
+
+        // Send welcome email (non-blocking)
+        try {
+          console.log('[Onboarding] Sending welcome email...');
+          const emailResponse = await fetch('/api/send-welcome-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              clientEmail: formData.clientEmail,
+              clientName: formData.clientName,
+              slug: response.temporarySlug || formData.slug,
+            }),
+          });
+
+          const emailResult = await emailResponse.json();
+
+          if (emailResult.success) {
+            console.log('[Onboarding] Welcome email sent successfully');
+          } else {
+            console.error('[Onboarding] Email sending failed:', emailResult.error);
+          }
+        } catch (emailError: any) {
+          // Don't block user flow if email fails
+          console.error('[Onboarding] Email error (non-blocking):', emailError);
+        }
       } else {
         console.error('[Onboarding] Submit error:', response.error);
         setError(response.error || 'Error al crear la invitación');
@@ -139,8 +164,8 @@ export function OnboardingWizard() {
   };
 
   const isStep1Valid = !!(
-    formData.clientName && 
-    formData.clientEmail && 
+    formData.clientName &&
+    formData.clientEmail &&
     /^\S+@\S+\.\S+$/.test(formData.clientEmail) &&
     formData.clientPhone &&
     /^[+]?[0-9\s-]{8,20}$/.test(formData.clientPhone)
@@ -161,13 +186,13 @@ export function OnboardingWizard() {
         </div>
         <h2 className="font-serif text-4xl text-[#2C3333] mb-4">¡Todo listo para brillar!</h2>
         <p className="text-[#2C3333]/70 mb-8 max-w-md">
-          Tu invitación digital se está generando. Recibirás un link en tu correo en unos instantes.
+          Tu invitación digital está lista. Te enviamos un email con todos los detalles y enlaces de acceso.
         </p>
         <div className="p-4 bg-gray-50 rounded-xl mb-8 border border-gray-100">
           <p className="text-xs uppercase tracking-widest font-bold text-gray-400 mb-2">Tu URL</p>
           <code className="text-[#A27B5C] font-mono text-lg tracking-tighter">vows.digital/{formData.slug}</code>
         </div>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="bg-[#2C3333] text-white px-10 py-4 rounded-xl font-bold tracking-premium text-xs uppercase hover:bg-[#A27B5C] transition-all duration-500"
         >
@@ -186,7 +211,7 @@ export function OnboardingWizard() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
           </svg>
           <span className="text-sm">Retomamos donde dejaste. Tu historia está a salvo.</span>
-          <button 
+          <button
             onClick={() => setShowRestoreToast(false)}
             className="ml-2 text-white/60 hover:text-white"
           >
@@ -214,7 +239,7 @@ export function OnboardingWizard() {
       {/* Left Panel - Form */}
       <div className={`flex-1 flex flex-col ${showPreview ? 'hidden lg:flex' : 'flex'}`}>
         <StepIndicator currentStep={currentStep} />
-        
+
         <div className="p-8 flex-grow overflow-y-auto">
           {currentStep === 1 && <Step1Personal formData={formData} updateFormData={updateFormData} onNext={handleNext} isNextDisabled={isNextDisabled()} />}
           {currentStep === 2 && <Step2Wedding formData={formData} updateFormData={updateFormData} />}
@@ -235,9 +260,8 @@ export function OnboardingWizard() {
           <button
             onClick={handleBack}
             disabled={currentStep === 1 || isSubmitting}
-            className={`px-6 py-2.5 rounded-lg font-bold tracking-premium text-[10px] uppercase transition-all ${
-              currentStep === 1 ? 'opacity-0 pointer-events-none' : 'text-[#2C3333] hover:text-[#A27B5C]'
-            }`}
+            className={`px-6 py-2.5 rounded-lg font-bold tracking-premium text-[10px] uppercase transition-all ${currentStep === 1 ? 'opacity-0 pointer-events-none' : 'text-[#2C3333] hover:text-[#A27B5C]'
+              }`}
           >
             Anterior
           </button>
@@ -288,7 +312,7 @@ export function OnboardingWizard() {
       </div>
 
       {/* Premium Paywall Modal */}
-      <PremiumPaywallModal 
+      <PremiumPaywallModal
         isOpen={showPaywallModal}
         onClose={() => setShowPaywallModal(false)}
         onActivate={handlePaywallActivate}
