@@ -25,17 +25,23 @@ export default function AdminClient({ invitations }: AdminClientProps) {
   }
 
   const handleViewDetails = async (slug: string) => {
+    if (loadingSlug) return; // Prevent multiple concurrent requests
+
     setLoadingSlug(slug);
     try {
+      console.log('Fetching details for:', slug);
       const res = await getDashboardData(slug);
+      console.log('Dashboard response:', res);
+
       if (res.success && res.data) {
         setDashboardData(res.data);
         setSelectedInvitation(slug);
       } else {
-        alert('Error al cargar detalles: ' + res.error);
+        console.error('Error in response:', res.error);
+        alert('Error al cargar detalles: ' + (res.error || 'Desconocido'));
       }
     } catch (error) {
-      console.error(error);
+      console.error('Catch error:', error);
       alert('Error inesperado al cargar detalles');
     } finally {
       setLoadingSlug(null);
@@ -170,9 +176,9 @@ function InvitationListView({
                 </Link>
                 <button
                   onClick={() => onSelect(inv.slug)}
-                  disabled={loadingSlug !== null}
+                  disabled={loadingSlug === inv.slug}
                   className={`px-4 py-2 rounded-lg text-white text-center text-sm transition-colors disabled:opacity-50 ${loadingSlug === inv.slug
-                      ? 'bg-[#A27B5C]'
+                      ? 'bg-[#A27B5C] opacity-75 cursor-not-allowed'
                       : 'bg-[#2C3333] hover:bg-[#A27B5C]'
                     }`}
                 >
