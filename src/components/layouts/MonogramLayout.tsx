@@ -300,12 +300,11 @@ function QuoteSection({ content }: { content: InvitationSchema['content'] }) {
           >
             <span
               style={{
-                float: 'left',
-                fontSize: '4.5em',
-                lineHeight: '0.8',
-                paddingTop: '0.05em',
-                paddingRight: '0',
-                marginRight: '-0.02em',
+                display: 'inline-block',
+                verticalAlign: 'baseline',
+                fontSize: '3.5em',
+                lineHeight: '1',
+                marginRight: '0.05em',
                 paddingLeft: '0',
                 fontWeight: 400,
               }}
