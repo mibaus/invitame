@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { OnboardingData } from '../types';
 import { generateFantasyData } from '../lib/mock-fantasy-data';
+import { PREVIEW_IMAGES } from '@/lib/constants';
 import { InvitationSchema, SkinId, VenueLocation, AgendaItem as SchemaAgendaItem } from '@/types';
 
 interface LivePreviewProps {
@@ -90,11 +91,8 @@ function createInvitationFromFormData(formData: Partial<OnboardingData>): Invita
         { name: 'Padres de la novia', relation: 'Anfitriones' },
         { name: 'Padres del novio', relation: 'Anfitriones' },
       ],
-      cover_image: formData.coverImage || 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80',
-      gallery_images: formData.galleryImages?.length ? formData.galleryImages : [
-        'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80',
-        'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80',
-      ],
+      cover_image: formData.coverImage || PREVIEW_IMAGES.cover,
+      gallery_images: formData.galleryImages?.length ? formData.galleryImages : PREVIEW_IMAGES.gallery,
       quote: formData.quote ? {
         text: formData.quote,
         author: formData.quoteAuthor || fantasyData.quoteAuthor,

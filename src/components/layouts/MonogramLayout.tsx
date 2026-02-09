@@ -293,7 +293,9 @@ function QuoteSection({ content }: { content: InvitationSchema['content'] }) {
               color: COLORS.graphite,
               fontFamily: FONTS.display,
               fontWeight: 300,
-              lineHeight: 1.6
+              lineHeight: 1.6,
+              display: 'inline-block',
+              textAlign: 'left'
             }}
           >
             <span
@@ -303,7 +305,7 @@ function QuoteSection({ content }: { content: InvitationSchema['content'] }) {
                 lineHeight: '0.8',
                 paddingTop: '0.05em',
                 paddingRight: '0',
-                marginRight: '0.08em',
+                marginRight: '-0.02em',
                 paddingLeft: '0',
                 fontWeight: 400,
               }}

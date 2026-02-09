@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { getAllSkins, SkinConfig } from '@/lib/skins';
 import { InvitationSchema, SkinId } from '@/types';
+import { PREVIEW_IMAGES } from '@/lib/constants';
 import { generateFantasyData } from '@/app/onboarding/lib/mock-fantasy-data';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -41,12 +42,8 @@ function createDemoInvitation(skinId: SkinId): InvitationSchema {
         { name: 'Padres de la novia', relation: 'Anfitriones' },
         { name: 'Padres del novio', relation: 'Anfitriones' },
       ],
-      cover_image: 'https://images.pexels.com/photos/1573007/pexels-photo-1573007.jpeg?auto=compress&cs=tinysrgb&w=1920',
-      gallery_images: [
-        'https://images.pexels.com/photos/265722/pexels-photo-265722.jpeg?auto=compress&cs=tinysrgb&w=800',
-        'https://images.pexels.com/photos/1024993/pexels-photo-1024993.jpeg?auto=compress&cs=tinysrgb&w=800',
-        'https://images.pexels.com/photos/1616113/pexels-photo-1616113.jpeg?auto=compress&cs=tinysrgb&w=800',
-      ],
+      cover_image: PREVIEW_IMAGES.cover,
+      gallery_images: PREVIEW_IMAGES.gallery,
       quote: {
         text: fantasyData.quote,
         author: fantasyData.quoteAuthor,
@@ -251,8 +248,8 @@ function SkinSelector({
           key={skin.id}
           onClick={() => onSelect(skin.id as SkinId)}
           className={`group relative px-4 py-3 rounded-xl transition-all duration-300 text-left min-w-[140px] ${activeSkin === skin.id
-              ? 'bg-charcoal text-cloud shadow-lg scale-105'
-              : 'bg-white text-charcoal hover:bg-stone-100 shadow-sm hover:shadow-md'
+            ? 'bg-charcoal text-cloud shadow-lg scale-105'
+            : 'bg-white text-charcoal hover:bg-stone-100 shadow-sm hover:shadow-md'
             }`}
         >
           <div className="flex items-center gap-3">
@@ -315,8 +312,8 @@ export function InteractiveDemoShowcase({ className = '' }: InteractiveDemoShowc
                   key={skin.id}
                   onClick={() => setActiveSkinId(skin.id as SkinId)}
                   className={`w-full group relative px-4 py-4 rounded-xl transition-all duration-300 text-left ${activeSkinId === skin.id
-                      ? 'bg-charcoal text-cloud shadow-md'
-                      : 'bg-stone-50 text-charcoal hover:bg-stone-100'
+                    ? 'bg-charcoal text-cloud shadow-md'
+                    : 'bg-stone-50 text-charcoal hover:bg-stone-100'
                     }`}
                 >
                   <div className="flex items-center gap-3">
@@ -353,8 +350,8 @@ export function InteractiveDemoShowcase({ className = '' }: InteractiveDemoShowc
               <button
                 onClick={() => setDeviceView('mobile')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${deviceView === 'mobile'
-                    ? 'bg-white text-charcoal shadow-sm'
-                    : 'text-charcoal/60 hover:text-charcoal'
+                  ? 'bg-white text-charcoal shadow-sm'
+                  : 'text-charcoal/60 hover:text-charcoal'
                   }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -365,8 +362,8 @@ export function InteractiveDemoShowcase({ className = '' }: InteractiveDemoShowc
               <button
                 onClick={() => setDeviceView('desktop')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${deviceView === 'desktop'
-                    ? 'bg-white text-charcoal shadow-sm'
-                    : 'text-charcoal/60 hover:text-charcoal'
+                  ? 'bg-white text-charcoal shadow-sm'
+                  : 'text-charcoal/60 hover:text-charcoal'
                   }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

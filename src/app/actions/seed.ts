@@ -2,6 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
+import { PREVIEW_IMAGES } from '@/lib/constants';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -53,7 +54,7 @@ export async function seedTestWedding() {
     // 2. Datos de la boda de prueba
     const weddingDate = '2026-06-15';
     const ceremonyTime = '18:00';
-    
+
     const temporarySlug = generateTemporarySlug();
 
     // Contenido completo de la invitación
@@ -61,7 +62,7 @@ export async function seedTestWedding() {
       headline: 'María & Carlos',
       subtitle: '¡Nos casamos!',
       main_message: 'Con mucha alegría queremos invitarte a compartir uno de los días más importantes de nuestras vidas. Tu presencia hará que este momento sea inolvidable. ¡Te esperamos!',
-      cover_image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&h=800&fit=crop',
+      cover_image: PREVIEW_IMAGES.cover,
       gallery_images: [
         'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=800&h=600&fit=crop',

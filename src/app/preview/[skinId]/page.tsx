@@ -3,6 +3,7 @@ import { MasterLayout } from '@/components/layouts/MasterLayout';
 import type { InvitationSchema, SkinId, EventType } from '@/types';
 import type { Invitation } from '@/types/database';
 import { createServerComponentClient } from '@/lib/supabase';
+import { PREVIEW_IMAGES } from '@/lib/constants';
 import { Suspense } from 'react';
 import { PreviewClient } from './PreviewClient';
 
@@ -83,7 +84,7 @@ async function getMockInvitationFromDB(skinId: SkinId): Promise<InvitationSchema
     if (!supabase) {
       return createServerMockData(skinId);
     }
-    
+
     // Buscar invitación de demo/prueba para este skin
     const { data: rawData, error } = await supabase
       .from('invitations')
@@ -129,13 +130,8 @@ function createServerMockData(skinId: SkinId): InvitationSchema {
         hashtag: '#MariaYCarlos',
       },
       hosts: [],
-      cover_image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1000&auto=format&fit=crop',
-      gallery_images: [
-        'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1519225495810-7517c33000e1?q=80&w=800&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1522673607200-16488321499b?q=80&w=800&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=800&auto=format&fit=crop',
-      ],
+      cover_image: PREVIEW_IMAGES.cover,
+      gallery_images: PREVIEW_IMAGES.gallery,
       quote: {
         text: 'Que todas nuestras noches sean aventuras y que cada mañana sea un nuevo comienzo de este amor que hoy decidimos unir para siempre.',
         author: 'Nuestro Voto Eterno',
@@ -232,7 +228,7 @@ async function getInvitationById(id: string): Promise<InvitationSchema | null> {
     if (!supabase) {
       return null;
     }
-    
+
     const { data: rawData, error } = await supabase
       .from('invitations')
       .select('*')

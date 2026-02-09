@@ -3,6 +3,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { getAllSkins } from '@/lib/skins';
 import { InvitationSchema, SkinId } from '@/types';
+import { PREVIEW_IMAGES } from '@/lib/constants';
 import { generateFantasyData } from '@/app/onboarding/lib/mock-fantasy-data';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -37,12 +38,8 @@ function createDemoInvitation(skinId: SkinId): InvitationSchema {
         { name: 'Padres de la novia', relation: 'Anfitriones' },
         { name: 'Padres del novio', relation: 'Anfitriones' },
       ],
-      cover_image: 'https://images.pexels.com/photos/1573007/pexels-photo-1573007.jpeg?auto=compress&cs=tinysrgb&w=1920',
-      gallery_images: [
-        'https://images.pexels.com/photos/265722/pexels-photo-265722.jpeg?auto=compress&cs=tinysrgb&w=800',
-        'https://images.pexels.com/photos/1024993/pexels-photo-1024993.jpeg?auto=compress&cs=tinysrgb&w=800',
-        'https://images.pexels.com/photos/1616113/pexels-photo-1616113.jpeg?auto=compress&cs=tinysrgb&w=800',
-      ],
+      cover_image: PREVIEW_IMAGES.cover,
+      gallery_images: PREVIEW_IMAGES.gallery,
       quote: {
         text: fantasyData.quote,
         author: fantasyData.quoteAuthor,
