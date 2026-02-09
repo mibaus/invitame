@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
         // Send email using Resend
         const { data, error } = await resend.emails.send({
-            from: 'VOWS <onboarding@resend.dev>', // Replace with your verified domain when available
+            from: 'VOWS <bienvenidx@vows.digital>', // Replace with your verified domain when available
             to: [clientEmail],
             subject: '¡Bienvenido a VOWS! Tu invitación digital está lista ✨',
             react: WelcomeEmail({ clientName, slug }),
