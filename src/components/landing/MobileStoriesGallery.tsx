@@ -37,11 +37,11 @@ function createDemoInvitation(skinId: SkinId): InvitationSchema {
         { name: 'Padres de la novia', relation: 'Anfitriones' },
         { name: 'Padres del novio', relation: 'Anfitriones' },
       ],
-      cover_image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80',
+      cover_image: 'https://images.pexels.com/photos/1573007/pexels-photo-1573007.jpeg?auto=compress&cs=tinysrgb&w=1920',
       gallery_images: [
-        'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80',
-        'https://images.unsplash.com/photo-1519225495810-7517c33000e1?q=80&w=800&q=80',
-        'https://images.unsplash.com/photo-1522673607200-16488321499b?q=80&w=800&q=80',
+        'https://images.pexels.com/photos/265722/pexels-photo-265722.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/1024993/pexels-photo-1024993.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/1616113/pexels-photo-1616113.jpeg?auto=compress&cs=tinysrgb&w=800',
       ],
       quote: {
         text: fantasyData.quote,
@@ -138,7 +138,7 @@ function PhoneMockup({ skinId, invitation }: { skinId: SkinId; invitation: Invit
       <div className="relative bg-[#1a1a1a] rounded-[2rem] border-[4px] border-[#1a1a1a] shadow-2xl overflow-hidden">
         {/* Notch */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-5 bg-[#1a1a1a] rounded-b-lg z-50"></div>
-        
+
         {/* Screen */}
         <div className="w-full bg-white rounded-[1.5rem] overflow-hidden" style={{ height: 500 }}>
           <iframe
@@ -236,7 +236,7 @@ export function MobileStoriesGallery() {
               <motion.div
                 className="h-full bg-charcoal"
                 initial={{ width: 0 }}
-                animate={{ 
+                animate={{
                   width: idx < activeIndex ? '100%' : idx === activeIndex ? '50%' : '0%'
                 }}
                 transition={{ duration: idx === activeIndex ? 3 : 0.3 }}
@@ -247,11 +247,11 @@ export function MobileStoriesGallery() {
       </div>
 
       {/* Stories Carousel */}
-      <div 
+      <div
         ref={containerRef}
         className="overflow-x-auto scrollbar-hide snap-x snap-mandatory"
-        style={{ 
-          scrollbarWidth: 'none', 
+        style={{
+          scrollbarWidth: 'none',
           msOverflowStyle: 'none',
           WebkitOverflowScrolling: 'touch'
         }}
@@ -271,12 +271,11 @@ export function MobileStoriesGallery() {
               className="snap-center shrink-0"
               style={{ width: '85vw', maxWidth: 340 }}
             >
-              <div className={`transition-all duration-300 ${
-                idx === activeIndex ? 'scale-100 opacity-100' : 'scale-95 opacity-70'
-              }`}>
-                <PhoneMockup 
-                  skinId={skin.id as SkinId} 
-                  invitation={invitations[idx]} 
+              <div className={`transition-all duration-300 ${idx === activeIndex ? 'scale-100 opacity-100' : 'scale-95 opacity-70'
+                }`}>
+                <PhoneMockup
+                  skinId={skin.id as SkinId}
+                  invitation={invitations[idx]}
                 />
               </div>
             </div>
@@ -296,7 +295,7 @@ export function MobileStoriesGallery() {
         >
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100">
             <div className="flex items-center gap-3 mb-3">
-              <div 
+              <div
                 className="w-4 h-4 rounded-full"
                 style={{ backgroundColor: activeSkin?.style.accent }}
               />
@@ -307,16 +306,15 @@ export function MobileStoriesGallery() {
             <p className="text-sm text-charcoal/70 font-light leading-relaxed">
               {activeSkin?.description}
             </p>
-            
+
             {/* Navigation Dots */}
             <div className="flex justify-center gap-2 mt-4">
               {skins.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => scrollToSlide(idx)}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    idx === activeIndex ? 'bg-charcoal w-6' : 'bg-stone-300'
-                  }`}
+                  className={`w-2 h-2 rounded-full transition-all ${idx === activeIndex ? 'bg-charcoal w-6' : 'bg-stone-300'
+                    }`}
                 />
               ))}
             </div>

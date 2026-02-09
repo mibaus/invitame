@@ -41,11 +41,11 @@ function createDemoInvitation(skinId: SkinId): InvitationSchema {
         { name: 'Padres de la novia', relation: 'Anfitriones' },
         { name: 'Padres del novio', relation: 'Anfitriones' },
       ],
-      cover_image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80',
+      cover_image: 'https://images.pexels.com/photos/1573007/pexels-photo-1573007.jpeg?auto=compress&cs=tinysrgb&w=1920',
       gallery_images: [
-        'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80',
-        'https://images.unsplash.com/photo-1519225495810-7517c33000e1?q=80&w=800&q=80',
-        'https://images.unsplash.com/photo-1522673607200-16488321499b?q=80&w=800&q=80',
+        'https://images.pexels.com/photos/265722/pexels-photo-265722.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/1024993/pexels-photo-1024993.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/1616113/pexels-photo-1616113.jpeg?auto=compress&cs=tinysrgb&w=800',
       ],
       quote: {
         text: fantasyData.quote,
@@ -142,7 +142,7 @@ function PhoneMockup({ skinId, invitation }: { skinId: SkinId; invitation: Invit
       <div className="relative mx-auto w-[280px] bg-[#1a1a1a] rounded-[2rem] border-[4px] border-[#1a1a1a] shadow-2xl overflow-hidden">
         {/* Notch */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-5 bg-[#1a1a1a] rounded-b-lg z-50"></div>
-        
+
         {/* Screen */}
         <div className="w-full h-[520px] bg-white rounded-[1.5rem] overflow-hidden">
           <iframe
@@ -154,7 +154,7 @@ function PhoneMockup({ skinId, invitation }: { skinId: SkinId; invitation: Invit
           />
         </div>
       </div>
-      
+
       {/* Reflection/Shadow */}
       <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[200px] h-[20px] bg-black/20 blur-xl rounded-full"></div>
     </div>
@@ -176,7 +176,7 @@ function DesktopMockup({ skinId, invitation }: { skinId: SkinId; invitation: Inv
   return (
     <div className="relative">
       {/* Desktop Frame */}
-      <div 
+      <div
         className="relative bg-[#1a1a1a] rounded-t-xl border-[6px] border-[#1a1a1a] shadow-2xl overflow-hidden mx-auto"
         style={{ width: CONTAINER_WIDTH }}
       >
@@ -197,12 +197,12 @@ function DesktopMockup({ skinId, invitation }: { skinId: SkinId; invitation: Inv
           </div>
           <div className="w-16"></div>
         </div>
-        
+
         {/* Screen with scaled iframe */}
-        <div 
+        <div
           className="bg-white overflow-hidden"
-          style={{ 
-            width: CONTAINER_WIDTH, 
+          style={{
+            width: CONTAINER_WIDTH,
             height: 450,
             position: 'relative'
           }}
@@ -210,8 +210,8 @@ function DesktopMockup({ skinId, invitation }: { skinId: SkinId; invitation: Inv
           <iframe
             src={iframeUrl}
             className="border-0"
-            style={{ 
-              width: DESKTOP_WIDTH, 
+            style={{
+              width: DESKTOP_WIDTH,
               height: 450 / scale,
               transform: `scale(${scale})`,
               transformOrigin: 'top left',
@@ -224,7 +224,7 @@ function DesktopMockup({ skinId, invitation }: { skinId: SkinId; invitation: Inv
           />
         </div>
       </div>
-      
+
       {/* Monitor Stand */}
       <div className="relative" style={{ width: CONTAINER_WIDTH }}>
         <div className="mx-auto w-32 h-4 bg-[#2a2a2a] rounded-b-lg"></div>
@@ -235,13 +235,13 @@ function DesktopMockup({ skinId, invitation }: { skinId: SkinId; invitation: Inv
   );
 }
 
-function SkinSelector({ 
-  skins, 
-  activeSkin, 
-  onSelect 
-}: { 
-  skins: SkinConfig[]; 
-  activeSkin: SkinId; 
+function SkinSelector({
+  skins,
+  activeSkin,
+  onSelect
+}: {
+  skins: SkinConfig[];
+  activeSkin: SkinId;
   onSelect: (skinId: SkinId) => void;
 }) {
   return (
@@ -250,17 +250,15 @@ function SkinSelector({
         <button
           key={skin.id}
           onClick={() => onSelect(skin.id as SkinId)}
-          className={`group relative px-4 py-3 rounded-xl transition-all duration-300 text-left min-w-[140px] ${
-            activeSkin === skin.id
+          className={`group relative px-4 py-3 rounded-xl transition-all duration-300 text-left min-w-[140px] ${activeSkin === skin.id
               ? 'bg-charcoal text-cloud shadow-lg scale-105'
               : 'bg-white text-charcoal hover:bg-stone-100 shadow-sm hover:shadow-md'
-          }`}
+            }`}
         >
           <div className="flex items-center gap-3">
-            <div 
-              className={`w-3 h-3 rounded-full transition-transform duration-300 ${
-                activeSkin === skin.id ? 'scale-125' : 'group-hover:scale-110'
-              }`}
+            <div
+              className={`w-3 h-3 rounded-full transition-transform duration-300 ${activeSkin === skin.id ? 'scale-125' : 'group-hover:scale-110'
+                }`}
               style={{ backgroundColor: skin.style.accent }}
             ></div>
             <div>
@@ -303,7 +301,7 @@ export function InteractiveDemoShowcase({ className = '' }: InteractiveDemoShowc
 
       {/* Main Layout: Selectors Left, Device Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-        
+
         {/* Left Column - Controls */}
         <div className="lg:col-span-4 space-y-8 lg:sticky lg:top-8">
           {/* Skin Selector */}
@@ -316,17 +314,15 @@ export function InteractiveDemoShowcase({ className = '' }: InteractiveDemoShowc
                 <button
                   key={skin.id}
                   onClick={() => setActiveSkinId(skin.id as SkinId)}
-                  className={`w-full group relative px-4 py-4 rounded-xl transition-all duration-300 text-left ${
-                    activeSkinId === skin.id
+                  className={`w-full group relative px-4 py-4 rounded-xl transition-all duration-300 text-left ${activeSkinId === skin.id
                       ? 'bg-charcoal text-cloud shadow-md'
                       : 'bg-stone-50 text-charcoal hover:bg-stone-100'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div 
-                      className={`w-3 h-3 rounded-full transition-transform duration-300 ${
-                        activeSkinId === skin.id ? 'scale-125' : 'group-hover:scale-110'
-                      }`}
+                    <div
+                      className={`w-3 h-3 rounded-full transition-transform duration-300 ${activeSkinId === skin.id ? 'scale-125' : 'group-hover:scale-110'
+                        }`}
                       style={{ backgroundColor: skin.style.accent }}
                     ></div>
                     <div className="flex-1">
@@ -356,11 +352,10 @@ export function InteractiveDemoShowcase({ className = '' }: InteractiveDemoShowc
             <div className="flex bg-stone-100 rounded-xl p-1">
               <button
                 onClick={() => setDeviceView('mobile')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                  deviceView === 'mobile'
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${deviceView === 'mobile'
                     ? 'bg-white text-charcoal shadow-sm'
                     : 'text-charcoal/60 hover:text-charcoal'
-                }`}
+                  }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -369,11 +364,10 @@ export function InteractiveDemoShowcase({ className = '' }: InteractiveDemoShowc
               </button>
               <button
                 onClick={() => setDeviceView('desktop')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                  deviceView === 'desktop'
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${deviceView === 'desktop'
                     ? 'bg-white text-charcoal shadow-sm'
                     : 'text-charcoal/60 hover:text-charcoal'
-                }`}
+                  }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />

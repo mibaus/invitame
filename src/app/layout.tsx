@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { 
-  Cormorant_Garamond, 
-  Lato, 
+import {
+  Cormorant_Garamond,
+  Lato,
   Great_Vibes,
   Playfair_Display,
   Source_Sans_3,
@@ -77,8 +77,15 @@ const pinyonScript = Pinyon_Script({
 });
 
 export const metadata: Metadata = {
-  title: "VOWS | Invitaciones Digitales de Lujo",
-  description: "Plataforma de invitaciones digitales premium para bodas y eventos exclusivos",
+  title: "VOWS | Invitaciones Digitales para bodas",
+  description: "Plataforma de invitaciones digitales premium para bodas",
+  openGraph: {
+    images: [{ url: "/logo.png", width: 320, height: 320, alt: "VOWS Logo" }],
+  },
+  twitter: {
+    card: "summary",
+    images: ["/logo.png"],
+  },
 };
 
 export default function RootLayout({
