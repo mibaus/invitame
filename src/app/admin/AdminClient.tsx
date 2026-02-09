@@ -16,7 +16,6 @@ export default function AdminClient({ invitations }: AdminClientProps) {
   const { data: session, status } = useSession();
   const [selectedInvitation, setSelectedInvitation] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [loadingSlug, setLoadingSlug] = useState<string | null>(null);
 
   // Auth check happens in server component, but keep client fail-safe
   if (status === 'unauthenticated') {
@@ -24,28 +23,9 @@ export default function AdminClient({ invitations }: AdminClientProps) {
     return null;
   }
 
-  const handleViewDetails = async (slug: string) => {
-    if (loadingSlug) return; // Prevent multiple concurrent requests
-
-    setLoadingSlug(slug);
-    try {
-      console.log('Fetching details for:', slug);
-      const res = await getDashboardData(slug);
-      console.log('Dashboard response:', res);
-
-      if (res.success && res.data) {
-        setDashboardData(res.data);
-        setSelectedInvitation(slug);
-      } else {
-        console.error('Error in response:', res.error);
-        alert('Error al cargar detalles: ' + (res.error || 'Desconocido'));
-      }
-    } catch (error) {
-      console.error('Catch error:', error);
-      alert('Error inesperado al cargar detalles');
-    } finally {
-      setLoadingSlug(null);
-    }
+  const handleSetData = (data: DashboardData, slug: string) => {
+    setDashboardData(data);
+    setSelectedInvitation(slug);
   };
 
   const handleBackToList = () => {
@@ -97,8 +77,7 @@ export default function AdminClient({ invitations }: AdminClientProps) {
             <InvitationListView
               key="list"
               invitations={invitations}
-              onSelect={handleViewDetails}
-              loadingSlug={loadingSlug}
+              onSelect={handleSetData}
             />
           )}
         </AnimatePresence>
@@ -111,12 +90,10 @@ export default function AdminClient({ invitations }: AdminClientProps) {
 
 function InvitationListView({
   invitations,
-  onSelect,
-  loadingSlug
+  onSelect
 }: {
   invitations: PendingInvitation[];
-  onSelect: (slug: string) => void;
-  loadingSlug: string | null;
+  onSelect: (data: DashboardData, slug: string) => void;
 }) {
   return (
     <motion.div
@@ -131,62 +108,15 @@ function InvitationListView({
             {invitations.length} invitaciones encontradas
           </p>
         </div>
-
-        {/* Actions like "Create New" could go here */}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {invitations.map((inv) => (
-          <div
+          <InvitationCard
             key={inv.id}
-            className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider font-bold ${inv.is_active
-                ? 'bg-green-100 text-green-700'
-                : 'bg-gray-100 text-gray-600'
-                }`}>
-                {inv.is_active ? 'Activa' : 'Inactiva'}
-              </span>
-              <span className="text-xs text-gray-400">
-                {new Date(inv.created_at).toLocaleDateString()}
-              </span>
-            </div>
-
-            <h3 className="font-serif text-xl mb-1">
-              {inv.content?.headline || 'Sin título'}
-            </h3>
-            <p className="text-xs text-gray-500 font-mono mb-4 truncate">
-              /{inv.slug}
-            </p>
-
-            <div className="mt-auto space-y-3">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <span className="w-2 h-2 rounded-full bg-[#A27B5C]"></span>
-                {inv.client?.full_name || 'Cliente desconocido'}
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 pt-4 border-t border-gray-50">
-                <Link
-                  href={`/preview/${inv.skin_id}?slug=${inv.slug}`}
-                  target="_blank"
-                  className="px-4 py-2 rounded-lg border border-gray-200 text-center text-sm hover:bg-gray-50 transition-colors"
-                >
-                  Ver
-                </Link>
-                <button
-                  onClick={() => onSelect(inv.slug)}
-                  disabled={loadingSlug === inv.slug}
-                  className={`px-4 py-2 rounded-lg text-white text-center text-sm transition-colors disabled:opacity-50 ${loadingSlug === inv.slug
-                      ? 'bg-[#A27B5C] opacity-75 cursor-not-allowed'
-                      : 'bg-[#2C3333] hover:bg-[#A27B5C]'
-                    }`}
-                >
-                  {loadingSlug === inv.slug ? 'Cargando...' : 'Gestionar'}
-                </button>
-              </div>
-            </div>
-          </div>
+            inv={inv}
+            onSelect={onSelect}
+          />
         ))}
 
         {invitations.length === 0 && (
@@ -196,6 +126,84 @@ function InvitationListView({
         )}
       </div>
     </motion.div>
+  );
+}
+
+function InvitationCard({
+  inv,
+  onSelect
+}: {
+  inv: PendingInvitation;
+  onSelect: (data: DashboardData, slug: string) => void;
+}) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleManage = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+
+    try {
+      console.log('Fetching details for:', inv.slug);
+      const res = await getDashboardData(inv.slug);
+      console.log('Response for', inv.slug, ':', res);
+
+      if (res.success && res.data) {
+        onSelect(res.data, inv.slug);
+      } else {
+        alert('Error: ' + (res.error || 'No se pudo cargar la información'));
+      }
+    } catch (err) {
+      console.error('Action error:', err);
+      alert('Error inesperado al conectar con el servidor');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col">
+      <div className="flex items-start justify-between mb-4">
+        <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider font-bold ${inv.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+          }`}>
+          {inv.is_active ? 'Activa' : 'Inactiva'}
+        </span>
+        <span className="text-xs text-gray-400">
+          {new Date(inv.created_at).toLocaleDateString()}
+        </span>
+      </div>
+
+      <h3 className="font-serif text-xl mb-1">
+        {inv.content?.headline || 'Sin título'}
+      </h3>
+      <p className="text-xs text-gray-500 font-mono mb-4 truncate">
+        /{inv.slug}
+      </p>
+
+      <div className="mt-auto space-y-3">
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span className="w-2 h-2 rounded-full bg-[#A27B5C]"></span>
+          {inv.client?.full_name || 'Cliente desconocido'}
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 pt-4 border-t border-gray-50">
+          <Link
+            href={`/preview/${inv.skin_id}?slug=${inv.slug}`}
+            target="_blank"
+            className="px-4 py-2 rounded-lg border border-gray-200 text-center text-sm hover:bg-gray-50 transition-colors"
+          >
+            Ver
+          </Link>
+          <button
+            onClick={handleManage}
+            disabled={isLoading}
+            className={`px-4 py-2 rounded-lg text-white text-center text-sm transition-colors disabled:opacity-50 ${isLoading ? 'bg-[#A27B5C]' : 'bg-[#2C3333] hover:bg-[#A27B5C]'
+              }`}
+          >
+            {isLoading ? 'Cargando...' : 'Gestionar'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -218,9 +226,9 @@ function InvitationDetailView({
       <div className="flex items-center gap-4 mb-8">
         <button
           onClick={onBack}
-          className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors"
+          className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors font-serif text-xl"
         >
-          ←
+          &larr;
         </button>
         <div>
           <h1 className="text-2xl font-serif">
@@ -236,7 +244,7 @@ function InvitationDetailView({
             target="_blank"
             className="px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
           >
-            Ver Dashboard Cliente ↗
+            Ver Dashboard Cliente &nearr;
           </Link>
         </div>
       </div>
