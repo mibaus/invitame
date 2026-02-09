@@ -16,7 +16,7 @@ export default function AdminClient({ invitations }: AdminClientProps) {
   const { data: session, status } = useSession();
   const [selectedInvitation, setSelectedInvitation] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [loadingSlug, setLoadingSlug] = useState<string | null>(null);
 
   // Auth check happens in server component, but keep client fail-safe
   if (status === 'unauthenticated') {
@@ -25,7 +25,7 @@ export default function AdminClient({ invitations }: AdminClientProps) {
   }
 
   const handleViewDetails = async (slug: string) => {
-    setIsLoadingDetails(true);
+    setLoadingSlug(slug);
     try {
       const res = await getDashboardData(slug);
       if (res.success && res.data) {
@@ -38,7 +38,7 @@ export default function AdminClient({ invitations }: AdminClientProps) {
       console.error(error);
       alert('Error inesperado al cargar detalles');
     } finally {
-      setIsLoadingDetails(false);
+      setLoadingSlug(null);
     }
   };
 
@@ -92,7 +92,7 @@ export default function AdminClient({ invitations }: AdminClientProps) {
               key="list"
               invitations={invitations}
               onSelect={handleViewDetails}
-              isLoading={isLoadingDetails}
+              loadingSlug={loadingSlug}
             />
           )}
         </AnimatePresence>
@@ -106,11 +106,11 @@ export default function AdminClient({ invitations }: AdminClientProps) {
 function InvitationListView({
   invitations,
   onSelect,
-  isLoading
+  loadingSlug
 }: {
   invitations: PendingInvitation[];
   onSelect: (slug: string) => void;
-  isLoading: boolean;
+  loadingSlug: string | null;
 }) {
   return (
     <motion.div
@@ -137,8 +137,8 @@ function InvitationListView({
           >
             <div className="flex items-start justify-between mb-4">
               <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider font-bold ${inv.is_active
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-gray-100 text-gray-600'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-gray-100 text-gray-600'
                 }`}>
                 {inv.is_active ? 'Activa' : 'Inactiva'}
               </span>
@@ -170,10 +170,13 @@ function InvitationListView({
                 </Link>
                 <button
                   onClick={() => onSelect(inv.slug)}
-                  disabled={isLoading}
-                  className="px-4 py-2 rounded-lg bg-[#2C3333] text-white text-center text-sm hover:bg-[#A27B5C] transition-colors disabled:opacity-50"
+                  disabled={loadingSlug !== null}
+                  className={`px-4 py-2 rounded-lg text-white text-center text-sm transition-colors disabled:opacity-50 ${loadingSlug === inv.slug
+                      ? 'bg-[#A27B5C]'
+                      : 'bg-[#2C3333] hover:bg-[#A27B5C]'
+                    }`}
                 >
-                  {isLoading ? '...' : 'Gestionar'}
+                  {loadingSlug === inv.slug ? 'Cargando...' : 'Gestionar'}
                 </button>
               </div>
             </div>
